@@ -17,7 +17,6 @@ app = typer.Typer()
 @app.command()
 def authenticate(username: str = typer.Option(..., prompt=True, help="Bhoonidhi username"),password: str = typer.Option(..., prompt=True, hide_input=True, help="Bhoonidhi password")):
     typer.echo("Logging in...")
-    typer.echo(f"Username: {username}")
     
     if not username or not password:
         typer.echo("Username and password cannot be empty.", err=True)
@@ -34,33 +33,6 @@ def authenticate(username: str = typer.Option(..., prompt=True, help="Bhoonidhi 
     except Exception:
         typer.echo(f"Login failed! Try again.", err=True)
         raise typer.Exit(code=1)
-
-@app.command()
-def show_cart(cart_date: str = typer.Option(..., prompt=True, help="Cart date in YYYYMMDD format")):
-    session = load_session_info()
-    jwt = session.get("jwt")
-    if not jwt:
-        typer.echo("Token not found. Logging in...", err=True)
-        authenticate()
-    typer.echo("Viewing cart...")
-    response = view_cart(session.get("userId"), cart_date, jwt)
-    if response.status_code == 200:
-        cart_items = response.json()['Results']
-        if len(cart_items) == 0:
-            print("Cart is empty.")
-            return
-        else:
-            print(f"Total Items in Cart: {len(cart_items)}")
-            for i, item in enumerate(cart_items):
-                print(f'--> {i+1}. {item["PRODUCTID"]} | {item["DIRPATH"]} | {item["SATELLITE"]}')
-            return cart_items
-    elif response.status_code == 401:
-        print("Unauthorized. Invalid token. Login again....")
-        authenticate()
-    else:
-        print("Unable to fetch cart for given date. \nStatus code:", response.status_code)
-    
-console = Console()
 
 @app.command()
 def search_scenes(
