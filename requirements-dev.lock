@@ -11,10 +11,15 @@
 certifi==2024.7.4
     # via pyogrio
     # via pyproj
+    # via requests
+charset-normalizer==3.3.2
+    # via requests
 click==8.1.7
     # via typer
 geopandas==1.0.1
     # via bhoonidhi-downloader
+idna==3.7
+    # via requests
 markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
@@ -39,6 +44,8 @@ python-dateutil==2.9.0.post0
     # via pandas
 pytz==2024.1
     # via pandas
+requests==2.32.3
+    # via bhoonidhi-downloader
 rich==13.7.1
     # via typer
 shapely==2.0.5
@@ -53,3 +60,5 @@ typing-extensions==4.12.2
     # via typer
 tzdata==2024.1
     # via pandas
+urllib3==2.2.2
+    # via requests
