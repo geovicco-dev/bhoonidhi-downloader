@@ -35,7 +35,7 @@ def authenticate(username: str = typer.Option(..., prompt=True, help="Bhoonidhi 
         raise typer.Exit(code=1)
 
 @app.command()
-def search_scenes(
+def search(
     minx: float = typer.Argument(..., help="Minimum longitude"),
     maxx: float = typer.Argument(..., help="Maximum longitude"),
     miny: float = typer.Argument(..., help="Minimum latitude"),
@@ -123,8 +123,6 @@ def search_scenes(
                 typer.echo("Invalid index. Please try again.")
         except ValueError:
             typer.echo("Invalid input. Please enter a number or 'q' to quit.")
-    
-    print(selected_scene)
     
     # Prompt user for confirmation
     confirm = typer.confirm(f"Do you want to download scene {selected_scene['ID']}?")

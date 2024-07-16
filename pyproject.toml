@@ -1,7 +1,9 @@
 [project]
 name = "bhoonidhi-downloader"
-version = "0.1.0"
-description = "CLI tool for searching and downloading satellite data from Bhoonidhi"
+version = "0.0.1"
+description = "Command line tool for searching and downloading satellite data from Bhoonidhi"
+license = "MIT"
+repository = "https://github.com/geovicco-dev/bhoonidhi-downloader"
 authors = [
     { name = "geovicco-dev", email = "geovicco.dev@gmail.com" }
 ]
