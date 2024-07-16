@@ -38,6 +38,8 @@ For more information, use the `--help` option:
 - View search results in tabular format with metadata and quicklook images
 - Select a scene to download from the search results
 
+![alt text](docs/image.png)
+
 ### Limitations
 
 - Supports only bounding box-based search for scenes.
