@@ -1,8 +1,8 @@
-# .github/workflows/publish.yaml
-
-name: Publish to PyPI
+name: Publish to TestPyPI
 
 on:
+  push:
+    branches: [test]
   release:
     types: [published]
 
@@ -27,8 +27,7 @@ jobs:
         run: rye build --clean
       - name: Publish to PyPI
         env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          PYPI_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
         run: |
-          echo $PYPI_PASSWORD
-          rye publish --username $PYPI_USERNAME --token $PYPI_PASSWORD --yes --verbose
+          rye publish --repository testpypi --repository-url https://test.pypi.org/legacy/ --yes --verbose
