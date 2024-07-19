@@ -5,11 +5,12 @@ from bhoonidhi_downloader.cart_actions import view_cart
 from rich.console import Console
 from rich.table import Table
 from bhoonidhi_downloader.scene_search import search_for_scenes
-from bhoonidhi_downloader.utils import get_scene_meta_url, get_quicklook_url, create_clickable_link, download_scene
+from bhoonidhi_downloader.utils import get_scene_meta_url, get_quicklook_url, create_clickable_link, get_download_url, download_scene
 from geopandas import GeoDataFrame
 from shapely.geometry import box
 from datetime import datetime
 from pathlib import Path
+from tqdm import tqdm
 
 console = Console()
 app = typer.Typer()
@@ -110,29 +111,54 @@ def search(
         console.print("1. Hold Cmd (on Mac) or Ctrl (on Windows/Linux)", style="dim")
         console.print("2. Click on the link", style="dim")
     
-    while True:    
-        choice = typer.prompt("\nEnter the index of the scene you want to download (or 'q' to quit)")
-        if choice.lower() == 'q':
-            raise typer.Exit()
-        try:
-            index = int(choice) - 1
-            if 0 <= index < len(open_data_scenes):
-                selected_scene = open_data_scenes[index]
-                break
+        while True:    
+            choice = typer.prompt("\nEnter the indices of the scenes you want to download - separated by comma (for multiple scenes) or 'q' to quit (example: 1,2,3) ", type=str)
+            if choice.lower() == 'q':
+                raise typer.Exit()
+            
+            # Convert choice to list by stripping any whitespaces and split by comma
+            try:
+                choice = [int(x.strip()) for x in choice.split(',')]
+            except ValueError:
+                typer.echo("Invalid input. Please enter numbers separated by commas or 'q' to quit.")
+                continue
+            
+            scenes_to_download = [] 
+            for scene_idx in choice:
+                index = scene_idx - 1
+                if 0 <= index < len(open_data_scenes):
+                    selected_scene = open_data_scenes[index]
+                    scenes_to_download.append(selected_scene)
+                else:
+                    typer.echo(f"Invalid index: {scene_idx}. Skipping.")
+
+            if not scenes_to_download:
+                typer.echo("No valid scenes selected. Please try again.")
+                continue
+
+            print(f"Selected scenes: {[scene['ID'] for scene in scenes_to_download]}")
+            
+            # Prompt user for confirmation
+            if len(scenes_to_download) > 1:
+                confirm = typer.confirm(f"Do you want to download {len(scenes_to_download)} scenes?")
             else:
-                typer.echo("Invalid index. Please try again.")
-        except ValueError:
-            typer.echo("Invalid input. Please enter a number or 'q' to quit.")
-    
-    # Prompt user for confirmation
-    confirm = typer.confirm(f"Do you want to download scene {selected_scene['ID']}?")
-    if confirm:
-        # Ask user for output directory
-        out_dir = typer.prompt("Enter the output directory (defaults to download folder inside current directory): ", default="./downloads", type=Path)
-        out_dir = Path(out_dir).expanduser().resolve()
-        # Download scene
-        typer.echo(f"\nDownloading scene {selected_scene['ID']} to {out_dir}...", err=True)
-        download_scene(scene_id=selected_scene["ID"], out_dir=out_dir, session=session)
+                confirm = typer.confirm(f"Do you want to download scene {scenes_to_download[0]['ID']}?")
+            
+            if confirm:
+                # Ask user for output directory once
+                out_dir = typer.prompt("Enter the output directory (defaults to download folder inside current directory): ", default="./downloads", type=Path)
+                out_dir = Path(out_dir).expanduser().resolve()
+                out_dir.mkdir(parents=True, exist_ok=True)
+                
+                scene_ids = [scene['ID'] for scene in scenes_to_download]
+                download_urls = [get_download_url(scene_id, session) for scene_id in scene_ids]
+
+                # Download scenes
+                for url, scene_id in tqdm(zip(download_urls, scene_ids), total=len(download_urls), desc="Downloading scenes"):
+                    typer.echo(download_scene(url, out_dir, scene_id))
+                typer.echo("All downloads completed.")
+                typer.Exit()
+                    
     
 def main():
     app()

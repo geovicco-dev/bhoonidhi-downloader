@@ -5,6 +5,8 @@ import urllib
 from rich.markup import escape
 from pathlib import Path
 import subprocess
+from typing import List
+import typer
 
 def parse_cart_date_from_sid(sid):
     """
@@ -54,8 +56,7 @@ def get_quicklook_url(scene):
 def create_clickable_link(url, text):
     return f"[link={url}]{escape(text)}[/link]"
 
-
-def download_scene(scene_id: str, out_dir: Path, session: dict):
+def get_download_url(scene_id: str, session: dict):
     scene = [scene for scene in session["scenes"] if scene['ID'] == scene_id][0]
     satellite = scene['SATELLITE']
     sensor = scene["SENSOR"]
@@ -77,8 +78,9 @@ def download_scene(scene_id: str, out_dir: Path, session: dict):
         print('Invalid selection. Please try again.')
 
     download_url = f"""{base_url}/{satellite}/{sensor}/{dirpath.split("/")[-4:][:2][0]}/{dirpath.split("/")[-4:][:2][1]}/{filename}.zip?token={session.get("jwt")}&product_id={filename}"""
-    
-    # Use WGET to download the file
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_file = out_dir / f'{filename}.zip'
-    subprocess.run(["wget", download_url, "-O", out_file])
+    return download_url
+
+def download_scene(url, out_dir, scene_id):
+    out_file = out_dir / f"{scene_id}.zip"
+    subprocess.run(["wget", url, "-O", str(out_file), "--quiet", "--show-progress"], check=True)
+    return f"Downloaded {scene_id}"

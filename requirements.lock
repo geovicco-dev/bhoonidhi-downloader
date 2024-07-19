@@ -54,6 +54,8 @@ shellingham==1.5.4
     # via typer
 six==1.16.0
     # via python-dateutil
+tqdm==4.66.4
+    # via bhoonidhi-downloader
 typer==0.12.3
     # via bhoonidhi-downloader
 typing-extensions==4.12.2
@@ -62,3 +64,5 @@ tzdata==2024.1
     # via pandas
 urllib3==2.2.2
     # via requests
+wget==3.2
+    # via bhoonidhi-downloader
