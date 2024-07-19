@@ -3,8 +3,6 @@ name: Publish to TestPyPI
 on:
   push:
     branches: [test]
-  release:
-    types: [published]
 
 jobs:
   deploy:
@@ -30,4 +28,4 @@ jobs:
           PYPI_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
         run: |
-          rye publish --repository testpypi --repository-url https://test.pypi.org/legacy/ --yes --verbose
+          rye publish --repository testpypi --repository-url https://test.pypi.org/legacy/ --yes --verbose --token $PYPI_PASSWORD
