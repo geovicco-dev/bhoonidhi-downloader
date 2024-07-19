@@ -1,6 +1,6 @@
 [project]
 name = "bhoonidhi-downloader"
-version = "0.1.1-dev0"
+version = "0.1.1.dev1"
 description = "Command line tool for searching and downloading satellite data from Bhoonidhi"
 license = "Apache-2.0"
 authors = [
@@ -11,9 +11,12 @@ dependencies = [
     "typer>=0.12.3",
     "requests>=2.32.3",
     "tqdm>=4.66.4",
+    "wget>=3.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
+
+urls = { "homepage" = "https://github.com/geovicco-dev/bhoonidhi-downloader", "repository" = "https://github.com/geovicco-dev/bhoonidhi-downloader" }
 
 [project.scripts]
 "bhoonidhi-downloader" = "bhoonidhi_downloader:main"
