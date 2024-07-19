@@ -1,0 +1,34 @@
+# .github/workflows/publish.yaml
+
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Setup Rye
+        uses: eifinger/setup-rye@v3
+      - name: Patch Rye
+        run: |
+          echo "Patching Rye with Twine 5.1.1"
+          $RYE_HOME/self/bin/pip install twine==5.1.1
+      - name: Install dependencies
+        run: rye pin 3.10 && rye sync
+      - name: Build package
+        run: rye build --clean
+      - name: Publish to PyPI
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          echo $PYPI_PASSWORD
+          rye publish --username $PYPI_USERNAME --token $PYPI_PASSWORD --yes --verbose
