@@ -3,10 +3,7 @@ from datetime import datetime
 import json
 import urllib
 from rich.markup import escape
-from pathlib import Path
 import subprocess
-from typing import List
-import typer
 
 def parse_cart_date_from_sid(sid):
     """
@@ -82,5 +79,9 @@ def get_download_url(scene_id: str, session: dict):
 
 def download_scene(url, out_dir, scene_id):
     out_file = out_dir / f"{scene_id}.zip"
-    subprocess.run(["wget", url, "-O", str(out_file), "--quiet", "--show-progress"], check=True)
+    try:
+        subprocess.run(["wget", url, "-O", str(out_file), "--quiet", "--show-progress"], check=True)
+    except Exception as e:
+        print(f"Error downloading scene {scene_id}: {e}")
+        print('Session might have expired. Try Logging in again...')
     return f"Downloaded {scene_id}"
