@@ -23,9 +23,8 @@ jobs:
         run: rye pin 3.10 && rye sync
       - name: Build package
         run: rye build --clean
-      - name: Publish to PyPI
+      - name: Publish to TestPyPI
         env:
-          PYPI_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+          TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
         run: |
-          rye publish --repository testpypi --repository-url https://test.pypi.org/legacy/ --yes --verbose --token $PYPI_PASSWORD
+          rye publish --repository testpypi --repository-url https://test.pypi.org/legacy/ --yes --verbose --token $TEST_PYPI_PASSWORD
