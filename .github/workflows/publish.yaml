@@ -1,8 +1,8 @@
-name: Publish to TestPyPI
+name: Publish to PyPI
 
 on:
-  push:
-    branches: [test]
+  release:
+    types: [published]
 
 jobs:
   deploy:
@@ -25,6 +25,8 @@ jobs:
         run: rye build --clean
       - name: Publish to TestPyPI
         env:
-          TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          rye publish --repository testpypi --repository-url https://test.pypi.org/legacy/ --yes --verbose --token $TEST_PYPI_PASSWORD
+          echo $PYPI_PASSWORD
+          rye publish --username $PYPI_USERNAME --token $PYPI_PASSWORD --yes --verbose
