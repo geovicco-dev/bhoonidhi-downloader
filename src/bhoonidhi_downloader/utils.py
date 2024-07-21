@@ -118,3 +118,57 @@ def download_scene(url, out_dir, scene_id):
         print(f"Error downloading scene {scene_id}: {e}")
         print('Session might have expired. Try Logging in again...')
     return f"Downloaded {scene_id}"
+
+import csv
+import json
+from tabulate import tabulate
+import typer
+
+def get_scenes_data_for_export(scenes: List):
+    export_data = {
+        scene.get('ID', f'Unknown_{idx}'): {
+            "Index": idx + 1,
+            "Date": scene.get('DOP', 'N/A'),
+            "Satellite": scene.get('SATELLITE', 'N/A'),
+            "Sensor": scene.get('SENSOR', 'N/A'),
+            "Product": scene.get('PRODTYPE', 'N/A'),
+            "Metadata": get_scene_meta_url(scene),
+            "Quick View": get_quicklook_url(scene)
+        }
+        for idx, scene in enumerate(scenes)
+    }
+    return export_data
+
+def export_search_results(format: str, export_data: dict, filename: str):
+    # Export as CSV
+    if format == 'csv':
+        export_data = list(export_data.values())
+        with open(filename, 'w', newline='') as csvfile:
+            fieldnames = export_data[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in export_data:
+                writer.writerow(row)
+                
+        typer.echo(f"----> Exported search results as CSV to {filename}.")
+
+    # Export as JSON
+    if format == 'json':
+        with open(filename, 'w') as jsonfile:
+            json.dump(export_data, jsonfile)
+    
+        typer.echo(f"----> Exported search results as JSON to {filename}.")
+
+    # Export as Markdown table
+    if format == 'markdown':
+        export_data = list(export_data.values())
+        headers = export_data[0].keys()
+        table = tabulate(
+            [row.values() for row in export_data],
+            headers=headers,
+            tablefmt="pipe"
+        )
+        with open(filename, 'w') as mdfile:
+            mdfile.write(table)
+            
+        typer.echo(f"----> Exported search results as Markdown table to {filename}.")

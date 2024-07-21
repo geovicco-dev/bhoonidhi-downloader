@@ -3,7 +3,7 @@ from bhoonidhi_downloader.authenticate import login, save_session_info, validate
 from bhoonidhi_downloader.constants import session_info
 from rich.console import Console
 from bhoonidhi_downloader.scene_search import search_for_scenes
-from bhoonidhi_downloader.utils import get_download_url, download_scene, display_search_results
+from bhoonidhi_downloader.utils import get_download_url, download_scene, display_search_results, get_scenes_data_for_export, export_search_results
 from geopandas import GeoDataFrame
 from shapely.geometry import box
 from datetime import datetime
@@ -86,6 +86,17 @@ def search(
                 
         # Display scenes in a table
         display_search_results(open_data_scenes, console)
+        
+        # Export search results as CSV, JSON, or Markdown table
+        if open_data_scenes:
+            # Prepare data for export
+            export_data = get_scenes_data_for_export(open_data_scenes)
+            if csv:
+                export_search_results('csv', export_data, csv)
+            if json:
+                export_search_results('json', export_data, json)
+            if markdown:
+                export_search_results('markdown', export_data, markdown)
  
         while True:    
             choice = typer.prompt("\nEnter the indices of the scenes you want to download - separated by comma (for multiple scenes) or 'q' to quit (example: 1,2,3) ", type=str)
