@@ -1,6 +1,6 @@
 [project]
 name = "bhoonidhi-downloader"
-version = "0.1.1"
+version = "0.1.2.dev0"
 description = "Command line tool for searching and downloading satellite data from Bhoonidhi"
 license = "MIT"
 authors = [
@@ -29,6 +29,7 @@ build-backend = "hatchling.build"
 managed = true
 dev-dependencies = [
     "ipykernel>=6.29.5",
+    "pyyaml>=6.0.1",
 ]
 
 [tool.hatch.metadata]

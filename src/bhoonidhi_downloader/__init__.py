@@ -133,20 +133,21 @@ def search(
                     typer.echo(f"Invalid index: {scene_idx}. Skipping.")
 
             if not scenes_to_download:
-                typer.echo("No valid scenes selected. Please try again.")
+                typer.echo("No valid scenes selected. Please try again or press 'q' to quit.")
                 continue
 
-            print(f"Selected scenes: {[scene['ID'] for scene in scenes_to_download]}")
+            selected_scenes = [scene['ID'] for scene in scenes_to_download] if len(scenes_to_download) > 1 else scenes_to_download[0]['ID']
+            typer.echo(f"Selected scene(s): {selected_scenes}")
             
             # Prompt user for confirmation
             if len(scenes_to_download) > 1:
-                confirm = typer.confirm(f"Do you want to download {len(scenes_to_download)} scenes?")
+                confirm = typer.confirm(f"Do you want to download the above scenes?")
             else:
                 confirm = typer.confirm(f"Do you want to download scene {scenes_to_download[0]['ID']}?")
             
             if confirm:
                 # Ask user for output directory once
-                out_dir = typer.prompt("Enter the output directory (defaults to download folder inside current directory): ", default="./downloads", type=Path)
+                out_dir = typer.prompt("\nEnter the output directory (defaults to download folder inside current directory): ", default="./downloads", type=Path)
                 out_dir = Path(out_dir).expanduser().resolve()
                 out_dir.mkdir(parents=True, exist_ok=True)
                 
@@ -157,7 +158,11 @@ def search(
                 for url, scene_id in tqdm(zip(download_urls, scene_ids), total=len(download_urls), desc="Downloading scenes"):
                     typer.echo(download_scene(url, out_dir, scene_id))
                 typer.echo("All downloads completed.")
+                break
+            else:
                 typer.Exit()
+                break
+        typer.Exit()
                     
     
 def main():
