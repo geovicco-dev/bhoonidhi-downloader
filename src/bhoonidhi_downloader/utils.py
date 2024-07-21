@@ -4,6 +4,9 @@ import json
 import urllib
 from rich.markup import escape
 import subprocess
+from typing import List
+from rich.table import Table
+from rich.console import Console
 
 def parse_cart_date_from_sid(sid):
     """
@@ -52,6 +55,36 @@ def get_quicklook_url(scene):
 
 def create_clickable_link(url, text):
     return f"[link={url}]{escape(text)}[/link]"
+
+
+def display_search_results(scenes: List, console: Console):
+    table = Table(title="Available Scenes")
+    table.add_column("Index", style="blue")
+    table.add_column("Scene ID", style="red")
+    table.add_column("Date", style="blue")
+    table.add_column("Satellite", style="red")
+    table.add_column("Sensor", style="blue")
+    table.add_column('Product', style="red")
+    table.add_column("Metadata", style="blue")
+    table.add_column("Quick View", style="red")
+    
+    for idx, scene in enumerate(scenes):
+        table.add_row(
+            str(idx+1),
+            scene.get('ID', 'N/A'),
+            scene.get('DOP', 'N/A'),
+            scene.get('SATELLITE', 'N/A'),
+            scene.get('SENSOR', 'N/A'),
+            scene.get('PRODTYPE', 'N/A'),
+            create_clickable_link(get_scene_meta_url(scene), "View Metadata"),
+            create_clickable_link(get_quicklook_url(scene), "Quick View"),
+        )
+
+    console.print(table)
+    # Instructions for the user
+    console.print("\nTo open links:", style="yellow")
+    console.print("1. Hold Cmd (on Mac) or Ctrl (on Windows/Linux)", style="dim")
+    console.print("2. Click on the link", style="dim")
 
 def get_download_url(scene_id: str, session: dict):
     scene = [scene for scene in session["scenes"] if scene['ID'] == scene_id][0]
