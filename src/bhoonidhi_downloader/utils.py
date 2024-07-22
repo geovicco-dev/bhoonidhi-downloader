@@ -113,13 +113,14 @@ def get_download_url(scene_id: str, session: dict):
     download_url = f"""{base_url}/{satellite}/{sensor}/{dirpath.split("/")[-4:][:2][0]}/{dirpath.split("/")[-4:][:2][1]}/{filename}.zip?token={session.get("jwt")}&product_id={filename}"""
     return download_url
 
-def download_scene(url, out_dir, scene_id):
+def download_scene(url, out_dir, scene_id, console: Console):
     out_file = out_dir / f"{scene_id}.zip"
     try:
         subprocess.run(["wget", url, "-O", str(out_file), "--quiet", "--show-progress"], check=True)
-    except Exception as e:
-        print(f"Error downloading scene {scene_id}: {e}")
-        print('Session might have expired. Try Logging in again...')
+    except:
+        # Print Console Error
+        console.print(f"Error downloading scene {scene_id}", style="bold red")
+        return
     return f"Downloaded {scene_id}"
 
 def get_scenes_data_for_export(scenes: List):
