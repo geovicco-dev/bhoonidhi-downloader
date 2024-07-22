@@ -10,21 +10,21 @@ def get_satellite_sensor(satellite=None, sensor=None):
     elif satellite == 'ResourceSat-1' and sensor == 'LISS4':
         return satellite_sensor_map.get('RS1').get('LISS4')
     elif satellite == 'ResourceSat-1' and sensor is None:
-        return list(satellite_sensor_map.get('RS1').values())
+        return flatten_dict_to_1d(satellite_sensor_map.get('RS1'))
     
     elif satellite == 'ResourceSat-2' and sensor == 'LISS3':
         return satellite_sensor_map.get('RS2').get('LISS3')
     elif satellite == 'ResourceSat-2' and sensor == 'LISS4':
         return satellite_sensor_map.get('RS2').get('LISS4')
     elif satellite == 'ResourceSat-2' and sensor is None:
-        return list(satellite_sensor_map.get('RS2').values())
+        return flatten_dict_to_1d(satellite_sensor_map.get('RS2'))
     
     elif satellite == 'ResourceSat-2A' and sensor == 'LISS3':
         return satellite_sensor_map.get('RS2A').get('LISS3')
     elif satellite == 'ResourceSat-2A' and sensor == 'LISS4':
         return satellite_sensor_map.get('RS2A').get('LISS4')
     elif satellite == 'ResourceSat-2A' and sensor is None:
-        return list(satellite_sensor_map.get('RS2A').values())
+        return flatten_dict_to_1d(satellite_sensor_map.get('RS2A'))
     
     elif satellite == 'Sentinel-2A':
         sensor = None
@@ -34,19 +34,63 @@ def get_satellite_sensor(satellite=None, sensor=None):
         sensor = None
         return satellite_sensor_map.get('S2B').get('MSI')
     
-    elif satellite == 'IRS-1C':
-        sensor = None
+    elif satellite == 'IRS-1A' and sensor == 'LISS1':
+        return satellite_sensor_map.get('IRS-1A').get('LISS1')
+    elif satellite == 'IRS-1A' and sensor == 'LISS2':
+        return satellite_sensor_map.get('IRS-1A').get('LISS2')
+    elif satellite == 'IRS-1A' and sensor is None:
+        return flatten_dict_to_1d(satellite_sensor_map.get('IRS-1A'))
+    
+    elif satellite == 'IRS-1B' and sensor == 'LISS1':
+        return satellite_sensor_map.get('IRS-1B').get('LISS1')
+    elif satellite == 'IRS-1B' and sensor == 'LISS2':
+        return satellite_sensor_map.get('IRS-1B').get('LISS2')
+    elif satellite == 'IRS-1B' and sensor is None:
+        return flatten_dict_to_1d(satellite_sensor_map.get('IRS-1B'))
+    
+    elif satellite == 'IRS-1C' and sensor == 'PAN':
         return satellite_sensor_map.get('IRS1C').get('PAN')
+    elif satellite == 'IRS-1C' and sensor == 'WIFS':
+        return satellite_sensor_map.get('IRS1C').get('WIFS')
+    elif satellite == 'IRS-1C' and sensor is None:
+        return flatten_dict_to_1d(satellite_sensor_map.get('IRS1C'))
     
     elif satellite == 'IRS-1D' and sensor == 'PAN':
         return satellite_sensor_map.get('IRS1D').get('PAN')
     elif satellite == 'IRS-1D' and sensor == 'LISS3':
         return satellite_sensor_map.get('IRS1D').get('LISS3')
+    elif satellite == 'IRS-1D' and sensor == 'WIFS':
+        return satellite_sensor_map.get('IRS1D').get('WIFS')
     elif satellite == 'IRS-1D' and sensor is None:
-        return list(satellite_sensor_map.get('IRS1D').values())
-
+        return flatten_dict_to_1d(satellite_sensor_map.get('IRS1D'))
+    
+    elif satellite == 'Sentinel-1A':
+        sensor = None
+        return satellite_sensor_map.get('S1A').get('SAR')
+    
+    elif satellite == 'Sentinel-1B':
+        sensor = None
+        return satellite_sensor_map.get('S1B').get('SAR')
+    
+    elif satellite == 'CartoSat-1':
+        sensor = None
+        return satellite_sensor_map.get('CartoSat-1').get('PAN')
+    
+    elif satellite == 'EOS-04':
+        sensor = None
+        return satellite_sensor_map.get('EOS-04').get('SAR')
+        
+    elif satellite == 'Landsat-8':
+        sensor = None
+        return satellite_sensor_map.get('LandSat-8').get('OLI+TIRS')
+    
+    elif satellite == "Landsat-9":
+        sensor = None
+        return satellite_sensor_map.get('LandSat-9').get('OLI+TIRS')
+    
     elif satellite is None and sensor is None:
         return flatten_dict_to_1d(satellite_sensor_map)
+    
     else:
         print('Satellite and sensor combination not found. Please try again with a valid combination.\n----> Available satellites are: \nResourceSat-1, ResourceSat-2, ResourceSat-2A, Sentinel-2A, Sentinel-2B, IRS-1C, IRS-1D\n')
 

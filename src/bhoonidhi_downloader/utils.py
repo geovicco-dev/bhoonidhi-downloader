@@ -11,6 +11,7 @@ import csv
 from tabulate import tabulate
 import typer
 from pathlib import Path
+import requests
 
 def parse_cart_date_from_sid(sid):
     """
@@ -107,6 +108,8 @@ def get_download_url(scene_id: str, session: dict):
         sensor = '3'
     elif satellite == "SEN2A" or satellite == "SEN2B":
         sensor = "MSI"
+    elif satellite == "SEN1A" or satellite == "SEN1B":
+        sensor = "SAR"
     else:
         print('Invalid selection. Please try again.')
 
@@ -118,10 +121,8 @@ def download_scene(url, out_dir, scene_id, console: Console):
     try:
         subprocess.run(["wget", url, "-O", str(out_file), "--quiet", "--show-progress"], check=True)
     except:
-        # Print Console Error
         console.print(f"Error downloading scene {scene_id}", style="bold red")
         return
-    return f"Downloaded {scene_id}"
 
 def get_scenes_data_for_export(scenes: List):
     export_data = {
@@ -186,3 +187,66 @@ def flatten_dict_to_1d(d):
                 values.append(v)
     _flatten(d)
     return values
+
+def get_archive_data():
+    url = f"{BASE_URL}/bhoonidhi/SatSenServlet"
+    payload = {"userId":"T","action":"GETAVCONFIG","userEmail":"abc@xyz.com"}
+
+    response = requests.post(url, json=payload)
+    data = response.json()["Results"]
+    return data
+
+def format_archive_data(archive_data, console: Console):
+    table = Table(title="Bhoonidhi Browse & Order Archive")
+    table.add_column("Index", style="blue")
+    table.add_column("Satellite", style="red")
+    table.add_column("Availability", style="blue")
+    table.add_column("Access Level", style="red")
+    table.add_column("Sensors", style="blue")
+    table.add_column('Resolution (m)', style="red")
+
+    if len(archive_data) != 0:
+        for idx, record in enumerate(archive_data):
+            res_range = f"{record.get('thisMinRes')} - {record.get('thisMaxRes')}" if record.get('thisMinRes') != record.get('thisMaxRes') else record.get('thisMinRes')
+            
+            availability = f"{datetime.strptime(record.get('totalStartDate'), '%m/%d/%Y').strftime('%d %B %Y')} - {datetime.strptime(record.get('totalEndDate'), '%m/%d/%Y').strftime('%d %B %Y')}" if record.get('totalEndDate') != '' else f"{datetime.strptime(record.get('totalStartDate'), '%m/%d/%Y').strftime('%d %B %Y')} - till date"
+            
+            sensors_list = [r.get('senName') for r in record.get('sensors')]
+            sensors = ', '.join(sensors_list)
+            
+            table.add_row(
+                str(idx+1),
+                record.get('satName', 'N/A'),
+                availability,
+                record.get('priced', 'N/A').split('_')[-1],
+                sensors,
+                res_range
+            )
+
+        console.print(table)
+
+def filter_archive_data(archive_data, satelite, console: Console):
+    # Filter archive data based on satelite
+    data = [item.get('sensors') for item in archive_data if item.get('satName') == satelite]
+
+    # Create table
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Satellite", style="cyan", no_wrap=True)
+    table.add_column("Sensor", style="cyan", no_wrap=True)
+    table.add_column("Resolution (m)", style="cyan", no_wrap=True)
+    table.add_column("Start Date", style="cyan", no_wrap=True)
+    table.add_column("End Date", style="cyan", no_wrap=True)
+    table.add_column("Products", style="cyan", no_wrap=True)
+
+    # Add rows
+    for d in data:
+        for i in d:
+            table.add_row(
+                i.get('satName', '-'),
+                i.get('senName', '-'),
+                i.get('res', '-'),
+                i.get('stDate', '-'),
+                i.get('endDate', '-'),
+                i.get('products', '-')
+            )
+    console.print(table)
