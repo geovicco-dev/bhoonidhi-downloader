@@ -1,32 +1,54 @@
 import requests
 from datetime import datetime, timedelta
 from bhoonidhi_downloader.constants import BASE_URL
+from bhoonidhi_downloader.utils import flatten_dict_to_1d
+from bhoonidhi_downloader.constants import satellite_sensor_map
 
-def get_satellite_sensor(satellite="ResourceSat-1", sensor="LISS3"):
+def get_satellite_sensor(satellite=None, sensor=None):
     if satellite == 'ResourceSat-1' and sensor == 'LISS3':
-        return "ResourceSat-1_LISS3"
+        return satellite_sensor_map.get('RS1').get('LISS3')
     elif satellite == 'ResourceSat-1' and sensor == 'LISS4':
-        return "ResourceSat-1_LISS4(MONO)"
+        return satellite_sensor_map.get('RS1').get('LISS4')
+    elif satellite == 'ResourceSat-1' and sensor is None:
+        return list(satellite_sensor_map.get('RS1').values())
+    
     elif satellite == 'ResourceSat-2' and sensor == 'LISS3':
-        return ["ResourceSat-2_LISS3", "ResourceSat-2_LISS3_BOA", "ResourceSat-2_LISS3_L2"]
+        return satellite_sensor_map.get('RS2').get('LISS3')
     elif satellite == 'ResourceSat-2' and sensor == 'LISS4':
-        return ["ResourceSat-2_LISS4(MX23)", "ResourceSat-2_LISS4(MX70)", "ResourceSat-2_LISS4(MX70)_L2"]
+        return satellite_sensor_map.get('RS2').get('LISS4')
+    elif satellite == 'ResourceSat-2' and sensor is None:
+        return list(satellite_sensor_map.get('RS2').values())
+    
     elif satellite == 'ResourceSat-2A' and sensor == 'LISS3':
-        return ["ResourceSat-2A_LISS3", "ResourceSat-2A_LISS3_BOA", "ResourceSat-2A_LISS3_L2"]
+        return satellite_sensor_map.get('RS2A').get('LISS3')
     elif satellite == 'ResourceSat-2A' and sensor == 'LISS4':
-        return ["ResourceSat-2A_LISS4(MX23)", "ResourceSat-2A_LISS4(MX70)", "ResourceSat-2A_LISS4(MX70)_L2"]
-    elif satellite == 'Sentinel-2A' and sensor == 'MSI':
-        return ["Sentinel-2A_MSI_Level-1C", "Sentinel-2A_MSI_Level-2A"]
-    elif satellite == 'Sentinel-2B' and sensor == 'MSI':
-        return ["Sentinel-2B_MSI_Level-1C", "Sentinel-2B_MSI_Level-2A"]
-    elif satellite == 'IRS-1C' and sensor == 'PAN':
-        return ["IRS-1C_PAN"]
+        return satellite_sensor_map.get('RS2A').get('LISS4')
+    elif satellite == 'ResourceSat-2A' and sensor is None:
+        return list(satellite_sensor_map.get('RS2A').values())
+    
+    elif satellite == 'Sentinel-2A':
+        sensor = None
+        return satellite_sensor_map.get('S2A').get('MSI')
+    
+    elif satellite == 'Sentinel-2B':
+        sensor = None
+        return satellite_sensor_map.get('S2B').get('MSI')
+    
+    elif satellite == 'IRS-1C':
+        sensor = None
+        return satellite_sensor_map.get('IRS1C').get('PAN')
+    
     elif satellite == 'IRS-1D' and sensor == 'PAN':
-        return ["IRS-1D_PAN"]
+        return satellite_sensor_map.get('IRS1D').get('PAN')
     elif satellite == 'IRS-1D' and sensor == 'LISS3':
-        return ["IRS-1D_LISS3"]
+        return satellite_sensor_map.get('IRS1D').get('LISS3')
+    elif satellite == 'IRS-1D' and sensor is None:
+        return list(satellite_sensor_map.get('IRS1D').values())
+
+    elif satellite is None and sensor is None:
+        return flatten_dict_to_1d(satellite_sensor_map)
     else:
-        print('Invalid selection. Please try again.')
+        print('Satellite and sensor combination not found. Please try again with a valid combination.\n----> Available satellites are: \nResourceSat-1, ResourceSat-2, ResourceSat-2A, Sentinel-2A, Sentinel-2B, IRS-1C, IRS-1D\n')
 
 def create_payload(gdf, satelite=None, sensor=None, start_date=None, end_date=None, product="Standard", user_id=None):
     # Ensure the GeoDataFrame is in EPSG:4326 (lat/lon)

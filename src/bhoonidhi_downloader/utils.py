@@ -7,6 +7,10 @@ import subprocess
 from typing import List
 from rich.table import Table
 from rich.console import Console
+import csv
+from tabulate import tabulate
+import typer
+from pathlib import Path
 
 def parse_cart_date_from_sid(sid):
     """
@@ -82,9 +86,8 @@ def display_search_results(scenes: List, console: Console):
 
     console.print(table)
     # Instructions for the user
-    console.print("\nTo open links:", style="yellow")
-    console.print("1. Hold Cmd (on Mac) or Ctrl (on Windows/Linux)", style="dim")
-    console.print("2. Click on the link", style="dim")
+    console.print("\nTo open table links from terminal:", style="yellow")
+    console.print("Click while holding Cmd (on Mac) or Ctrl (on Windows/Linux)\n", style="dim")
 
 def get_download_url(scene_id: str, session: dict):
     scene = [scene for scene in session["scenes"] if scene['ID'] == scene_id][0]
@@ -119,11 +122,6 @@ def download_scene(url, out_dir, scene_id):
         print('Session might have expired. Try Logging in again...')
     return f"Downloaded {scene_id}"
 
-import csv
-import json
-from tabulate import tabulate
-import typer
-
 def get_scenes_data_for_export(scenes: List):
     export_data = {
         scene.get('ID', f'Unknown_{idx}'): {
@@ -133,13 +131,15 @@ def get_scenes_data_for_export(scenes: List):
             "Sensor": scene.get('SENSOR', 'N/A'),
             "Product": scene.get('PRODTYPE', 'N/A'),
             "Metadata": get_scene_meta_url(scene),
-            "Quick View": get_quicklook_url(scene)
+            "Quick View": get_quicklook_url(scene),
+            "Search ID": scene.get("srt", "N/A")
         }
         for idx, scene in enumerate(scenes)
     }
     return export_data
 
 def export_search_results(format: str, export_data: dict, filename: str):
+    Path(filename).parent.mkdir(parents=True, exist_ok=True) # Create parent directory if it doesn't exist
     # Export as CSV
     if format == 'csv':
         export_data = list(export_data.values())
@@ -172,3 +172,16 @@ def export_search_results(format: str, export_data: dict, filename: str):
             mdfile.write(table)
             
         typer.echo(f"----> Exported search results as Markdown table to {filename}.")
+        
+def flatten_dict_to_1d(d):
+    values = []
+    def _flatten(d):
+        for v in d.values():
+            if isinstance(v, dict):
+                _flatten(v)
+            elif isinstance(v, list):
+                values.extend(v)
+            else:
+                values.append(v)
+    _flatten(d)
+    return values
