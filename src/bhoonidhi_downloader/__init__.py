@@ -3,7 +3,7 @@ from bhoonidhi_downloader.authenticate import login, save_session_info, validate
 from bhoonidhi_downloader.constants import session_info
 from rich.console import Console
 from bhoonidhi_downloader.scene_search import search_for_scenes
-from bhoonidhi_downloader.utils import get_download_url, download_scene, display_search_results, get_scenes_data_for_export, export_search_results, get_archive_data, format_archive_data, filter_archive_data
+from bhoonidhi_downloader.utils import get_download_url, download_scene, display_search_results, get_scenes_data_for_export, export_search_results, get_archive_data, show_archive_data, filter_archive_data
 from geopandas import GeoDataFrame
 from shapely.geometry import box
 from datetime import datetime
@@ -40,15 +40,22 @@ def authenticate(username: str = typer.Option(..., prompt=True, help="Bhoonidhi 
 
 @app.command()
 def archive(
-    sat = typer.Option(None, "--sat", help="Filter by Satellite (Ex: ResourceSat-2)"),
+    sat: str = typer.Option(None, "--sat", "-s", help="Filter by Satellite (Ex: ResourceSat-2). If not provided, shows all available satellites and sensors from Bhoonidhi Browse & Order Archive."),
 ):
     """
-        List's all available satellites and sensors from Bhoonidhi Browse & Order Archive.
+        Lists satellites and sensors from Bhoonidhi Browse & Order Archive.
+
+        Args:
+            sat (str, optional): Satellite to filter by. Defaults to None.
+
+        Returns:
+            None
     """
     archive_data = get_archive_data()
-    format_archive_data(archive_data, console=console)
     if sat is not None:
         filter_archive_data(archive_data, sat, console=console)
+    else:
+        show_archive_data(archive_data, console=console)
 
 @app.command()
 def search(

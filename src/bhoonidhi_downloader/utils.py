@@ -196,7 +196,7 @@ def get_archive_data():
     data = response.json()["Results"]
     return data
 
-def format_archive_data(archive_data, console: Console):
+def show_archive_data(archive_data, console: Console):
     table = Table(title="Bhoonidhi Browse & Order Archive")
     table.add_column("Index", style="blue")
     table.add_column("Satellite", style="red")
@@ -241,6 +241,8 @@ def filter_archive_data(archive_data, satelite, console: Console):
     # Add rows
     for d in data:
         for i in d:
+            if i.get('endDate') == '':
+                i['endDate'] = 'Till date'
             table.add_row(
                 i.get('satName', '-'),
                 i.get('senName', '-'),
