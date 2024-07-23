@@ -31,6 +31,7 @@ def authenticate(username: str = typer.Option(..., prompt=True, help="Bhoonidhi 
         session_info["userId"] = session["USERID"]
         session_info["user_email"] = session["USEREMAIL"]
         session_info["username"] = session["USERNAME"]
+        session_info["password"] = password
         validate_session(session_info["jwt"])
         save_session_info(session_info)
         typer.echo("Login successful!")

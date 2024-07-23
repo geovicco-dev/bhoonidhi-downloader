@@ -1,4 +1,4 @@
-# `bhoonidhi-downloader`
+# `API Reference`
 
 **Usage**:
 

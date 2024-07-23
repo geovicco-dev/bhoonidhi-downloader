@@ -1,5 +1,5 @@
 BASE_URL = "https://bhoonidhi.nrsc.gov.in"
-session_info = {"jwt": None,"userId": None, "user_email": None, "username": None, 'sid': None, 'scenes': []}
+session_info = {"jwt": None,"userId": None, "user_email": None, "username": None, "password": None, "sid": None, "scenes": []}
 
 satellite_sensor_map = {
     'RS1': {
