@@ -8,25 +8,25 @@ $ bhoonidhi-downloader [OPTIONS] COMMAND [ARGS]...
 
 **Options**:
 
-* `--install-completion`: Install completion for the current shell.
-* `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
-* `--help`: Show this message and exit.
+- `--install-completion`: Install completion for the current shell.
+- `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
+- `--help`: Show this message and exit.
 
 **Commands**:
 
-* `archive`: Lists satellites and sensors from...
-* `authenticate`: Authenticates session using Bhoonidhi...
-* `search`: Search for scenes from Bhoonidhi Browse &...
+- `archive`: Lists satellites and sensors from...
+- `authenticate`: Authenticates session using Bhoonidhi...
+- `search`: Search for scenes from Bhoonidhi Browse &...
 
 ## `bhoonidhi-downloader archive`
 
 Lists satellites and sensors from Bhoonidhi Browse & Order Archive.
 
 Args:
-    sat (str, optional): Satellite to filter by. Defaults to None.
+sat (str, optional): Satellite to filter by. Defaults to None.
 
 Returns:
-    None
+None
 
 **Usage**:
 
@@ -36,8 +36,8 @@ $ bhoonidhi-downloader archive [OPTIONS]
 
 **Options**:
 
-* `-s, --sat TEXT`: Filter by Satellite (Ex: ResourceSat-2). If not provided, shows all available satellites and sensors from Bhoonidhi Browse & Order Archive.
-* `--help`: Show this message and exit.
+- `-s, --sat TEXT`: Filter by Satellite (Ex: ResourceSat-2). If not provided, shows all available satellites and sensors from Bhoonidhi Browse & Order Archive.
+- `--help`: Show this message and exit.
 
 ## `bhoonidhi-downloader authenticate`
 
@@ -51,9 +51,9 @@ $ bhoonidhi-downloader authenticate [OPTIONS]
 
 **Options**:
 
-* `--username TEXT`: Bhoonidhi username  [required]
-* `--password TEXT`: Bhoonidhi password  [required]
-* `--help`: Show this message and exit.
+- `--username TEXT`: Bhoonidhi username [required]
+- `--password TEXT`: Bhoonidhi password [required]
+- `--help`: Show this message and exit.
 
 ## `bhoonidhi-downloader search`
 
@@ -67,18 +67,18 @@ $ bhoonidhi-downloader search [OPTIONS] MINX MAXX MINY MAXY START_DATE:[%Y-%m-%d
 
 **Arguments**:
 
-* `MINX`: Minimum longitude  [required]
-* `MAXX`: Maximum longitude  [required]
-* `MINY`: Minimum latitude  [required]
-* `MAXY`: Maximum latitude  [required]
-* `START_DATE:[%Y-%m-%d]`: Start date (YYYY-MM-DD)  [required]
-* `END_DATE:[%Y-%m-%d]`: End date (YYYY-MM-DD)  [required]
+- `MINX`: Minimum longitude [required]
+- `MAXX`: Maximum longitude [required]
+- `MINY`: Minimum latitude [required]
+- `MAXY`: Maximum latitude [required]
+- `START_DATE:[%Y-%m-%d]`: Start date (YYYY-MM-DD) [required]
+- `END_DATE:[%Y-%m-%d]`: End date (YYYY-MM-DD) [required]
 
 **Options**:
 
-* `--sat TEXT`: Satellite name (Ex: ResourceSat-2)
-* `--sen TEXT`: Sensor name (Ex: LISS3)
-* `--csv TEXT`: Export results as CSV
-* `--json TEXT`: Export results as JSON
-* `--md TEXT`: Export results as Markdown table
-* `--help`: Show this message and exit.
+- `--sat TEXT`: Satellite name (Ex: ResourceSat-2)
+- `--sen TEXT`: Sensor name (Ex: LISS3)
+- `--csv TEXT`: Export results as CSV
+- `--json TEXT`: Export results as JSON
+- `--md TEXT`: Export results as Markdown table
+- `--help`: Show this message and exit.
