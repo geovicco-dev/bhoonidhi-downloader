@@ -73,3 +73,21 @@ satellite_sensor_map = {
         "OLI+TIRS": ["LandSat-9_OLI%2BTIRS_L1"] # LandSat-9_OLI+TIRS_L1
     },
 }
+
+supported_satellites = [
+    "ResourceSat-1", 
+    "ResourceSat-2",
+    "ResourceSat-2A",
+    "Sentinel-2A",
+    "Sentinel-2B",
+    "IRS-1A",
+    "IRS-1B",
+    "IRS-1C",
+    "IRS-1D",
+    "Sentinel-1A",
+    "Sentinel-1B",
+    "CartoSat-1",
+    "EOS-04",
+    "Landsat-8",
+    "Landsat-9"
+]

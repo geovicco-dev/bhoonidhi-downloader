@@ -72,7 +72,7 @@ def search(
     markdown: str = typer.Option(None, "--md", help="Export results as Markdown table"),
 ):
     """
-        Search for scenes from Bhoonidhi Browse & Order Archive based on bounding box and date range.
+        Search for scenes from Bhoonidhi Browse & Order Portal based on bounding box and date range. The results can be filtered by available satellites and sensors. Additional options to export results as CSV, JSON or Markdown table.
     """
     
     # Load session info
@@ -97,7 +97,6 @@ def search(
             raise typer.Exit(code=1)
 
         # Search for scenes
-        print(satellite, sensor)
         scenes = search_for_scenes(gdf, satellite, sensor, start_date, end_date, session)
                 
         if scenes is None or len(scenes) == 0:
@@ -108,7 +107,7 @@ def search(
             session['sid'] = scenes[0]['srt']
 
             # Filter scenes
-            open_data_scenes = [scene for scene in scenes]# if scene['PRICED'] == 'OpenData_DirectDownload']
+            open_data_scenes = [scene for scene in scenes if scene['PRICED'] == 'OpenData_DirectDownload']
                     
             if not open_data_scenes:
                 typer.echo("No open data - direct download scenes found.", err=True)

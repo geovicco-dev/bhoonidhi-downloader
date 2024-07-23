@@ -61,7 +61,6 @@ def get_quicklook_url(scene):
 def create_clickable_link(url, text):
     return f"[link={url}]{escape(text)}[/link]"
 
-
 def display_search_results(scenes: List, console: Console):
     table = Table(title="Available Scenes")
     table.add_column("Index", style="blue")
@@ -96,23 +95,32 @@ def get_download_url(scene_id: str, session: dict):
     sensor = scene["SENSOR"]
     dirpath = scene['DIRPATH']
     filename = scene_id
-
+    
     base_url = f"{BASE_URL}//bhoonidhi/data/"
-    if satellite == "R2A" and sensor == "LIS4":
-        sensor = "F"
-    elif satellite == "RS2" and sensor == "LIS4":
-        sensor = "F"
-    elif satellite == 'R2A' and sensor == 'LIS3':
+    if satellite == 'R2A' and sensor == 'LIS3':
         sensor = '3'
+    elif satellite == "R2A" and sensor == "LIS4":
+        sensor = "F"
+    elif satellite == 'R2A' and sensor == 'AWIF':
+        sensor = 'W'
     elif satellite == 'RS2' and sensor == 'LIS3':
         sensor = '3'
+    elif satellite == "RS2" and sensor == "LIS4":
+        sensor = "F"
+    elif satellite == 'RS2' and sensor == 'AWIF':
+        sensor = 'W'    
     elif satellite == "SEN2A" or satellite == "SEN2B":
         sensor = "MSI"
     elif satellite == "SEN1A" or satellite == "SEN1B":
         sensor = "SAR"
-    else:
-        print('Invalid selection. Please try again.')
-
+    elif satellite == "L8" or satellite == "L9":
+        sensor = "O"
+    elif satellite == 'P5' and sensor == 'PAN':
+        download_url = f"""{base_url}CARTODEM/{satellite}/{sensor}/30m/{filename}.zip?token={session.get("jwt")}&product_id={filename}"""
+        return download_url
+    # else:
+    #     print('Donwload feature not supported!')
+    
     download_url = f"""{base_url}/{satellite}/{sensor}/{dirpath.split("/")[-4:][:2][0]}/{dirpath.split("/")[-4:][:2][1]}/{filename}.zip?token={session.get("jwt")}&product_id={filename}"""
     return download_url
 

@@ -2,7 +2,8 @@ import requests
 from datetime import datetime, timedelta
 from bhoonidhi_downloader.constants import BASE_URL
 from bhoonidhi_downloader.utils import flatten_dict_to_1d
-from bhoonidhi_downloader.constants import satellite_sensor_map
+from bhoonidhi_downloader.constants import satellite_sensor_map, supported_satellites
+from rich.progress import Progress
 
 def get_satellite_sensor(satellite=None, sensor=None):
     if satellite == 'ResourceSat-1' and sensor == 'LISS3':
@@ -16,6 +17,8 @@ def get_satellite_sensor(satellite=None, sensor=None):
         return satellite_sensor_map.get('RS2').get('LISS3')
     elif satellite == 'ResourceSat-2' and sensor == 'LISS4':
         return satellite_sensor_map.get('RS2').get('LISS4')
+    elif satellite == 'ResourceSat-2' and sensor == 'AWIFS':
+        return satellite_sensor_map.get('RS2').get('AWIFS')
     elif satellite == 'ResourceSat-2' and sensor is None:
         return flatten_dict_to_1d(satellite_sensor_map.get('RS2'))
     
@@ -23,6 +26,8 @@ def get_satellite_sensor(satellite=None, sensor=None):
         return satellite_sensor_map.get('RS2A').get('LISS3')
     elif satellite == 'ResourceSat-2A' and sensor == 'LISS4':
         return satellite_sensor_map.get('RS2A').get('LISS4')
+    elif satellite == 'ResourceSat-2A' and sensor == 'AWIFS':
+        return satellite_sensor_map.get('RS2A').get('AWIFS')
     elif satellite == 'ResourceSat-2A' and sensor is None:
         return flatten_dict_to_1d(satellite_sensor_map.get('RS2A'))
     
@@ -90,11 +95,11 @@ def get_satellite_sensor(satellite=None, sensor=None):
     
     elif satellite is None and sensor is None:
         return flatten_dict_to_1d(satellite_sensor_map)
-    
+
     else:
         print('Satellite and sensor combination not found. Please try again with a valid combination.\n----> Available satellites are: \nResourceSat-1, ResourceSat-2, ResourceSat-2A, Sentinel-2A, Sentinel-2B, IRS-1C, IRS-1D\n')
 
-def create_payload(gdf, satelite=None, sensor=None, start_date=None, end_date=None, product="Standard", user_id=None):
+def create_payload(gdf, satelite, sensor, start_date, end_date, product="Standard", user_id=None):
     # Ensure the GeoDataFrame is in EPSG:4326 (lat/lon)
     gdf = gdf.to_crs(epsg=4326)
     
@@ -138,13 +143,25 @@ def create_payload(gdf, satelite=None, sensor=None, start_date=None, end_date=No
     return payload
 
 def search_for_scenes(gdf, satellite, sensor, start_date, end_date, session):
+    results = []
+    if satellite is None and sensor is None:
+        with Progress() as progress:
+            task = progress.add_task("[green]Searching satellites...", total=len(supported_satellites))
+            for sat in supported_satellites:
+                try:
+                    sat_results = search_for_scenes(gdf, sat, None, start_date, end_date, session)
+                    results.extend(sat_results)
+                except:
+                    pass
+                progress.update(task, advance=1)
+        return results
+    
     payload = create_payload(gdf, satelite=satellite, sensor=sensor, start_date=start_date,end_date=end_date, user_id=session.get("userId"))
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
         "token": session.get("jwt")
     }
-
     url = f"{BASE_URL}/bhoonidhi/ProductSearch"
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code == 200:
