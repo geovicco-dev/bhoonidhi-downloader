@@ -48,8 +48,6 @@ bhoonidhi-downloader archive --sat ResourceSat-2
 
 ## Features
 
-Certainly. Here are the key standout features of the Bhoonidhi Downloader CLI tool:
-
 1. Allows secure login to Bhoonidhi Portal with session management for subsequent operations.
 2. Capable of searching for scenes using bounding box coordinates (lat/lon), filter by date range and specific satellite and sensor types
 3. Displays all available satellites and sensors from Bhoonidhi Archive along withtheir availability, spatial resolution, and access level.

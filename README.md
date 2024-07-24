@@ -1,6 +1,6 @@
 # Bhoonidhi Downloader
 
-[![PyPI version](https://badge.fury.io/py/bhoonidhi-downloader.svg)](https://badge.fury.io/py/bhoonidhi-downloader) [![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://geovicco-dev.github.io/bhoonidhi-downloader/)
+[![PyPI version](https://badge.fury.io/py/bhoonidhi-downloader.svg)](https://badge.fury.io/py/bhoonidhi-downloader) [![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://geovicco-dev.github.io/bhoonidhi-downloader/) [![Web App](https://img.shields.io/badge/web--app-online-brightgreen)](https://bhoonidhi-satellite-footprint-viewer.streamlit.app/)
 
 A Python CLI tool for searching and downloading satellite imagery from Bhoonidhi Browse & Order Portal.
 
@@ -50,9 +50,13 @@ bhoonidhi-downloader archive --sat ResourceSat-2
 
 ## Features
 
-- Search for openly available satellite scenes from Bhoonidhi portal based on bounding box coordinates, date range, and satellite/sensor
-- View search results in tabular format with metadata and quicklook images
-- Download recent scenes that are available via direct download
+1. Allows secure login to Bhoonidhi Portal with session management for subsequent operations.
+2. Capable of searching for scenes using bounding box coordinates (lat/lon), filter by date range and specific satellite and sensor types
+3. Displays all available satellites and sensors from Bhoonidhi Archive along withtheir availability, spatial resolution, and access level.
+4. Automatically filters for and displays only open data scenes available for direct download.
+5. Presents search results along with metadata and quicklook images (clickable links) in a formatted table.
+6. Ability to export search results as CSV, JSON, or Markdown table.
+7. Multi-scene downloads - Users can choose specific scenes to download from the search results
 
 ![alt text](docs/image.png)
 
