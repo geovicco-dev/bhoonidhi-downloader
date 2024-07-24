@@ -60,7 +60,7 @@ bhoonidhi-downloader archive --sat ResourceSat-2
 
 ![alt text](docs/image.png)
 
-### Limitations
+### Limitations and Future Enhancements
 
 - Supports only bounding box-based search for scenes.
   - Future support for search based on point coordinates and shapefile is planned.
