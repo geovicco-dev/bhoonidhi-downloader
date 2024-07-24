@@ -9,6 +9,7 @@ from shapely.geometry import box
 from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
+from rich import print as rprint
 
 console = Console()
 app = typer.Typer()
@@ -30,7 +31,8 @@ def authenticate(username: str = typer.Option(..., prompt=True, help="Bhoonidhi 
         session_info["jwt"] = session["JWT"]
         session_info["userId"] = session["USERID"]
         session_info["user_email"] = session["USEREMAIL"]
-        session_info["username"] = session["USERNAME"]
+        session_info["user_name"] = session["USERNAME"]
+        session_info["username"] = username
         session_info["password"] = password
         validate_session(session_info["jwt"])
         save_session_info(session_info)
@@ -147,7 +149,7 @@ def search(
                 try:
                     choice = [int(x.strip()) for x in choice.split(',')]
                 except ValueError:
-                    typer.echo(">>>>> Invalid input. Please enter numbers separated by commas or 'q' to quit.")
+                    rprint(">>>>> Invalid input. Please enter numbers separated by commas or 'q' to quit.")
                     continue
                 
                 scenes_to_download = [] 
@@ -157,14 +159,14 @@ def search(
                         selected_scene = open_data_scenes[index]
                         scenes_to_download.append(selected_scene)
                     else:
-                        typer.echo(f">>>>> Invalid index: {scene_idx}. Skipping.")
+                        rprint(f">>>>> Invalid index: {scene_idx}. Skipping.")
 
                 if not scenes_to_download:
-                    typer.echo(">>>>> No valid scenes selected. Please try again or press 'q' to quit.")
+                    rprint(">>>>> No valid scenes selected. Please try again or press 'q' to quit.")
                     continue
 
                 selected_scenes = [scene['ID'] for scene in scenes_to_download] if len(scenes_to_download) > 1 else scenes_to_download[0]['ID']
-                typer.echo(f"\nSelected scene(s): {selected_scenes}")
+                rprint(f"\nSelected scene(s): {selected_scenes}")
                 
                 # Prompt user for confirmation
                 if len(scenes_to_download) > 0:
@@ -177,11 +179,14 @@ def search(
                     out_dir.mkdir(parents=True, exist_ok=True)
                     
                     scene_ids = [scene['ID'] for scene in scenes_to_download]
-                    download_urls = [get_download_url(scene_id, session) for scene_id in scene_ids]
 
                     # Download scenes
-                    for url, scene_id in tqdm(zip(download_urls, scene_ids), total=len(download_urls), desc="Downloading scenes"):
-                        typer.echo(download_scene(url, out_dir, scene_id, console))
+                    for scene_id in tqdm(scene_ids, total=len(scene_ids), desc="Downloading scenes"):                        
+                        # Login after each download to avoid session expiry in case of large number of downloads
+                        jwt = login(session.get('username'), session.get('password')).get('JWT')
+                        session['jwt'] = jwt
+                        download_url = get_download_url(scene_id, session)
+                        typer.echo(download_scene(download_url, out_dir, scene_id, console))
                     break
                 else:
                     typer.Exit()

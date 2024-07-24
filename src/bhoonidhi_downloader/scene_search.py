@@ -146,7 +146,7 @@ def search_for_scenes(gdf, satellite, sensor, start_date, end_date, session):
     results = []
     if satellite is None and sensor is None:
         with Progress() as progress:
-            task = progress.add_task("[green]Searching satellites...", total=len(supported_satellites))
+            task = progress.add_task("[green]Searching...", total=len(supported_satellites))
             for sat in supported_satellites:
                 try:
                     sat_results = search_for_scenes(gdf, sat, None, start_date, end_date, session)

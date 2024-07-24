@@ -46,9 +46,9 @@ satellite_sensor_map = {
         "SAR": ["Sentinel-1B_SAR(IW)_GRD"],
     },
     ###### Low Resolution Imagery (25 - 100m) ######
-    'CartoSat-1': {
-        "PAN": ["CartoSat-1_PAN_CartoDEM-30m"]
-    },
+    # 'CartoSat-1': {
+    #     "PAN": ["CartoSat-1_PAN_CartoDEM-30m"]
+    # },
     'EOS-04': {
         "SAR": [
             "EOS-04_SAR(CRS)_L2B",
@@ -86,7 +86,7 @@ supported_satellites = [
     "IRS-1D",
     "Sentinel-1A",
     "Sentinel-1B",
-    "CartoSat-1",
+    # "CartoSat-1",
     "EOS-04",
     "Landsat-8",
     "Landsat-9"

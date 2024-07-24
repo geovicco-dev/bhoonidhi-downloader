@@ -128,8 +128,8 @@ def download_scene(url, out_dir, scene_id, console: Console):
     out_file = out_dir / f"{scene_id}.zip"
     try:
         subprocess.run(["wget", url, "-O", str(out_file), "--quiet", "--show-progress"], check=True)
-    except:
-        console.print(f"Error downloading scene {scene_id}", style="bold red")
+    except Exception as e:
+        console.print(f"Error downloading scene {scene_id}\n{e}", style="bold red")
         return
 
 def get_scenes_data_for_export(scenes: List):

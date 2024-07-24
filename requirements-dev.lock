@@ -35,6 +35,7 @@ colorama==0.4.6
     # via mkdocs-material
 comm==0.2.2
     # via ipykernel
+    # via ipywidgets
 cssselect2==0.7.0
     # via cairosvg
 dateparser==1.2.0
@@ -64,6 +65,8 @@ inflect==7.3.1
 ipykernel==6.29.5
 ipython==8.26.0
     # via ipykernel
+    # via ipywidgets
+ipywidgets==8.1.3
 jedi==0.19.1
     # via ipython
 jinja2==3.1.4
@@ -76,6 +79,8 @@ jupyter-client==8.6.2
 jupyter-core==5.7.2
     # via ipykernel
     # via jupyter-client
+jupyterlab-widgets==3.0.11
+    # via ipywidgets
 markdown==3.6
     # via mkdocs
     # via mkdocs-material
@@ -214,6 +219,7 @@ traitlets==5.14.3
     # via comm
     # via ipykernel
     # via ipython
+    # via ipywidgets
     # via jupyter-client
     # via jupyter-core
     # via matplotlib-inline
@@ -240,6 +246,8 @@ webencodings==0.5.1
     # via tinycss2
 wget==3.2
     # via bhoonidhi-downloader
+widgetsnbextension==4.0.11
+    # via ipywidgets
 word2number==1.1
     # via bhoonidhi
 zope-interface==6.4.post2
