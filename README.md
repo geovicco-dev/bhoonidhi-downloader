@@ -1,5 +1,7 @@
 # Bhoonidhi Downloader
 
+[![PyPI version](https://badge.fury.io/py/bhoonidhi-downloader.svg)](https://badge.fury.io/py/bhoonidhi-downloader) [![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://geovicco-dev.github.io/bhoonidhi-downloader/)
+
 A Python CLI tool for searching and downloading satellite imagery from Bhoonidhi Browse & Order Portal.
 
 ## Installation
