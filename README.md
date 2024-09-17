@@ -17,19 +17,19 @@ Basic usage:
 **Authenticate**:
 
 ```shell
-bhoonidhi-downloader authenticate <username> --password <password>
+bhoonidhi-downloader authenticate --username <username> --password <password>
 ```
 
 **Search Scenes using Bounding Box Coordinates**:
 
 ```shell
-bhoonidhi-downloader search <minx> <maxx> <miny> <maxy> <start_date> <end_date> <satellite> <sensor>
+bhoonidhi-downloader search <minx> <maxx> <miny> <maxy> <start_date> <end_date> --sat <satellite> --sen <sensor>
 ```
 
 Example - downloading a Sentinel-2A MSI scene from from December 2023 for Shillong, Meghalaya:
 
 ```shell
-bhoonidhi-downloader search 91.77 92 25.496 25.695 2023-12-01 2023-12-30 Sentinel-2A MSI
+bhoonidhi-downloader search 91.77 92 25.496 25.695 2023-12-01 2023-12-30 --sat Sentinel-2A --sen MSI
 ```
 
 For more information, use the `--help` option:
