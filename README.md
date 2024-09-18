@@ -1,6 +1,9 @@
 # Bhoonidhi Downloader
 
-[![PyPI version](https://badge.fury.io/py/bhoonidhi-downloader.svg)](https://badge.fury.io/py/bhoonidhi-downloader) [![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://geovicco-dev.github.io/bhoonidhi-downloader/) [![Web App](https://img.shields.io/badge/web--app-online-brightgreen)](https://bhoonidhi-satellite-footprint-viewer.streamlit.app/)
+[![PyPI version](https://badge.fury.io/py/bhoonidhi-downloader.svg)](https://badge.fury.io/py/bhoonidhi-downloader) 
+[![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://geovicco-dev.github.io/bhoonidhi-downloader/) 
+[![Web App](https://img.shields.io/badge/web--app-online-brightgreen)](https://bhoonidhi-satellite-footprint-viewer.streamlit.app/) 
+[![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://www.youtube.com/watch?v=3K6VEqq-CWE)
 
 A Python CLI tool for searching and downloading satellite imagery from Bhoonidhi Browse & Order Portal.
 
