@@ -51,6 +51,28 @@ Example - Displaying all available sensors and their information for ResourceSat
 bhoonidhi-downloader archive --sat ResourceSat-2
 ```
 
+### Supported Satellite and Sensors
+
+> Acceptable values for `--sat` and `--sen` options used during the `search` command are:
+
+| Satellite      | Sensors             | Imaging Spectrum |
+| -------------- | ------------------- | ---------------- |
+| EOS-04         | SAR                 | Microwave        |
+| IRS-1A         | LISS1, LISS2        | Optical          |
+| IRS-1B         | LISS1, LISS2        | Optical          |
+| IRS-1C         | PAN, WIFS           | Optical          |
+| IRS-1D         | PAN, WIFS, LISS3    | Optical          |
+| Landsat-8      | OLI+TIRS            | Optical          |
+| Landsat-9      | OLI+TIRS            | Optical          |
+| ResourceSat-1  | LISS3, LISS4, AWIFS | Optical          |
+| ResourceSat-2  | LISS3, LISS4, AWIFS | Optical          |
+| ResourceSat-2A | LISS3, LISS4, AWIFS | Optical          |
+| Sentinel-1A    | SAR                 | Microwave        |
+| Sentinel-1B    | SAR                 | Microwave        |
+| Sentinel-2A    | MSI                 | Optical          |
+| Sentinel-2B    | MSI                 | Optical          |
+
+
 ## Features
 
 1. Allows secure login to Bhoonidhi Portal with session management for subsequent operations.
