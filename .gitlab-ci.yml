@@ -1,0 +1,47 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  RYE_HOME: "$CI_PROJECT_DIR/.rye"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/pip
+    - .rye
+
+# Documentation deployment (mirrors .github/workflows/mkdocs.yaml)
+pages:
+  stage: deploy
+  image: python:3.11
+  before_script:
+    - pip install mkdocs-material
+    - pip install pillow cairosvg
+  script:
+    - mkdocs build --site-dir public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# PyPI publishing (mirrors .github/workflows/publish.yaml)
+pypi-publish:
+  stage: build
+  image: python:3.11
+  before_script:
+    - curl -sSL https://raw.githubusercontent.com/rye-community/rye/main/install.sh | sh
+    - export PATH="$RYE_HOME/shims:$PATH"
+    - rye pin 3.10
+    - rye sync
+    - rye self update
+    - $RYE_HOME/self/bin/pip install twine==5.1.1
+  script:
+    - rye build --clean
+    - rye publish --username __token__ --token $PYPI_TOKEN --yes --verbose
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+      variables:
+        PYPI_TOKEN: $PYPI_TOKEN
