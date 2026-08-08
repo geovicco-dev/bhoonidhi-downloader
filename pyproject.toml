@@ -1,6 +1,6 @@
 [project]
 name = "bhoonidhi-downloader"
-version = "0.2.0-beta"
+version = "0.2.0"
 description = "CLI and Python SDK for searching, saving, and downloading satellite data from Bhoonidhi"
 license = "MIT"
 authors = [
