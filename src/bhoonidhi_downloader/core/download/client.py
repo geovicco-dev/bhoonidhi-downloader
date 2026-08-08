@@ -97,17 +97,20 @@ def _download_one(
             resp = requests.get(url, stream=True, timeout=(10, 60))
 
             if resp.status_code == 404:
-                # Scene isn't served directly — commonly older archive
-                # data that has aged into cold storage and needs to be
-                # requested via the Bhoonidhi Browse & Order cart before
-                # it's downloadable again.
+                # Bhoonidhi's archiving/cold-storage policy isn't publicly
+                # documented, but scenes past a certain age consistently
+                # 404 on direct download. This CLI only fetches
+                # OpenData_DirectDownload scenes — it has no cart/order
+                # support yet, so a 404'd scene can't be retrieved here at
+                # all, only requested directly on the portal.
                 resp.close()
                 return DownloadOutcome(
                     scene_id=scene_id,
                     status="cold_storage",
                     error=(
-                        "404 — likely archived to cold storage; request it via the "
-                        "Bhoonidhi Browse & Order Portal cart, then retry."
+                        "404 — likely not served directly due to age (Bhoonidhi's "
+                        "archiving policy isn't documented). Request it directly on the "
+                        "Bhoonidhi Browse & Order Portal; this CLI can't fetch it."
                     ),
                 )
 

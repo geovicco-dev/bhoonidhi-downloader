@@ -12,6 +12,7 @@ from tabulate import tabulate
 from .utils import create_clickable_link, get_quicklook_url, get_scene_meta_url
 
 COLD_STORAGE_THRESHOLD_DAYS = 365
+BHOONIDHI_BROWSE_ORDER_URL = "https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#"
 
 
 def _is_likely_cold_storage(scene: dict) -> bool:
@@ -80,11 +81,15 @@ def render_search_results(console: Console, scenes: list) -> None:
         )
 
     if any_old:
+        portal_link = create_clickable_link(
+            BHOONIDHI_BROWSE_ORDER_URL, "Bhoonidhi Browse & Order Portal"
+        )
         console.print(
-            f"\n⚠  [yellow]Scenes older than {COLD_STORAGE_THRESHOLD_DAYS} days are often "
-            "moved to cold storage.[/] Direct download may fail with a 404 for these — "
-            "if so, request the scene via the Bhoonidhi Browse & Order Portal cart first, "
-            "then retry 'query download'.",
+            f"\n⚠  [yellow]Scenes older than {COLD_STORAGE_THRESHOLD_DAYS} days are flagged here "
+            "because Bhoonidhi's archiving policy isn't publicly documented, but scenes this old "
+            f"typically aren't served directly and downloads may fail with a 404 error.[/] If that "
+            f"happens, you can request the scene directly on the {portal_link} — this CLI can only "
+            "fetch OpenData_DirectDownload scenes, not request or retrieve archived ones.",
             style="dim",
         )
 

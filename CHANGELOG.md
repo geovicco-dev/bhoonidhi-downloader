@@ -37,7 +37,7 @@ The old `search` command ran once and forgot everything the moment your terminal
 - **Named, persistent queries.** Every search is now saved to `~/.bhoonidhi/queries/<slug>.json`. `query list` shows everything you've saved; `query fork` clones one under a new name without re-querying the portal.
 - **Real download engine.** `query download` fetches scenes concurrently (`--parallel`, default 4), verifies each one with a SHA256 written back onto the saved query, and skips anything already downloaded unless you pass `--force`. Bhoonidhi's servers don't support HTTP Range requests, so an interrupted download can't resume — it restarts from byte 0, and the download report tells you when that happened.
 - **`auth refresh`.** If your session starts failing (common under rate-limiting), this gets you a fresh token from the portal without logging out and back in.
-- **Cold-storage detection.** Scenes older than ~365 days often 404 on direct download because they've aged out of hot storage. The download report flags these explicitly instead of just calling it a generic failure.
+- **Cold-storage detection.** Scenes older than ~365 days often fail with a 404 error on direct download — Bhoonidhi's archiving policy isn't publicly documented, but this age is a consistent trigger. The download report flags these explicitly instead of just calling it a generic failure.
 
 ### Removed
 

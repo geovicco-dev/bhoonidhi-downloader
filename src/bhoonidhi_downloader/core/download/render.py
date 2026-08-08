@@ -16,6 +16,7 @@ from rich.table import Table
 
 from bhoonidhi_downloader.logger import CUSTOM_THEME
 
+from ..search.utils import create_clickable_link
 from .client import DownloadOutcome
 
 STATUS_STYLE = {
@@ -25,6 +26,8 @@ STATUS_STYLE = {
     "cold_storage": "bold magenta",
     "failed": "bold red",
 }
+
+BHOONIDHI_BROWSE_ORDER_URL = "https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#"
 
 
 def make_progress() -> Progress:
@@ -105,8 +108,13 @@ def render_download_report(console: Console, outcomes: list[DownloadOutcome]) ->
         )
 
     if counts.get("cold_storage"):
+        portal_link = create_clickable_link(
+            BHOONIDHI_BROWSE_ORDER_URL, "Bhoonidhi Browse & Order Portal"
+        )
         console.print(
-            "[magenta]Note:[/] scenes marked 'cold_storage' returned HTTP 404 — "
-            "they've likely aged out of hot storage. Request them via the "
-            "Bhoonidhi Browse & Order Portal cart, then retry the download.\n"
+            "[magenta]Note:[/] scenes marked 'cold_storage' returned HTTP 404. Bhoonidhi's "
+            "archiving policy isn't publicly documented, but scenes this old typically aren't "
+            f"served directly. You can request them directly on the {portal_link} — this CLI "
+            "can only fetch OpenData_DirectDownload scenes and has no cart/order support yet, "
+            "so it can't retrieve these for you (metadata only).\n"
         )

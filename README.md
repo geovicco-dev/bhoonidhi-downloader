@@ -115,7 +115,7 @@ The satellite/sensor list itself isn't hardcoded anywhere in this tool — `bhd 
 A couple of Bhoonidhi-specific quirks worth knowing about going in:
 
 - **No resumable downloads.** The portal doesn't honor HTTP Range requests, so an interrupted download restarts from byte 0 rather than picking up where it left off. `query download` reports this explicitly (`↺ restarted from scratch`) when it happens.
-- **Cold storage.** Scenes older than roughly a year often 404 on direct download because they've aged out of hot storage. The download report flags these as `cold_storage` rather than a generic failure — recovering them requires requesting them via the Bhoonidhi Browse & Order Portal cart first, outside this tool.
+- **Cold storage.** Scenes older than roughly a year often fail with a 404 error on direct download — Bhoonidhi's archiving policy isn't publicly documented, but this age threshold is a consistent pattern. The download report flags these as `cold_storage` rather than a generic failure. This CLI can only fetch `OpenData_DirectDownload` scenes; a 404'd scene can't be retrieved through it at all. You can request the scene directly on the [Bhoonidhi Browse & Order Portal](https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#) — cart/order support is planned for this CLI but not yet implemented.
 
 ## Limitations
 
