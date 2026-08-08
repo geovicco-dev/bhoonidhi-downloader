@@ -1,4 +1,4 @@
-import bhoonidhi_downloader
-import sys
+from bhoonidhi_downloader.cli.main import app
 
-sys.exit(bhoonidhi_downloader.main())
+if __name__ == "__main__":
+    app()
