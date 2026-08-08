@@ -52,7 +52,7 @@ Every command supports `--help` for its full option list. This is the short vers
 | `bhd auth login` | Authenticate and save your session to `~/.bhoonidhi/session`. |
 | `bhd auth status` | Show whether you're logged in and whether the token is still valid. |
 | `bhd auth whoami` | Print the current username. |
-| `bhd auth refresh` | Get a fresh token without logging out and back in. |
+| `bhd auth refresh` | Get a fresh token without logging out and back in — only works if your session's still recent; once it's properly stale you'll need to log in again. |
 | `bhd auth logout` | Clear the saved session. |
 
 ### `archive` — browse what's available
@@ -72,7 +72,7 @@ Every command supports `--help` for its full option list. This is the short vers
 | `bhd query show <slug>` | Redisplay a saved query's scenes. |
 | `bhd query refresh <slug>` | Check for new scenes matching an existing query. |
 | `bhd query fork <slug>` | Clone a query under a new name, without re-searching. |
-| `bhd query download <slug> --out <dir>` | Download scenes from a saved query. Add `--select` to pick specific scenes, `--parallel` to control concurrency, `--force` to re-download. |
+| `bhd query download <slug> --out <dir>` | Download scenes from a saved query. Add `--select` to pick specific scenes, `--parallel` to control concurrency, `--force` to re-download. Re-logs you in automatically if your session's expired. |
 | `bhd query rename <slug>` | Update a saved query's name/description. |
 | `bhd query rm <slug>` | Delete a saved query. |
 
@@ -116,6 +116,7 @@ A couple of Bhoonidhi-specific quirks worth knowing about going in:
 
 - **No resumable downloads.** The portal doesn't honor HTTP Range requests, so an interrupted download restarts from byte 0 rather than picking up where it left off. `query download` reports this explicitly (`↺ restarted from scratch`) when it happens.
 - **Cold storage.** Scenes older than roughly a year often fail with a 404 error on direct download — Bhoonidhi's archiving policy isn't publicly documented, but this age threshold is a consistent pattern. The download report flags these as `cold_storage` rather than a generic failure. This CLI can only fetch `OpenData_DirectDownload` scenes; a 404'd scene can't be retrieved through it at all. You can request the scene directly on the [Bhoonidhi Browse & Order Portal](https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#) — cart/order support is planned for this CLI but not yet implemented.
+- **Already have it somewhere else?** `query download` checks if a scene's already downloaded and SHA-verified in a different folder before re-fetching it — if it finds one, it'll tell you and ask before wasting bandwidth. `--force` skips the check and downloads anyway.
 
 ## Limitations
 

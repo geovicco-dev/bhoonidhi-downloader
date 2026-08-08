@@ -36,8 +36,10 @@ The old `search` command ran once and forgot everything the moment your terminal
 
 - **Named, persistent queries.** Every search is now saved to `~/.bhoonidhi/queries/<slug>.json`. `query list` shows everything you've saved; `query fork` clones one under a new name without re-querying the portal.
 - **Real download engine.** `query download` fetches scenes concurrently (`--parallel`, default 4), verifies each one with a SHA256 written back onto the saved query, and skips anything already downloaded unless you pass `--force`. Bhoonidhi's servers don't support HTTP Range requests, so an interrupted download can't resume — it restarts from byte 0, and the download report tells you when that happened.
-- **`auth refresh`.** If your session starts failing (common under rate-limiting), this gets you a fresh token from the portal without logging out and back in.
+- **`auth refresh`.** Gets you a fresh token without logging out and back in — but only works while your session is still recent. Once it's properly stale, refresh can't save it and you'll need to log in again.
 - **Cold-storage detection.** Scenes older than ~365 days often fail with a 404 error on direct download — Bhoonidhi's archiving policy isn't publicly documented, but this age is a consistent trigger. The download report flags these explicitly instead of just calling it a generic failure.
+- **Auto re-login on `query download`.** If your session's expired, it'll just ask for your password right there and log you back in instead of making you run `auth login` separately. Password never touches disk. Scripted use doesn't get prompted — pass `password=` if you want the same behavior, otherwise it fails with a clear message instead of hanging.
+- **Warns before re-downloading scenes you already have somewhere else.** If a scene's already downloaded and SHA-verified in a different folder, pointing `--out` at a new location now tells you and asks before wasting bandwidth re-fetching it. `--force` skips the check.
 
 ### Removed
 
@@ -50,4 +52,5 @@ The old `search` command ran once and forgot everything the moment your terminal
 
 - Added `bhd` as a shorter alias for `bhoonidhi-downloader` — same tool, less typing.
 - Requires Python 3.10+ (was 3.8+) — the rewrite uses `X | None` union syntax throughout.
+- No test suite yet — this release was verified by hand against the live portal (login, search, download, re-auth, duplicate detection), not an automated CI run.
 
