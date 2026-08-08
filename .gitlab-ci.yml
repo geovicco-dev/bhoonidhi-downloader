@@ -1,5 +1,7 @@
 stages:
   - lint
+  - build
+  - deploy
 
 variables:
   UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
@@ -9,13 +11,43 @@ cache:
   paths:
     - .cache/uv
 
+.setup_uv: &setup_uv
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.local/bin:$PATH"
+
 lint:
   stage: lint
   image: python:3.11
   before_script:
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
+    - *setup_uv
     - uv sync --group dev
   script:
     - uv run ruff check src/
     - uv run ruff format --check src/
+
+# Documentation deployment (mirrors .github/workflows/mkdocs.yaml, GitLab Pages equivalent)
+pages:
+  stage: deploy
+  image: python:3.11
+  before_script:
+    - *setup_uv
+    - uv sync --group dev
+  script:
+    - uv run mkdocs build --strict --site-dir public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# PyPI publishing (mirrors .github/workflows/publish.yaml, rewritten for uv instead of rye+twine)
+pypi-publish:
+  stage: build
+  image: python:3.11
+  before_script:
+    - *setup_uv
+  script:
+    - uv build
+    - uv publish --token "$PYPI_TOKEN"
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
