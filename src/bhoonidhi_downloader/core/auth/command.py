@@ -112,10 +112,12 @@ def run_whoami(console: Console) -> str | None:
 def run_refresh(console: Console) -> bool:
     """Renew the current session's JWT without re-entering credentials.
 
-    Useful when downloads start failing (commonly under rate-limiting) and
-    a fresh token resolves it — previously the only fix was logging out
-    and back in. Returns True on success, False if there's no session to
-    refresh or the refresh fails.
+    Only works if the current token is still within Bhoonidhi's refresh
+    window (confirmed live: works right after login, fails once the
+    token's aged past some threshold — exact window unknown). If it
+    fails, 'auth logout' + 'auth login' is the only fallback. Returns
+    True on success, False if there's no session to refresh or the
+    refresh fails.
     """
     if not SESSION_FILE.exists():
         render_status_no_session(console)

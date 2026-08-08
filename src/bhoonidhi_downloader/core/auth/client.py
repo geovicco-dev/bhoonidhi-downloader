@@ -110,11 +110,14 @@ class AuthManager:
     def refresh_session(self, jwt: str) -> str:
         """Renew a JWT against Bhoonidhi's VALIDATE_SESSION endpoint.
 
-        The portal issues a fresh JWT on every VALIDATE_SESSION call (verified:
-        it differs from the token sent in), so this doubles as a token refresh
-        with no re-entry of credentials needed. Useful when downloads start
-        failing due to a stale/rate-limited token — previously the only fix
-        was 'bhoonidhi-downloader auth logout' + 'auth login' again.
+        Only works on a token that's still within Bhoonidhi's refresh
+        window — confirmed live: works immediately after a fresh login,
+        fails once the token has aged (exact window unknown, but a
+        ~1-day-old token was already past it). Once that window has
+        closed, the portal returns HTTP 200 with an empty JWT rather
+        than a clear expiry signal, so there's no way to distinguish
+        "still refreshable" from "needs a full login" ahead of time —
+        if this raises, fall back to 'auth logout' + 'auth login'.
 
         Raises:
             BhoonidhiAuthError: if the token is rejected or the response is

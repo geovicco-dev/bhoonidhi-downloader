@@ -93,7 +93,10 @@ def render_refresh_success(console: Console) -> None:
 def render_refresh_error(console: Console, error: str) -> None:
     """Display session refresh error panel."""
     panel = Panel(
-        f"[red]{error}[/]",
+        f"[red]{error}[/]\n\n"
+        "[dim]This usually means the token's past Bhoonidhi's refresh "
+        "window. Run [bold]auth logout[/bold] then [bold]auth login[/bold] "
+        "to get a fresh session.[/]",
         title="[bold red]✗ Refresh Failed[/]",
         border_style="red",
         padding=(1, 2),
