@@ -1,5 +1,11 @@
 site_name: Bhoonidhi Downloader
 site_url: https://geovicco-dev.github.io/bhoonidhi-downloader/
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Changelog: CHANGELOG.md
+
 theme:
   name: material
   features:
