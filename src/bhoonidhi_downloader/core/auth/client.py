@@ -80,8 +80,15 @@ class AuthManager:
     def validate_session(self, jwt: str) -> bool:
         """Validate a session token against Bhoonidhi.
 
+        A 200 response alone doesn't mean the session is valid — a stale/
+        expired token still gets HTTP 200 back, just with an empty JWT and
+        placeholder fields (observed live: {"MSG": "NEW", "JWT": "",
+        "USERID": "", ...}). The only reliable signal is whether the
+        response actually carries a real JWT, same check login() and
+        refresh_session() already use.
+
         Raises:
-            BhoonidhiAuthError: if the token is rejected or the request fails.
+            BhoonidhiAuthError: if the request itself fails.
         """
         payload = {"action": "VALIDATE_SESSION"}
         headers = {
@@ -96,7 +103,9 @@ class AuthManager:
             raise BhoonidhiAuthError(
                 f"Session validation failed. Status code: {response.status_code}"
             )
-        return True
+
+        results = response.json().get("Results") or []
+        return bool(results and results[0].get("JWT"))
 
     def refresh_session(self, jwt: str) -> str:
         """Renew a JWT against Bhoonidhi's VALIDATE_SESSION endpoint.
