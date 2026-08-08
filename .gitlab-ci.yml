@@ -1,0 +1,63 @@
+stages:
+  - lint
+  - build
+  - deploy
+
+variables:
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/uv
+
+.setup_uv: &setup_uv
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.local/bin:$PATH"
+
+lint:
+  stage: lint
+  image: python:3.11
+  before_script:
+    - *setup_uv
+    - uv sync --group dev
+  script:
+    - uv run ruff check src/
+    - uv run ruff format --check src/
+
+# Documentation deployment (mirrors .github/workflows/mkdocs.yaml, GitLab Pages
+# equivalent), using Pages Parallel Deployments (path_prefix) so main and dev
+# both deploy live at once instead of one overwriting the other: main serves at
+# the Pages root (production docs), dev serves under /dev/ (staging).
+pages:
+  stage: deploy
+  image: python:3.11
+  before_script:
+    - *setup_uv
+    - uv sync --group dev
+  script:
+    - uv run mkdocs build --strict --site-dir public
+  pages:
+    path_prefix: "$PAGES_PREFIX"
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      variables:
+        PAGES_PREFIX: ""
+    - if: $CI_COMMIT_BRANCH == "dev"
+      variables:
+        PAGES_PREFIX: "dev"
+
+# PyPI publishing (mirrors .github/workflows/publish.yaml, rewritten for uv instead of rye+twine)
+pypi-publish:
+  stage: build
+  image: python:3.11
+  before_script:
+    - *setup_uv
+  script:
+    - uv build
+    - uv publish --token "$PYPI_TOKEN"
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/

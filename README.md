@@ -1,11 +1,20 @@
-# Bhoonidhi Downloader
+# bhoonidhi-downloader
 
-[![PyPI version](https://badge.fury.io/py/bhoonidhi-downloader.svg)](https://badge.fury.io/py/bhoonidhi-downloader) 
-[![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://geovicco-dev.github.io/bhoonidhi-downloader/) 
-[![Web App](https://img.shields.io/badge/web--app-online-brightgreen)](https://bhoonidhi-satellite-footprint-viewer.streamlit.app/) 
+[![PyPI version](https://badge.fury.io/py/bhoonidhi-downloader.svg)](https://badge.fury.io/py/bhoonidhi-downloader)
+[![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://geovicco-dev.github.io/bhoonidhi-downloader/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://www.youtube.com/watch?v=3K6VEqq-CWE)
 
-A Python CLI tool for searching and downloading satellite imagery from Bhoonidhi Browse & Order Portal.
+A CLI and Python SDK for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/).
+
+## Features
+
+- **Search by bounding box** — filter by satellite, sensor, and date range.
+- **Named, persistent queries** — every search is saved under a short slug (`misty-falcon`), so you can come back to it later, refresh it for new scenes, or download from it without re-querying the portal.
+- **Concurrent, verified downloads** — fetches multiple scenes in parallel, verifies each with a SHA256, and skips anything already downloaded.
+- **Browse the archive** — list every satellite/sensor Bhoonidhi currently supports, live from the portal.
+- **Session management** — login once, refresh your token when it goes stale, no need to keep re-entering credentials.
+- **Usable as a library** — every command has a matching Python function, so you can script searches/downloads directly instead of shelling out.
 
 ## Installation
 
@@ -13,78 +22,127 @@ A Python CLI tool for searching and downloading satellite imagery from Bhoonidhi
 pip install bhoonidhi-downloader
 ```
 
-## Usage
+This installs two equivalent commands — `bhoonidhi-downloader` and the shorter `bhd`. They're the same tool; use whichever you'd rather type.
 
-Basic usage:
+## Quickstart
 
-**Authenticate**:
-
-```shell
-bhoonidhi-downloader authenticate --username <username> --password <password>
-```
-
-**Search Scenes using Bounding Box Coordinates**:
+Log in, run a search, and download what you find — three commands, start to finish:
 
 ```shell
-bhoonidhi-downloader search <minx> <maxx> <miny> <maxy> <start_date> <end_date> --sat <satellite> --sen <sensor>
+# 1. Authenticate (prompts for username/password if omitted)
+bhd auth login
+
+# 2. Search a bounding box + date range, save the results as a named query
+bhd query create 91.77 92 25.496 25.695 2023-12-01 2023-12-30 --sat Sentinel-2A --sen MSI
+
+# 3. Download everything the query found
+bhd query download misty-falcon --out ./downloads
 ```
 
-Example - downloading a Sentinel-2A MSI scene from from December 2023 for Shillong, Meghalaya:
+`query create` prints the scenes it found in a table and tells you what slug it saved them under (here, `misty-falcon` — yours will be different). You don't have to download right away: come back anytime with `bhd query show misty-falcon`, or `bhd query refresh misty-falcon` to check for newly published scenes in the same area.
+
+## Command reference
+
+Every command supports `--help` for its full option list. This is the short version; see the [full documentation](https://geovicco-dev.github.io/bhoonidhi-downloader/usage/) for every flag and example.
+
+### `auth` — session management
+
+| Command | What it does |
+|---|---|
+| `bhd auth login` | Authenticate and save your session to `~/.bhoonidhi/session`. |
+| `bhd auth status` | Show whether you're logged in and whether the token is still valid. |
+| `bhd auth whoami` | Print the current username. |
+| `bhd auth refresh` | Get a fresh token without logging out and back in — only works if your session's still recent; once it's properly stale you'll need to log in again. |
+| `bhd auth logout` | Clear the saved session. |
+
+### `archive` — browse what's available
+
+| Command | What it does |
+|---|---|
+| `bhd archive list` | List every satellite and sensor Bhoonidhi currently supports. |
+| `bhd archive list --sat ResourceSat-2A` | Filter the list to one satellite. |
+| `bhd archive export --out archive.json` | Export the archive data to a file. |
+
+### `query` — search, save, and download
+
+| Command | What it does |
+|---|---|
+| `bhd query create <bbox> <dates> --sat ... --sen ...` | Search and save the results as a new named query. |
+| `bhd query list` | List all your saved queries. |
+| `bhd query show <slug>` | Redisplay a saved query's scenes. |
+| `bhd query refresh <slug>` | Check for new scenes matching an existing query. |
+| `bhd query fork <slug>` | Clone a query under a new name, without re-searching. |
+| `bhd query download <slug> --out <dir>` | Download scenes from a saved query. Add `--select` to pick specific scenes, `--parallel` to control concurrency, `--force` to re-download. Re-logs you in automatically if your session's expired. |
+| `bhd query rename <slug>` | Update a saved query's name/description. |
+| `bhd query rm <slug>` | Delete a saved query. |
+
+## Using it as a library
+
+Every CLI command is a thin wrapper around a plain Python function — nothing about the underlying logic depends on being invoked from a terminal. If you're scripting a bulk ingestion pipeline or wiring this into a notebook, call into `bhoonidhi_downloader.core` directly instead of shelling out:
+
+```python
+from bhoonidhi_downloader.core.archive import ArchiveManager
+from bhoonidhi_downloader.core.query.command import run_query_create, run_query_download
+from bhoonidhi_downloader.logger import get_console
+from datetime import datetime
+
+console = get_console()
+
+# Browse the archive programmatically
+manifest = ArchiveManager().build_manifest()
+print(manifest["Sentinel-2A"].keys())  # -> dict_keys(['MSI'])
+
+# Search + save a query (same thing `bhd query create` does)
+query = run_query_create(
+    console,
+    minx=91.77, maxx=92, miny=25.496, maxy=25.695,
+    start_date=datetime(2023, 12, 1), end_date=datetime(2023, 12, 30),
+    satellite="Sentinel-2A", sensor="MSI",
+)
+
+# Download everything it found
+run_query_download(console, slug=query.slug, out="./downloads")
+```
+
+Command handlers live under `core/<domain>/command.py` (`auth`, `archive`, `search`, `query`, `download`) — each one takes a `rich.console.Console` (get one via `bhoonidhi_downloader.logger.get_console()`) and returns plain data (a `QuerySchema`, a list of scenes, a bool) rather than printing-and-exiting like a CLI would. The `render.py` modules alongside them are what turn that data into the tables you see on screen — you can skip them entirely and just work with the returned objects.
+
+## What's actually downloadable
+
+Bhoonidhi's archive covers far more than what this tool can fetch directly. Every scene is searchable and shows up in results — but only scenes marked `OpenData_DirectDownload` (typically the more recent ones) can actually be pulled by `query download`. Anything priced or on-order shows up as metadata/planning-only for now, since there's no cart/order flow implemented yet.
+
+The satellite/sensor list itself isn't hardcoded anywhere in this tool — `bhd archive list` fetches it live from the portal every time, so it's always current. Run it to see exactly what's searchable today rather than relying on a list here that would just go stale.
+
+A couple of Bhoonidhi-specific quirks worth knowing about going in:
+
+- **No resumable downloads.** The portal doesn't honor HTTP Range requests, so an interrupted download restarts from byte 0 rather than picking up where it left off. `query download` reports this explicitly (`↺ restarted from scratch`) when it happens.
+- **Cold storage.** Scenes older than roughly a year often fail with a 404 error on direct download — Bhoonidhi's archiving policy isn't publicly documented, but this age threshold is a consistent pattern. The download report flags these as `cold_storage` rather than a generic failure. This CLI can only fetch `OpenData_DirectDownload` scenes; a 404'd scene can't be retrieved through it at all. You can request the scene directly on the [Bhoonidhi Browse & Order Portal](https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#) — cart/order support is planned for this CLI but not yet implemented.
+- **Already have it somewhere else?** `query download` checks if a scene's already downloaded and SHA-verified in a different folder before re-fetching it — if it finds one, it'll tell you and ask before wasting bandwidth. `--force` skips the check and downloads anyway.
+
+## Limitations
+
+- Search is bounding-box only — no point-coordinate or shapefile-based search yet.
+- Only `OpenData_DirectDownload` scenes can be fetched directly; priced/on-order scenes show up in search results but are skipped on download (see above).
+- No cart/order integration, so scenes that need to be requested first aren't reachable through this tool at all.
+
+## Development
 
 ```shell
-bhoonidhi-downloader search 91.77 92 25.496 25.695 2023-12-01 2023-12-30 --sat Sentinel-2A --sen MSI
+git clone https://github.com/geovicco-dev/bhoonidhi-downloader.git
+cd bhoonidhi-downloader
+uv sync --group dev
 ```
 
-For more information, use the `--help` option:
-
-**Display Bhoonidhi Browse & Order Archive**:
+Before committing, run the same checks CI runs:
 
 ```shell
-bhoonidhi-downloader archive
+uv run ruff check src/
+uv run ruff format --check src/
 ```
 
-The `archive` command displays a table that listing all available satellites and their corresponding sensors along with information about availability, spatial resolution, and access level. The information can be filtered by satellite and sensor using the `--sat` options.
+## Changelog
 
-Example - Displaying all available sensors and their information for ResourceSat-2 satellite:
+See [CHANGELOG.md](CHANGELOG.md) for what's changed release to release.
 
-```shell
-bhoonidhi-downloader archive --sat ResourceSat-2
-```
+## License
 
-### Supported Satellite Missions
-
-> Acceptable values for `--sat` and `--sen` options used during the `search` command are:
-
-| Satellite      | Sensors             | Imaging Spectrum |
-| -------------- | ------------------- | ---------------- |
-| EOS-04         | SAR                 | Microwave        |
-| Landsat-8      | OLI+TIRS            | Optical          |
-| Landsat-9      | OLI+TIRS            | Optical          |
-| ResourceSat-2  | LISS3, LISS4, AWIFS | Optical          |
-| ResourceSat-2A | LISS3, LISS4, AWIFS | Optical          |
-| Sentinel-1A    | SAR                 | Microwave        |
-| Sentinel-1B    | SAR                 | Microwave        |
-| Sentinel-2A    | MSI                 | Optical          |
-| Sentinel-2B    | MSI                 | Optical          |
-
-## Features
-
-1. Allows secure login to Bhoonidhi Portal with session management for subsequent operations.
-2. Capable of searching for scenes using bounding box coordinates (lat/lon), filter by date range and specific satellite and sensor types
-3. Displays all available satellites and sensors from Bhoonidhi Archive along withtheir availability, spatial resolution, and access level.
-4. Automatically filters for and displays only open data scenes available for direct download.
-5. Presents search results along with metadata and quicklook images (clickable links) in a formatted table.
-6. Ability to export search results as CSV, JSON, or Markdown table.
-7. Multi-scene downloads - Users can choose specific scenes to download from the search results
-
-![alt text](docs/image.png)
-
-### Limitations and Future Enhancements
-
-- Supports only bounding box-based search for scenes.
-  - Future support for search based on point coordinates and shapefile is planned.
-- Supports only scenes with direct download links
-- Supports only Low and Medium resolution scenes from Optical and Microwave Satellite Sensors.
-  - Planning to add support for other sensors in future.
-- Direct downloads only work for images from recent past - upto a year or so depending on the area and sensor. To download scenes dated ealier than that, using the [Bhoonidhi Portal](https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#) is recommended.
-  - Planning to add support for interacting with carts by way of viewing, adding, deleting items in future. This will help with downloading older scenes.
+[MIT](LICENSE)
