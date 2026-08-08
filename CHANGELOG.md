@@ -1,0 +1,53 @@
+# Changelog
+
+All notable changes to this project are documented here.
+
+## [0.2.0] — August 2026
+
+This version represents a significant departure from the current version (v0.1.21). This release is my attempt to modernise the project — a rewrite of the entire codebase. If you've been using `bhoonidhi-downloader` 0.1.x, **your commands will need to change** — see the migration notes below. Nothing about *what* this tool does has changed; how you talk to it has.
+
+### Why the rewrite
+
+The original work (0.1x) grew out of a semi-reverse-engineered approach where the goal was to just get things up and working — every  feature was thought out according to my use case at the time which was to bulk ingest scenes from ResourceSat-2. While the core logic around authentication and search capabilities still hold in this newer version, the interface and commands have been re-worked, both in how the information is organised on the screen,  how codebase is structred for better readability and debugging, and the ease of calling API directly into scripts/notebooks . Previous work had  HTTP calls, business logic, and terminal output all lived in the same functions. That worked fine for a while, but it made two things hard: testing anything without hitting the live Bhoonidhi portal, and adding features without touching five unrelated things at once.
+
+This version splits the tool into three components per feature  (auth, archive, search, query, download):
+
+- `client.py` — talks to the Bhoonidhi portal, nothing else
+- `command.py` — orchestrates the client + does the actual work, returns plain data
+- `render.py` — turns that data into the Rich tables/panels you see on screen
+
+The CLI layer (`cli/*.py`) is now *just* argument parsing — it calls into `command.py` and gets back a result or a `None`/`False` to know whether to exit non-zero. None of it talks to the network directly anymore.
+
+### Breaking: command surface
+
+Every top-level command from 0.1.x is now a subcommand group:
+
+
+| 0.1.x                                                             | 0.2.x                                                                  |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `bhoonidhi-downloader authenticate --username ... --password ...` | `bhoonidhi-downloader auth login`                                      |
+| `bhoonidhi-downloader archive --sat ResourceSat-2`                | `bhoonidhi-downloader archive list --sat ResourceSat-2`                |
+| `bhoonidhi-downloader search <bbox> <dates> --sat ... --sen ...`  | `bhoonidhi-downloader query create <bbox> <dates> --sat ... --sen ...` |
+
+
+The old `search` command ran once and forgot everything the moment your terminal closed. `query create` does the same search, but *saves* the result under a short slug (like `misty-falcon`) so you can come back to it later with `query show misty-falcon`, re-check for new scenes with `query refresh`, or download from it whenever you're ready — no need to re-run the search.
+
+### Added
+
+- **Named, persistent queries.** Every search is now saved to `~/.bhoonidhi/queries/<slug>.json`. `query list` shows everything you've saved; `query fork` clones one under a new name without re-querying the portal.
+- **Real download engine.** `query download` fetches scenes concurrently (`--parallel`, default 4), verifies each one with a SHA256 written back onto the saved query, and skips anything already downloaded unless you pass `--force`. Bhoonidhi's servers don't support HTTP Range requests, so an interrupted download can't resume — it restarts from byte 0, and the download report tells you when that happened.
+- **`auth refresh`.** If your session starts failing (common under rate-limiting), this gets you a fresh token from the portal without logging out and back in.
+- **Cold-storage detection.** Scenes older than ~365 days often 404 on direct download because they've aged out of hot storage. The download report flags these explicitly instead of just calling it a generic failure.
+
+### Removed
+
+- `geopandas`, `shapely` — were only used by an `AOISchema.to_gdf()` method nothing called.
+- `wget` — downloads now stream through `requests` directly.
+- `tqdm` — replaced by `rich.progress`, which is already a dependency.
+- Cart/order support (`cart_actions.py`) — existed in 0.1.x but was already half-commented-out and never wired into a working command. It's gone for now; may come back once there's a real `cart` subcommand to attach it to.
+
+### Also
+
+- Added `bhd` as a shorter alias for `bhoonidhi-downloader` — same tool, less typing.
+- Requires Python 3.10+ (was 3.8+) — the rewrite uses `X | None` union syntax throughout.
+
