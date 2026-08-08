@@ -25,7 +25,9 @@ lint:
     - uv run ruff check src/
     - uv run ruff format --check src/
 
-# Documentation deployment (mirrors .github/workflows/mkdocs.yaml, GitLab Pages equivalent)
+# Documentation deployment (mirrors .github/workflows/mkdocs.yaml, GitLab Pages equivalent).
+# Job name "pages" is special to GitLab — whatever it last produces becomes the
+# live Pages site, so this only runs on main to avoid publishing pre-release docs.
 pages:
   stage: deploy
   image: python:3.11
@@ -39,6 +41,24 @@ pages:
       - public
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+
+# Build-only check for dev: catches broken snippet includes / dead links before
+# they'd reach main, without touching the live Pages deployment (different job
+# name than "pages" so GitLab never treats this output as publishable).
+pages-check:
+  stage: deploy
+  image: python:3.11
+  before_script:
+    - *setup_uv
+    - uv sync --group dev
+  script:
+    - uv run mkdocs build --strict --site-dir public-check
+  artifacts:
+    paths:
+      - public-check
+    expire_in: 1 day
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
 
 # PyPI publishing (mirrors .github/workflows/publish.yaml, rewritten for uv instead of rye+twine)
 pypi-publish:
