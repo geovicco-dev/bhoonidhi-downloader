@@ -108,7 +108,7 @@ Command handlers live under `core/<domain>/command.py` (`auth`, `archive`, `sear
 
 ## What's actually downloadable
 
-Bhoonidhi's archive covers far more than what this tool can fetch directly. Every scene has a `PRICED` status, and only scenes marked `OpenData_DirectDownload` come back from a search or get pulled by `query download` — anything priced or on-order is metadata/planning-only for now, since there's no cart/order flow implemented yet.
+Bhoonidhi's archive covers far more than what this tool can fetch directly. Every scene is searchable and shows up in results — but only scenes marked `OpenData_DirectDownload` (typically the more recent ones) can actually be pulled by `query download`. Anything priced or on-order shows up as metadata/planning-only for now, since there's no cart/order flow implemented yet.
 
 The satellite/sensor list itself isn't hardcoded anywhere in this tool — `bhd archive list` fetches it live from the portal every time, so it's always current. Run it to see exactly what's searchable today rather than relying on a list here that would just go stale.
 
