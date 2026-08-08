@@ -18,9 +18,7 @@ def render_query_saved(console: Console, query: QuerySchema) -> None:
 def render_query_list(console: Console, queries: list[QuerySchema]) -> None:
     """Render a table of all saved queries."""
     if not queries:
-        console.print(
-            "[yellow]No saved queries. Run 'query create' to make one.[/]"
-        )
+        console.print("[yellow]No saved queries. Run 'query create' to make one.[/]")
         return
 
     table = Table(title="Saved Queries")

@@ -1,0 +1,21 @@
+stages:
+  - lint
+
+variables:
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/uv
+
+lint:
+  stage: lint
+  image: python:3.11
+  before_script:
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - uv sync --group dev
+  script:
+    - uv run ruff check src/
+    - uv run ruff format --check src/

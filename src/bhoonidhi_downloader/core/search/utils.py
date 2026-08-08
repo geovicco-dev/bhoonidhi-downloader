@@ -1,9 +1,11 @@
 import random
 import time
 from typing import Any
+
 import requests
 from rich.live import Live
 from rich.spinner import Spinner
+
 from bhoonidhi_downloader.logger import get_console
 
 

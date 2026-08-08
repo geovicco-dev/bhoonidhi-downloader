@@ -1,6 +1,7 @@
 """Slug generation, auto-naming, and storage for saved queries."""
 
 import json
+import logging
 import random
 from datetime import datetime
 from pathlib import Path
@@ -8,6 +9,8 @@ from pathlib import Path
 from bhoonidhi_downloader.schemas import AOISchema, QuerySchema
 
 QUERIES_DIR = Path.home() / ".bhoonidhi" / "queries"
+
+logger = logging.getLogger(__name__)
 
 _ADJECTIVES = [
     "amber",
@@ -166,6 +169,9 @@ def list_queries() -> list[QuerySchema]:
         try:
             queries.append(QuerySchema.model_validate(json.loads(path.read_text())))
         except Exception:
+            logger.warning(
+                "Skipping unreadable/corrupt query file: %s", path, exc_info=True
+            )
             continue
     return queries
 

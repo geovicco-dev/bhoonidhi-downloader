@@ -1,6 +1,7 @@
 """Bhoonidhi authentication client."""
 
 import json
+from typing import ClassVar
 
 import requests
 
@@ -14,7 +15,7 @@ class AuthManager:
     """Manages authentication with Bhoonidhi portal."""
 
     LOGIN_URL = "https://bhoonidhi.nrsc.gov.in/bhoonidhi/LoginServlet"
-    LOGIN_HEADERS = {
+    LOGIN_HEADERS: ClassVar[dict[str, str]] = {
         "Host": "bhoonidhi.nrsc.gov.in",
         "Accept": "application/json, text/javascript, */*; q=0.01",
         "Accept-Language": "en-US,en;q=0.9",

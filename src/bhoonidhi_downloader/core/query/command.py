@@ -321,7 +321,9 @@ def run_query_download(
         console.print("[yellow]No open-access scenes in the selection.[/]")
         return []
 
-    manager = DownloadManager(jwt=jwt, out_dir=Path(out), parallel=parallel, force=force)
+    manager = DownloadManager(
+        jwt=jwt, out_dir=Path(out), parallel=parallel, force=force
+    )
     progress = make_progress()
     tasks: dict[str, Any] = {}
 

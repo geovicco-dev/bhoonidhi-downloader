@@ -67,7 +67,11 @@ def render_download_report(console: Console, outcomes: list[DownloadOutcome]) ->
     for o in outcomes:
         counts[o.status] = counts.get(o.status, 0) + 1
         style = STATUS_STYLE.get(o.status, "white")
-        size = f"{o.bytes_downloaded / (1024 * 1024):.1f} MB" if o.bytes_downloaded else "-"
+        size = (
+            f"{o.bytes_downloaded / (1024 * 1024):.1f} MB"
+            if o.bytes_downloaded
+            else "-"
+        )
         if o.status == "failed":
             detail = f"[bold red]{o.error}[/]"
         elif o.status == "cold_storage":

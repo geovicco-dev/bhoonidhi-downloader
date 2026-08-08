@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import requests
 
@@ -18,8 +18,8 @@ MANIFEST_PATH = CACHE_DIR / "manifest.json"
 
 
 class ArchiveManager:
-    def __init__(self, refresh: Optional[bool] = False):
-        self.archive: List[Dict[str, Any]] = []
+    def __init__(self, refresh: bool | None = False):
+        self.archive: list[dict[str, Any]] = []
         self.manifest: dict[str, dict[str, list[dict]]] = {}
 
         if refresh:
@@ -45,13 +45,13 @@ class ArchiveManager:
         else:
             self.manifest = self.build_manifest(save=True)
 
-    def fetch(self) -> List[Dict[str, Any]]:
+    def fetch(self) -> list[dict[str, Any]]:
         """Fetch the entire Bhoonidhi archive JSON from the web.
         Returns:
             A list of satellite records, each a dict with keys like 'name', 'sensors', etc.
         """
 
-        url = f"https://bhoonidhi.nrsc.gov.in/bhoonidhi/SatSenServlet"
+        url = "https://bhoonidhi.nrsc.gov.in/bhoonidhi/SatSenServlet"
         payload = {"userId": "T", "action": "GETAVCONFIG", "userEmail": "abc@xyz.com"}
         response = requests.post(url, json=payload)
 
@@ -63,9 +63,7 @@ class ArchiveManager:
         self.archive = response.json().get("Results", [])
         return self.archive
 
-    def parse(
-        self, satellite_filter: Optional[str] | None = None
-    ) -> List[Dict[str, Any]]:
+    def parse(self, satellite_filter: str | None = None) -> list[dict[str, Any]]:
 
         if satellite_filter:
             self.archive = self.format_archive(self.archive, satellite_filter)
@@ -76,19 +74,19 @@ class ArchiveManager:
 
     @staticmethod
     def format_archive(
-        archive_data: List[Dict[str, Any]],
-        satellite_filter: Optional[str] | None = None,
-    ) -> List[Dict[str, Any]]:
+        archive_data: list[dict[str, Any]],
+        satellite_filter: str | None = None,
+    ) -> list[dict[str, Any]]:
 
         def _normalize_products(products: Any | None) -> str | None:
             """Normalize products to a list of strings."""
             if products is None:
                 return None
             if isinstance(products, list):
-                return [str(p).strip() for p in products if str(p).strip()][0]
+                return next(str(p).strip() for p in products if str(p).strip())
             return str(products)
 
-        results: List[Dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
 
         for idx, record in enumerate(archive_data, start=1):
             # Skip if filtering by satellite
@@ -114,7 +112,7 @@ class ArchiveManager:
             )
             availability = f"{start} - {end}"
 
-            collections: List[Dict[str, Dict[str, Any]]] = [
+            collections: list[dict[str, dict[str, Any]]] = [
                 {
                     str(r.get("dispName", "")): {
                         "sensor": r.get("senName"),

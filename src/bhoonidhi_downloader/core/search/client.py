@@ -1,10 +1,12 @@
-from .utils import create_payload, recursive_search
+from typing import Any
+
 from bhoonidhi_downloader.schemas import SearchSchema
-from typing import Dict, Any
+
+from .utils import create_payload, recursive_search
 
 
 class SearchManager:
-    def __init__(self, cfg: SearchSchema, manifest: Dict[str, Any]):
+    def __init__(self, cfg: SearchSchema, manifest: dict[str, Any]):
         # Get Archive Manifest
         self.manifest = manifest
         # Get SearchScema

@@ -49,7 +49,9 @@ def render_search_results(console: Console, scenes: list) -> None:
     for idx, scene in enumerate(scenes):
         is_old = _is_likely_cold_storage(scene)
         any_old = any_old or is_old
-        date_cell = f"{scene.get('DOP', 'N/A')} ⚠" if is_old else scene.get("DOP", "N/A")
+        date_cell = (
+            f"{scene.get('DOP', 'N/A')} ⚠" if is_old else scene.get("DOP", "N/A")
+        )
 
         access = scene.get("PRICED", "N/A")
         if scene.get("_bhx_download"):

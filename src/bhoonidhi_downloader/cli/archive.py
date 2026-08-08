@@ -2,7 +2,10 @@
 
 import typer
 
-from bhoonidhi_downloader.core.archive.command import run_archive_export, run_archive_list
+from bhoonidhi_downloader.core.archive.command import (
+    run_archive_export,
+    run_archive_list,
+)
 from bhoonidhi_downloader.logger import get_console
 
 archive_app = typer.Typer(
@@ -36,12 +39,8 @@ def list_archive(
 
 @archive_app.command("export")
 def export_archive(
-    out: str = typer.Option(
-        ..., "--out", "-o", help="Output file path."
-    ),
-    sat: str = typer.Option(
-        None, "--sat", "-s", help="Filter by satellite name."
-    ),
+    out: str = typer.Option(..., "--out", "-o", help="Output file path."),
+    sat: str = typer.Option(None, "--sat", "-s", help="Filter by satellite name."),
     refresh: bool = typer.Option(
         False,
         "--refresh",

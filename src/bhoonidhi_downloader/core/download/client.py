@@ -156,7 +156,10 @@ def _download_one(
             time.sleep(delay)
 
     return DownloadOutcome(
-        scene_id=scene_id, status="failed", error="unreachable", restarted_bytes=restarted_bytes
+        scene_id=scene_id,
+        status="failed",
+        error="unreachable",
+        restarted_bytes=restarted_bytes,
     )
 
 
@@ -184,7 +187,9 @@ class DownloadManager:
         results: list[DownloadOutcome] = []
         lock = threading.Lock()
 
-        def _wrapped_progress(scene_id: str, downloaded: int, total: int | None) -> None:
+        def _wrapped_progress(
+            scene_id: str, downloaded: int, total: int | None
+        ) -> None:
             if on_progress:
                 with lock:
                     on_progress(scene_id, downloaded, total)
@@ -195,7 +200,12 @@ class DownloadManager:
                 time.sleep(random.uniform(0.05, 0.2))
                 futures[
                     pool.submit(
-                        _download_one, scene, self.jwt, self.out_dir, self.force, _wrapped_progress
+                        _download_one,
+                        scene,
+                        self.jwt,
+                        self.out_dir,
+                        self.force,
+                        _wrapped_progress,
                     )
                 ] = scene.get("ID")
 
