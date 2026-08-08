@@ -132,10 +132,20 @@ def download(
     force: bool = typer.Option(
         False, "--force", help="Re-download scenes even if already present in --out"
     ),
+    password: str = typer.Option(
+        None,
+        "--password",
+        help="Password to re-authenticate with if the session has expired "
+        "(non-interactive use only; omit to be prompted instead).",
+    ),
 ) -> None:
     """Download scenes from a saved query.
 
     Priced scenes are skipped; interrupted downloads restart from scratch.
+    Re-authenticates automatically if the session has expired.
     """
-    if run_query_download(console, slug, out, select, parallel, force) is None:
+    if (
+        run_query_download(console, slug, out, select, parallel, force, password)
+        is None
+    ):
         raise typer.Exit(code=1)

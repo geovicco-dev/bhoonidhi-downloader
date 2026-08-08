@@ -45,7 +45,7 @@ class DownloadOutcome:
 ProgressCallback = Callable[[str, int, "int | None"], None]
 
 
-def _sha256_of_file(path: Path) -> str:
+def sha256_of_file(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
@@ -75,7 +75,7 @@ def _download_one(
             scene_id=scene_id,
             status="already_downloaded",
             path=str(out_file),
-            sha256=existing.get("sha256") or _sha256_of_file(out_file),
+            sha256=existing.get("sha256") or sha256_of_file(out_file),
             bytes_downloaded=out_file.stat().st_size,
         )
 
@@ -134,7 +134,7 @@ def _download_one(
             resp.close()
 
             part_file.rename(out_file)
-            sha256 = _sha256_of_file(out_file)
+            sha256 = sha256_of_file(out_file)
             return DownloadOutcome(
                 scene_id=scene_id,
                 status="downloaded",

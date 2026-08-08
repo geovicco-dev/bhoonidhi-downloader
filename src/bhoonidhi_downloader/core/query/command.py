@@ -1,5 +1,8 @@
 """Query command handlers: create, list, show, rename, fork, export, refresh, rm, download."""
 
+import getpass
+import logging
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -7,16 +10,23 @@ from typing import Any
 from rich.console import Console
 
 from bhoonidhi_downloader.core.archive import ArchiveManager
-from bhoonidhi_downloader.core.auth.utils import load_session_info
+from bhoonidhi_downloader.core.auth.client import AuthManager
+from bhoonidhi_downloader.core.auth.utils import load_session_info, save_session_info
 from bhoonidhi_downloader.core.download import (
     DownloadManager,
     DownloadOutcome,
     is_downloadable,
     make_progress,
     render_download_report,
+    sha256_of_file,
 )
 from bhoonidhi_downloader.core.search.client import SearchManager
-from bhoonidhi_downloader.schemas import AOISchema, QuerySchema, SearchSchema
+from bhoonidhi_downloader.schemas import (
+    AOISchema,
+    QuerySchema,
+    SearchSchema,
+    SessionSchema,
+)
 
 from .client import (
     delete_query,
@@ -34,6 +44,8 @@ from .render import (
     render_query_saved,
     render_refresh_result,
 )
+
+logger = logging.getLogger(__name__)
 
 REFRESH_LOOKBACK_DAYS = 3
 
@@ -263,6 +275,64 @@ def _resolve_scene_selection(
     return resolved
 
 
+def _ensure_downloadable_session(console: Console, password: str | None) -> str | None:
+    """Get a working JWT for download, re-authenticating if the stored one is stale.
+
+    Not stored anywhere — this only ever lives in memory for the duration of
+    the call, same as ``auth login`` already does. Two paths, depending on
+    how this is invoked:
+
+    - CLI (interactive terminal): if the session's expired, prompt for the
+      password right here via ``getpass`` and log in fresh — no separate
+      'auth login' step required, avoiding the need to persist a password to
+      re-authenticate automatically.
+    - SDK / non-interactive (scripts, cron, CI): no prompting. Callers pass
+      ``password`` explicitly to opt into the same re-auth, or handle a
+      ``None`` return themselves (e.g. call ``AuthManager.login()`` and
+      retry) — silently blocking on stdin would hang a script that isn't
+      expecting to be asked for input.
+
+    Returns a valid JWT, or None if no working session could be obtained.
+    """
+    session_dict = load_session_info()
+    jwt = session_dict.get("jwt")
+    username = session_dict.get("username")
+
+    if jwt:
+        try:
+            if AuthManager(cfg=SessionSchema(username=username)).validate_session(jwt):
+                return jwt
+        except Exception:
+            logger.debug("Stored session failed validation; falling back to re-auth.")
+
+    if password is None:
+        if not sys.stdin.isatty():
+            console.print(
+                "[bold red]Not authenticated.[/] Run 'auth login' first, or "
+                "(SDK) pass password= to re-authenticate automatically."
+            )
+            return None
+        if not username:
+            console.print("[bold red]Not authenticated.[/] Run 'auth login' first.")
+            return None
+        console.print(
+            f"[yellow]Session expired.[/] Re-enter the password for '{username}' "
+            "to continue (nothing is written to disk):"
+        )
+        password = getpass.getpass("Password: ")
+
+    try:
+        am = AuthManager(cfg=SessionSchema(username=username, password=password))
+        session = am.login()
+    except Exception as e:
+        console.print(f"[bold red]Re-authentication failed:[/] {e}")
+        return None
+
+    save_session_info(dict(session))
+    console.print("[green]✓[/] Re-authenticated.")
+    return session.jwt
+
+
 def run_query_download(
     console: Console,
     slug: str,
@@ -270,6 +340,7 @@ def run_query_download(
     select: list[str] | None = None,
     parallel: int = 4,
     force: bool = False,
+    password: str | None = None,
 ) -> list[DownloadOutcome] | None:
     """Download open-access scenes from a saved query to ``out``.
 
@@ -279,8 +350,11 @@ def run_query_download(
     idempotent unless ``force`` is set. Bhoonidhi's servers don't honor
     HTTP Range requests, so an interrupted download cannot be resumed —
     a leftover partial file is discarded and the scene is re-fetched from
-    scratch. Returns the list of per-scene DownloadOutcome, or None if the
-    query or scene selection couldn't be resolved.
+    scratch. If the stored session has expired, this re-authenticates
+    automatically (prompting interactively on a CLI, or using ``password``
+    if given — see ``_ensure_downloadable_session``). Returns the list of
+    per-scene DownloadOutcome, or None if the query, scene selection, or
+    authentication couldn't be resolved.
     """
     query = load_query(slug)
     if query is None:
@@ -296,10 +370,8 @@ def run_query_download(
         console.print("[yellow]No scenes matched the given --select values.[/]")
         return None
 
-    session = load_session_info()
-    jwt = session.get("jwt")
+    jwt = _ensure_downloadable_session(console, password)
     if not jwt:
-        console.print("[bold red]Not authenticated.[/] Run 'auth login' first.")
         return None
 
     eligible = [s for s in scenes if is_downloadable(s)]
@@ -310,12 +382,51 @@ def run_query_download(
             "(direct download not available yet).[/]"
         )
 
-    already = sum(1 for s in eligible if s.get("_bhx_download") and not force)
-    if already:
+    out_dir = Path(out).expanduser().resolve()
+    already_here = 0
+    elsewhere: list[tuple[dict[str, Any], Path]] = []
+    for s in eligible:
+        record = s.get("_bhx_download") if not force else None
+        if not record or not record.get("path"):
+            continue
+        recorded_path = Path(record["path"]).expanduser().resolve()
+        if recorded_path.parent == out_dir:
+            already_here += 1
+        elif recorded_path.exists() and record.get("sha256") == sha256_of_file(
+            recorded_path
+        ):
+            elsewhere.append((s, recorded_path))
+        # else: recorded elsewhere but the file's missing or corrupted (SHA
+        # mismatch) -- treat as not-a-duplicate, download normally instead
+        # of warning about a file that's effectively gone.
+
+    if already_here:
         console.print(
-            f"[cyan]{already} scene(s) already downloaded previously "
-            "(will skip-fast unless --force).[/]"
+            f"[cyan]{already_here} scene(s) already downloaded previously to "
+            f"{out_dir} (will skip-fast unless --force).[/]"
         )
+
+    if elsewhere:
+        console.print(
+            f"\n[yellow]{len(elsewhere)} scene(s) are already downloaded and "
+            f"verified elsewhere:[/]"
+        )
+        for s, path in elsewhere:
+            console.print(f"  \u2022 {s.get('ID')} \u2192 {path}")
+        console.print(
+            f"\nDownloading again to {out_dir} will re-fetch "
+            f"{len(elsewhere)} file(s) unnecessarily."
+        )
+        if not sys.stdin.isatty():
+            console.print(
+                "[bold red]Refusing to proceed non-interactively.[/] Re-run with "
+                "--force to download anyway, or point --out at the existing location."
+            )
+            return None
+        proceed = input("Download to the new location anyway? [y/N] ").strip().lower()
+        if proceed not in ("y", "yes"):
+            console.print("[yellow]Aborted.[/]")
+            return None
 
     if not eligible:
         console.print("[yellow]No open-access scenes in the selection.[/]")
