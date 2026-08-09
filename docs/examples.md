@@ -80,9 +80,14 @@ print(manifest["Sentinel-2A"].keys())  # -> dict_keys(['MSI'])
 # Search + save a query (same thing `bhd query create` does)
 query = run_query_create(
     console,
-    minx=91.77, maxx=92, miny=25.496, maxy=25.695,
-    start_date=datetime(2025, 12, 1), end_date=datetime(2025, 12, 30),
-    satellite="Sentinel-2A", sensor="MSI",
+    minx=91.77,
+    maxx=92,
+    miny=25.496,
+    maxy=25.695,
+    start_date=datetime(2025, 12, 1),
+    end_date=datetime(2025, 12, 30),
+    satellite="Sentinel-2A",
+    sensor="MSI",
 )
 
 # Download everything it found
@@ -114,5 +119,6 @@ data = am.parse(satellite_filter="ResourceSat-2A")  # omit for the full archive
 
 import json
 from pathlib import Path
+
 Path("archive.json").write_text(json.dumps(data, indent=2))
 ```
