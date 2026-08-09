@@ -1,13 +1,26 @@
 site_name: Bhoonidhi Downloader
+site_description: CLI and Python SDK for searching, saving, and downloading satellite imagery from ISRO's Bhoonidhi Earth Observation portal.
 site_url: https://geovicco-dev.github.io/bhoonidhi-downloader/
+repo_url: https://github.com/geovicco-dev/bhoonidhi-downloader
+repo_name: geovicco-dev/bhoonidhi-downloader
+edit_uri: edit/main/docs/
 
 nav:
   - Home: index.md
+  - Examples: examples.md
   - Usage:
       - Overview: usage/index.md
       - auth: usage/auth.md
       - archive: usage/archive.md
       - query: usage/query.md
+  - API Reference:
+      - Overview: api/index.md
+      - Auth: api/auth.md
+      - Archive: api/archive.md
+      - Search: api/search.md
+      - Query: api/query.md
+      - Download: api/download.md
+      - Schemas: api/schemas.md
   - Changelog: CHANGELOG.md
 
 theme:
@@ -15,30 +28,49 @@ theme:
   features:
     - navigation.tabs
     - navigation.sections
-    - toc.integrate
+    - navigation.indexes
     - navigation.top
+    - navigation.footer
+    - navigation.path
+    - toc.integrate
     - search.suggest
     - search.highlight
     - content.tabs.link
+    - content.tooltips
     - content.code.annotation
     - content.code.copy
   language: en
+  icon:
+    repo: fontawesome/brands/github
   palette:
     - scheme: default
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
-      primary: teal
-      accent: purple
+      primary: indigo
+      accent: indigo
     - scheme: slate
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
-      primary: teal
-      accent: lime
+      primary: indigo
+      accent: indigo
 
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_root_full_path: false
+            show_source: false
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+            docstring_section_style: table
+            members_order: source
+            summary: true
 
 extra:
   social:
@@ -66,6 +98,10 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.mark
   - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 copyright: |
   &copy; 2024 <a href="https://github.com/geovicco-dev"  target="_blank" rel="noopener">Aditya Sharma</a>

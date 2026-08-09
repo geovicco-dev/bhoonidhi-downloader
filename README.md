@@ -33,7 +33,7 @@ Log in, run a search, and download what you find — three commands, start to fi
 bhd auth login
 
 # 2. Search a bounding box + date range, save the results as a named query
-bhd query create 91.77 92 25.496 25.695 2023-12-01 2023-12-30 --sat Sentinel-2A --sen MSI
+bhd query create 91.77 92 25.496 25.695 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI
 
 # 3. Download everything the query found
 bhd query download misty-falcon --out ./downloads
@@ -47,34 +47,40 @@ Every command supports `--help` for its full option list. This is the short vers
 
 ### `auth` — session management
 
-| Command | What it does |
-|---|---|
-| `bhd auth login` | Authenticate and save your session to `~/.bhoonidhi/session`. |
-| `bhd auth status` | Show whether you're logged in and whether the token is still valid. |
-| `bhd auth whoami` | Print the current username. |
+
+| Command            | What it does                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bhd auth login`   | Authenticate and save your session to `~/.bhoonidhi/session`.                                                                                        |
+| `bhd auth status`  | Show whether you're logged in and whether the token is still valid.                                                                                  |
+| `bhd auth whoami`  | Print the current username.                                                                                                                          |
 | `bhd auth refresh` | Get a fresh token without logging out and back in — only works if your session's still recent; once it's properly stale you'll need to log in again. |
-| `bhd auth logout` | Clear the saved session. |
+| `bhd auth logout`  | Clear the saved session.                                                                                                                             |
+
 
 ### `archive` — browse what's available
 
-| Command | What it does |
-|---|---|
-| `bhd archive list` | List every satellite and sensor Bhoonidhi currently supports. |
-| `bhd archive list --sat ResourceSat-2A` | Filter the list to one satellite. |
-| `bhd archive export --out archive.json` | Export the archive data to a file. |
+
+| Command                                 | What it does                                                  |
+| --------------------------------------- | ------------------------------------------------------------- |
+| `bhd archive list`                      | List every satellite and sensor Bhoonidhi currently supports. |
+| `bhd archive list --sat ResourceSat-2A` | Filter the list to one satellite.                             |
+| `bhd archive export --out archive.json` | Export the archive data to a file.                            |
+
 
 ### `query` — search, save, and download
 
-| Command | What it does |
-|---|---|
-| `bhd query create <bbox> <dates> --sat ... --sen ...` | Search and save the results as a new named query. |
-| `bhd query list` | List all your saved queries. |
-| `bhd query show <slug>` | Redisplay a saved query's scenes. |
-| `bhd query refresh <slug>` | Check for new scenes matching an existing query. |
-| `bhd query fork <slug>` | Clone a query under a new name, without re-searching. |
-| `bhd query download <slug> --out <dir>` | Download scenes from a saved query. Add `--select` to pick specific scenes, `--parallel` to control concurrency, `--force` to re-download. Re-logs you in automatically if your session's expired. |
-| `bhd query rename <slug>` | Update a saved query's name/description. |
-| `bhd query rm <slug>` | Delete a saved query. |
+
+| Command                                               | What it does                                                                                                                                                                                       |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bhd query create <bbox> <dates> --sat ... --sen ...` | Search and save the results as a new named query.                                                                                                                                                  |
+| `bhd query list`                                      | List all your saved queries.                                                                                                                                                                       |
+| `bhd query show <slug>`                               | Redisplay a saved query's scenes.                                                                                                                                                                  |
+| `bhd query refresh <slug>`                            | Check for new scenes matching an existing query.                                                                                                                                                   |
+| `bhd query fork <slug>`                               | Clone a query under a new name, without re-searching.                                                                                                                                              |
+| `bhd query download <slug> --out <dir>`               | Download scenes from a saved query. Add `--select` to pick specific scenes, `--parallel` to control concurrency, `--force` to re-download. Re-logs you in automatically if your session's expired. |
+| `bhd query rename <slug>`                             | Update a saved query's name/description.                                                                                                                                                           |
+| `bhd query rm <slug>`                                 | Delete a saved query.                                                                                                                                                                              |
+
 
 ## Using it as a library
 
@@ -96,7 +102,7 @@ print(manifest["Sentinel-2A"].keys())  # -> dict_keys(['MSI'])
 query = run_query_create(
     console,
     minx=91.77, maxx=92, miny=25.496, maxy=25.695,
-    start_date=datetime(2023, 12, 1), end_date=datetime(2023, 12, 30),
+    start_date=datetime(2025, 12, 1), end_date=datetime(2025, 12, 30),
     satellite="Sentinel-2A", sensor="MSI",
 )
 
