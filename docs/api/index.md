@@ -1,6 +1,6 @@
 # API Reference
 
-Every CLI command in `bhd` is backed by a plain Python function or class under `bhoonidhi_downloader.core` — this section documents those directly from their source docstrings, for anyone scripting against the SDK instead of shelling out.
+Every CLI command in `bhd` is backed by a plain Python function or class under `bhoonidhi_downloader.core` — this section documents those directly from their source docstrings, for anyone calling into the CLI's internals from a script instead of shelling out.
 
 The package is organized by domain, matching the CLI's command groups:
 

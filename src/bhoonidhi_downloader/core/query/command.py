@@ -286,10 +286,10 @@ def _ensure_downloadable_session(console: Console, password: str | None) -> str 
       password right here via ``getpass`` and log in fresh — no separate
       'auth login' step required, avoiding the need to persist a password to
       re-authenticate automatically.
-    - SDK / non-interactive (scripts, cron, CI): no prompting. Callers pass
-      ``password`` explicitly to opt into the same re-auth, or handle a
-      ``None`` return themselves (e.g. call ``AuthManager.login()`` and
-      retry) — silently blocking on stdin would hang a script that isn't
+    - Called from a script / non-interactive (cron, CI): no prompting.
+      Callers pass ``password`` explicitly to opt into the same re-auth, or
+      handle a ``None`` return themselves (e.g. call ``AuthManager.login()``
+      and retry) — silently blocking on stdin would hang a script that isn't
       expecting to be asked for input.
 
     Returns a valid JWT, or None if no working session could be obtained.
@@ -309,7 +309,8 @@ def _ensure_downloadable_session(console: Console, password: str | None) -> str 
         if not sys.stdin.isatty():
             console.print(
                 "[bold red]Not authenticated.[/] Run 'auth login' first, or "
-                "(SDK) pass password= to re-authenticate automatically."
+                "pass password= to re-authenticate automatically when calling "
+                "this from a script."
             )
             return None
         if not username:

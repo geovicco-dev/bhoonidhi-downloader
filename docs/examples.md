@@ -60,7 +60,7 @@ To grab specific scenes instead of the whole query, use `--select` with the 1-ba
 $ bhd query download misty-falcon --out ./downloads --select 1,3,5
 ```
 
-## Using it as a library
+## Calling it from a script
 
 Every CLI command is a thin wrapper around a plain Python function — nothing about the underlying logic depends on being invoked from a terminal. If you're scripting a bulk ingestion pipeline or wiring this into a notebook, call into `bhoonidhi_downloader.core` directly instead of shelling out:
 

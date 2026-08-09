@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -25,13 +24,19 @@ def _get_manifest() -> dict[str, dict[str, list[dict]]]:
 
 
 class SearchSchema(BaseModel):
-    aoi: Annotated[AOISchema, "Area of Interest"] = Field(default_factory=AOISchema)
-    satellite: Annotated[str | None, "Satellite name"] = Field(default="ResourceSat-2A")
-    sensor: Annotated[str | None, "Sensor name"] = Field(default="LISS3")
-    start_date: Annotated[datetime, "Start date (YYYY-MM-DD)"] = datetime.now(
-        timezone.utc
-    ) - timedelta(days=30)
-    end_date: Annotated[datetime, "End date (YYYY-MM-DD)"] = datetime.now(timezone.utc)
+    aoi: AOISchema = Field(default_factory=AOISchema, description="Area of Interest")
+    satellite: str | None = Field(
+        default="ResourceSat-2A", description="Satellite name"
+    )
+    sensor: str | None = Field(default="LISS3", description="Sensor name")
+    start_date: datetime = Field(
+        default=datetime.now(timezone.utc) - timedelta(days=30),
+        description="Start date (YYYY-MM-DD)",
+    )
+    end_date: datetime = Field(
+        default=datetime.now(timezone.utc),
+        description="End date (YYYY-MM-DD)",
+    )
 
     @model_validator(mode="after")
     def validate_aoi_bounds(self) -> "SearchSchema":

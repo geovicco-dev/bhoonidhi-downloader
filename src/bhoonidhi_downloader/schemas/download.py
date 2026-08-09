@@ -1,9 +1,7 @@
-from typing import Annotated
-
 from pydantic import BaseModel, Field
 
 from .scene import SceneSchema
 
 
 class DownloadSchema(BaseModel):
-    scene: Annotated[SceneSchema, "Scene ID"] = Field(default_factory=SceneSchema)
+    scene: SceneSchema = Field(default_factory=SceneSchema, description="Scene ID")

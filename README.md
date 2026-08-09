@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://www.youtube.com/watch?v=3K6VEqq-CWE)
 
-A CLI and Python SDK for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/).
+A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/). Every command is also callable from a Python script.
 
 ## Features
 
@@ -14,7 +14,7 @@ A CLI and Python SDK for searching, saving, and downloading satellite imagery fr
 - **Concurrent, verified downloads** — fetches multiple scenes in parallel, verifies each with a SHA256, and skips anything already downloaded.
 - **Browse the archive** — list every satellite/sensor Bhoonidhi currently supports, live from the portal.
 - **Session management** — login once, refresh your token when it goes stale, no need to keep re-entering credentials.
-- **Usable as a library** — every command has a matching Python function, so you can script searches/downloads directly instead of shelling out.
+- **Scriptable** — every command has a matching Python function, so you can call searches/downloads directly from a script instead of shelling out.
 
 ## Installation
 
@@ -43,7 +43,7 @@ bhd query download misty-falcon --out ./downloads
 
 ## Command reference
 
-Every command supports `--help` for its full option list. This is the short version; see the [full documentation](https://geovicco-dev.github.io/bhoonidhi-downloader/usage/) for every flag and example.
+Every command supports `--help` for its full option list. This is the short version; see the [API Reference](https://geovicco-dev.github.io/bhoonidhi-downloader/api/) for the underlying functions this calls into.
 
 ### `auth` — session management
 
@@ -82,7 +82,7 @@ Every command supports `--help` for its full option list. This is the short vers
 | `bhd query rm <slug>`                                 | Delete a saved query.                                                                                                                                                                              |
 
 
-## Using it as a library
+## Calling it from a script
 
 Every CLI command is a thin wrapper around a plain Python function — nothing about the underlying logic depends on being invoked from a terminal. If you're scripting a bulk ingestion pipeline or wiring this into a notebook, call into `bhoonidhi_downloader.core` directly instead of shelling out:
 

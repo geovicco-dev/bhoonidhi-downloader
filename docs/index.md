@@ -1,6 +1,6 @@
 # Bhoonidhi Downloader
 
-A CLI and Python SDK for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/).
+A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/). Every command is also callable from a Python script.
 
 [:octicons-mark-github-16: View on GitHub](https://github.com/geovicco-dev/bhoonidhi-downloader){ .md-button }
 [:material-language-python: PyPI](https://pypi.org/project/bhoonidhi-downloader/){ .md-button }
@@ -12,7 +12,7 @@ A CLI and Python SDK for searching, saving, and downloading satellite imagery fr
 - **Concurrent, verified downloads** — fetches multiple scenes in parallel, verifies each with a SHA256, and skips anything already downloaded.
 - **Browse the archive** — list every satellite/sensor Bhoonidhi currently supports, live from the portal.
 - **Session management** — log in once, refresh your token when it goes stale; no need to keep re-entering credentials.
-- **Usable as a library** — every command has a matching Python function, so you can script searches and downloads directly instead of shelling out.
+- **Scriptable** — every command has a matching Python function, so you can call searches and downloads directly from a script instead of shelling out.
 
 ## Installation
 
@@ -43,17 +43,13 @@ bhd query download misty-falcon --out ./downloads
 
 <div class="grid cards" markdown>
 
-- :material-console-line: **[Usage](usage/index.md)**
-
-    Full command reference — every subcommand, option, and argument for `auth`, `archive`, and `query`.
-
 - :material-code-tags: **[Examples](examples.md)**
 
-    Worked walkthroughs of the CLI and the Python SDK, end to end.
+    Worked walkthroughs of the CLI, including calling it from a script.
 
 - :material-api: **[API Reference](api/index.md)**
 
-    Class and function documentation generated from the source, for scripting against the SDK directly.
+    Class and function documentation generated from the source, for calling into the CLI's internals directly.
 
 - :material-file-document-outline: **[Changelog](CHANGELOG.md)**
 
