@@ -54,3 +54,28 @@ The old `search` command ran once and forgot everything the moment your terminal
 - Requires Python 3.10+ (was 3.8+) — the rewrite uses `X | None` union syntax throughout.
 - No test suite yet — this release was verified by hand against the live portal (login, search, download, re-auth, duplicate detection), not an automated CI run.
 
+## [0.1.21] — July 2024
+
+- Added MkDocs + GitHub Pages workflow — first version of this tool with hosted documentation.
+- Added PyPI and docs badges to the README.
+
+## [0.1.2] — July 2024
+
+- **`archive` command.** New command to list every satellite/sensor Bhoonidhi supports, with results cached locally instead of re-fetched on every run.
+- **Sentinel-1 and Landsat 8/9 support** in the search command, alongside the satellites already supported.
+- `search` no longer requires `--sat`/`--sen` — both became optional, searching across everything if omitted.
+- Search results can be exported to a file; the export path's parent directory is created automatically if missing, instead of failing.
+- Fixed a `while True` loop bug from 0.1.1's multi-select prompt that could hang on bad input.
+- Refactored `search()` and the archive command to cut down on inline `typer.echo()` clutter.
+
+## [0.1.1] — July 2024
+
+- **Multi-scene selection.** `search` could previously only download one scene per run; you can now select several with a comma-separated list (`1,2,3`) instead of downloading them one search at a time.
+- Replaced manual download plumbing with `wget` as a dependency.
+- Added debug logging for the expired-session scenario during download.
+- Set up GitHub Actions workflows for publishing to PyPI (via TestPyPI first).
+
+## [0.1] — July 2024
+
+First public release. Search Bhoonidhi's archive by bounding box and date range, authenticate, and download a single scene at a time. Started as a `rye`-managed project; the cart/order-viewing command (`show-cart`) that existed during early development was removed before this release since it was never fully wired up.
+
