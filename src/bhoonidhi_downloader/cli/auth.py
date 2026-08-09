@@ -15,6 +15,7 @@ auth_app = typer.Typer(
     name="auth",
     help="Authenticate with Bhoonidhi Portal.",
     no_args_is_help=True,
+    add_completion=False,
 )
 
 console = get_console()

@@ -3,7 +3,11 @@ site_url: https://geovicco-dev.github.io/bhoonidhi-downloader/
 
 nav:
   - Home: index.md
-  - Usage: usage.md
+  - Usage:
+      - Overview: usage/index.md
+      - auth: usage/auth.md
+      - archive: usage/archive.md
+      - query: usage/query.md
   - Changelog: CHANGELOG.md
 
 theme:

@@ -12,6 +12,7 @@ archive_app = typer.Typer(
     name="archive",
     help="Browse available satellites and sensors.",
     no_args_is_help=True,
+    add_completion=False,
 )
 
 console = get_console()

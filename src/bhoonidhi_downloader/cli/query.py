@@ -20,6 +20,7 @@ query_app = typer.Typer(
     name="query",
     help="Search and manage saved queries.",
     no_args_is_help=True,
+    add_completion=False,
 )
 
 console = get_console()
