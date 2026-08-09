@@ -48,6 +48,11 @@ The old `search` command ran once and forgot everything the moment your terminal
 - `tqdm` — replaced by `rich.progress`, which is already a dependency.
 - Cart/order support (`cart_actions.py`) — existed in 0.1.x but was already half-commented-out and never wired into a working command. It's gone for now; may come back once there's a real `cart` subcommand to attach it to.
 
+### Fixed
+
+- **Sensor names are now URL-encoded in the search payload.** Sensors with names that contain characters needing URL encoding (spaces, `/`, etc.) previously produced a malformed request and could come back empty; `query create` now encodes them correctly before hitting the portal.
+- **Hardened session storage, error logging, and download filename generation.** Session files are written/read more consistently across auth, portal HTTP errors now produce clearer log messages instead of hiding the underlying cause, and scene filenames on download are built more robustly (no more collisions or mangled names for scenes with special characters).
+
 ### Also
 
 - Added `bhd` as a shorter alias for `bhoonidhi-downloader` — same tool, less typing.
