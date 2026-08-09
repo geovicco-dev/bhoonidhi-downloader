@@ -1,11 +1,11 @@
-# `bhoonidhi-downloader`
+# `bhd`
 
 Search, save, and download satellite imagery from the Bhoonidhi Earth Observation portal.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader [OPTIONS] COMMAND [ARGS]...
+$ bhd [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:

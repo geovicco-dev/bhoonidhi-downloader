@@ -1,11 +1,11 @@
-# `bhoonidhi-downloader archive`
+# `bhd archive`
 
 Browse available satellites and sensors.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader archive [OPTIONS] COMMAND [ARGS]...
+$ bhd archive [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -17,14 +17,14 @@ $ bhoonidhi-downloader archive [OPTIONS] COMMAND [ARGS]...
 * `list`: List satellites and sensors from the archive.
 * `export`: Export archive data to a JSON file.
 
-## `bhoonidhi-downloader archive list`
+## `bhd archive list`
 
 List satellites and sensors from the archive.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader archive list [OPTIONS]
+$ bhd archive list [OPTIONS]
 ```
 
 **Options**:
@@ -33,14 +33,14 @@ $ bhoonidhi-downloader archive list [OPTIONS]
 * `--refresh`: Re-fetch archive data from the portal.
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader archive export`
+## `bhd archive export`
 
 Export archive data to a JSON file.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader archive export [OPTIONS]
+$ bhd archive export [OPTIONS]
 ```
 
 **Options**:

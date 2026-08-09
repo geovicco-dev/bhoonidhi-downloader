@@ -25,9 +25,9 @@ Every top-level command from 0.1.x is now a subcommand group:
 
 | 0.1.x                                                             | 0.2.x                                                                  |
 | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `bhoonidhi-downloader authenticate --username ... --password ...` | `bhoonidhi-downloader auth login`                                      |
-| `bhoonidhi-downloader archive --sat ResourceSat-2`                | `bhoonidhi-downloader archive list --sat ResourceSat-2`                |
-| `bhoonidhi-downloader search <bbox> <dates> --sat ... --sen ...`  | `bhoonidhi-downloader query create <bbox> <dates> --sat ... --sen ...` |
+| `bhoonidhi-downloader authenticate --username ... --password ...` | `bhd auth login`                                      |
+| `bhoonidhi-downloader archive --sat ResourceSat-2`                | `bhd archive list --sat ResourceSat-2`                |
+| `bhoonidhi-downloader search <bbox> <dates> --sat ... --sen ...`  | `bhd query create <bbox> <dates> --sat ... --sen ...` |
 
 
 The old `search` command ran once and forgot everything the moment your terminal closed. `query create` does the same search, but *saves* the result under a short slug (like `misty-falcon`) so you can come back to it later with `query show misty-falcon`, re-check for new scenes with `query refresh`, or download from it whenever you're ready — no need to re-run the search.

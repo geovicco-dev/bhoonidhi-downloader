@@ -1,11 +1,11 @@
-# `bhoonidhi-downloader query`
+# `bhd query`
 
 Search and manage saved queries.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query [OPTIONS] COMMAND [ARGS]...
+$ bhd query [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -23,14 +23,14 @@ $ bhoonidhi-downloader query [OPTIONS] COMMAND [ARGS]...
 * `refresh`: Check for new scenes matching this query.
 * `download`: Download scenes from a saved query.
 
-## `bhoonidhi-downloader query create`
+## `bhd query create`
 
 Search for scenes and save the results as a new named query.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query create [OPTIONS] {minx} {maxx} {miny} {maxy} {start_date}:<%Y-%m-%d> {end_date}:<%Y-%m-%d>
+$ bhd query create [OPTIONS] {minx} {maxx} {miny} {maxy} {start_date}:<%Y-%m-%d> {end_date}:<%Y-%m-%d>
 ```
 
 **Arguments**:
@@ -50,28 +50,28 @@ $ bhoonidhi-downloader query create [OPTIONS] {minx} {maxx} {miny} {maxy} {start
 * `--desc <str>`: Override the auto-generated description
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader query list`
+## `bhd query list`
 
 List all saved queries.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query list [OPTIONS]
+$ bhd query list [OPTIONS]
 ```
 
 **Options**:
 
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader query show`
+## `bhd query show`
 
 Show a saved query's scenes.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query show [OPTIONS] {slug}
+$ bhd query show [OPTIONS] {slug}
 ```
 
 **Arguments**:
@@ -82,14 +82,14 @@ $ bhoonidhi-downloader query show [OPTIONS] {slug}
 
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader query rename`
+## `bhd query rename`
 
 Update a saved query's name/description.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query rename [OPTIONS] {slug}
+$ bhd query rename [OPTIONS] {slug}
 ```
 
 **Arguments**:
@@ -102,14 +102,14 @@ $ bhoonidhi-downloader query rename [OPTIONS] {slug}
 * `--desc <str>`: New description
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader query fork`
+## `bhd query fork`
 
 Clone a saved query under a new name.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query fork [OPTIONS] {slug}
+$ bhd query fork [OPTIONS] {slug}
 ```
 
 **Arguments**:
@@ -121,14 +121,14 @@ $ bhoonidhi-downloader query fork [OPTIONS] {slug}
 * `--name <str>`: Name for the forked query
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader query rm`
+## `bhd query rm`
 
 Delete a saved query.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query rm [OPTIONS] {slug}
+$ bhd query rm [OPTIONS] {slug}
 ```
 
 **Arguments**:
@@ -139,14 +139,14 @@ $ bhoonidhi-downloader query rm [OPTIONS] {slug}
 
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader query refresh`
+## `bhd query refresh`
 
 Check for new scenes matching this query.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query refresh [OPTIONS] {slug}
+$ bhd query refresh [OPTIONS] {slug}
 ```
 
 **Arguments**:
@@ -157,7 +157,7 @@ $ bhoonidhi-downloader query refresh [OPTIONS] {slug}
 
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader query download`
+## `bhd query download`
 
 Download scenes from a saved query.
 
@@ -167,7 +167,7 @@ Re-authenticates automatically if the session has expired.
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader query download [OPTIONS] {slug}
+$ bhd query download [OPTIONS] {slug}
 ```
 
 **Arguments**:

@@ -1,11 +1,11 @@
-# `bhoonidhi-downloader auth`
+# `bhd auth`
 
 Authenticate with Bhoonidhi Portal.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader auth [OPTIONS] COMMAND [ARGS]...
+$ bhd auth [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -20,14 +20,14 @@ $ bhoonidhi-downloader auth [OPTIONS] COMMAND [ARGS]...
 * `whoami`: Print the current username.
 * `refresh`: Refresh the authentication token.
 
-## `bhoonidhi-downloader auth login`
+## `bhd auth login`
 
 Authenticate and save session to ~/.bhoonidhi/session.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader auth login [OPTIONS]
+$ bhd auth login [OPTIONS]
 ```
 
 **Options**:
@@ -37,56 +37,56 @@ $ bhoonidhi-downloader auth login [OPTIONS]
 * `--save / --no-save`: Persist session to disk  [default: save]
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader auth logout`
+## `bhd auth logout`
 
 Clear the saved session.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader auth logout [OPTIONS]
+$ bhd auth logout [OPTIONS]
 ```
 
 **Options**:
 
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader auth status`
+## `bhd auth status`
 
 Show current session status.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader auth status [OPTIONS]
+$ bhd auth status [OPTIONS]
 ```
 
 **Options**:
 
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader auth whoami`
+## `bhd auth whoami`
 
 Print the current username.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader auth whoami [OPTIONS]
+$ bhd auth whoami [OPTIONS]
 ```
 
 **Options**:
 
 * `--help`: Show this message and exit.
 
-## `bhoonidhi-downloader auth refresh`
+## `bhd auth refresh`
 
 Refresh the authentication token.
 
 **Usage**:
 
 ```console
-$ bhoonidhi-downloader auth refresh [OPTIONS]
+$ bhd auth refresh [OPTIONS]
 ```
 
 **Options**:
