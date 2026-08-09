@@ -1,6 +1,7 @@
 import random
 import time
 from typing import Any
+from urllib.parse import quote
 
 import requests
 from rich.live import Live
@@ -16,7 +17,20 @@ def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
     assert cfg.sensor is not None
     col_meta = manifest[cfg.satellite][cfg.sensor]
 
-    sat_sen = [str(col.get("dispName", "")) for col in col_meta if col.get("dispName")]
+    # The portal URL-decodes selSats server-side (that's why the comma
+    # separator has to be sent as %2C rather than a literal ","). Any
+    # sensor's name containing a character that's meaningful in a URL-encoded
+    # string therefore has to be percent-encoded too, or it gets mangled
+    # on arrival and silently matches nothing:
+    #
+    #   "LandSat-8_OLI+TIRS_L1"  ->  "+" decodes to a space  ->  0 results
+    #   "LandSat-8_OLI%2BTIRS_L1"                            ->  500 results
+ 
+    sat_sen = [
+        quote("".join(str(col["dispName"]).split()), safe="")
+        for col in col_meta
+        if col.get("dispName")
+    ]
 
     if isinstance(sat_sen, list) and len(sat_sen) > 1:
         sat_sen = "%2C".join(sat_sen)
