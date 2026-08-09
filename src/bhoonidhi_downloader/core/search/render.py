@@ -87,13 +87,12 @@ def render_search_results(console: Console, scenes: list) -> None:
         console.print(
             f"\n⚠  [yellow]Scenes older than {COLD_STORAGE_THRESHOLD_DAYS} days are flagged here "
             "because Bhoonidhi's archiving policy isn't publicly documented, but scenes this old "
-            f"typically aren't served directly and downloads may fail with a 404 error.[/] If that "
-            f"happens, you can request the scene directly on the {portal_link} — this CLI can only "
-            "fetch OpenData_DirectDownload scenes, not request or retrieve archived ones.",
+            f"typically aren't served directly and downloads may fail with a 404 error.[/] "
+            f"Request those on the {portal_link} — this CLI only fetches "
+            "OpenData_DirectDownload scenes, not archived ones.",
             style="dim",
         )
 
-    # Instructions for the user
     console.print("\nTo open table links from terminal:", style="yellow")
     console.print(
         "Click while holding Cmd (on Mac) or Ctrl (on Windows/Linux)\n", style="dim"

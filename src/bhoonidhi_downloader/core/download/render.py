@@ -114,7 +114,6 @@ def render_download_report(console: Console, outcomes: list[DownloadOutcome]) ->
         console.print(
             "[magenta]Note:[/] scenes marked 'cold_storage' returned HTTP 404. Bhoonidhi's "
             "archiving policy isn't publicly documented, but scenes this old typically aren't "
-            f"served directly. You can request them directly on the {portal_link} — this CLI "
-            "can only fetch OpenData_DirectDownload scenes and has no cart/order support yet, "
-            "so it can't retrieve these for you (metadata only).\n"
+            f"served directly. Request them on the {portal_link} — this CLI only fetches "
+            "OpenData_DirectDownload scenes and has no cart/order support yet (metadata only).\n"
         )

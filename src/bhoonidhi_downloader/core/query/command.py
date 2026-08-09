@@ -244,11 +244,9 @@ def _resolve_scene_selection(
 ) -> list[dict[str, Any]]:
     """Resolve a --select list (1-based indices and/or scene IDs) to scenes.
 
-    Empty/None select means "the whole query" (Option: pass the entire
-    query and let PRICED-gating decide what's actually fetched). Each
-    --select token may itself be comma-separated (``-s 1,2,3``) since
-    that's the syntax most people reach for first; repeated flags
-    (``-s 1 -s 2``) keep working too.
+    Empty/None select means the whole query. Each --select token may
+    itself be comma-separated (``-s 1,2,3``); repeated flags
+    (``-s 1 -s 2``) work too.
     """
     if not select:
         return scenes
@@ -278,19 +276,16 @@ def _resolve_scene_selection(
 def _ensure_downloadable_session(console: Console, password: str | None) -> str | None:
     """Get a working JWT for download, re-authenticating if the stored one is stale.
 
-    Not stored anywhere — this only ever lives in memory for the duration of
-    the call, same as ``auth login`` already does. Two paths, depending on
-    how this is invoked:
+    The password is never persisted — it only lives in memory for the
+    duration of the call. Two paths, depending on how this is invoked:
 
-    - CLI (interactive terminal): if the session's expired, prompt for the
-      password right here via ``getpass`` and log in fresh — no separate
-      'auth login' step required, avoiding the need to persist a password to
-      re-authenticate automatically.
-    - Called from a script / non-interactive (cron, CI): no prompting.
-      Callers pass ``password`` explicitly to opt into the same re-auth, or
-      handle a ``None`` return themselves (e.g. call ``AuthManager.login()``
-      and retry) — silently blocking on stdin would hang a script that isn't
-      expecting to be asked for input.
+    - Interactive terminal: if the session's expired, prompt for the
+      password here via ``getpass`` and log in fresh, so no separate
+      'auth login' step is needed.
+    - Non-interactive (script, cron, CI): no prompting. Callers pass
+      ``password`` explicitly to opt into the same re-auth, or handle a
+      ``None`` return themselves — blocking on stdin would hang a script
+      that isn't expecting to be asked for input.
 
     Returns a valid JWT, or None if no working session could be obtained.
     """

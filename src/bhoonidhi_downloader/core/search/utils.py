@@ -25,7 +25,7 @@ def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
     #
     #   "LandSat-8_OLI+TIRS_L1"  ->  "+" decodes to a space  ->  0 results
     #   "LandSat-8_OLI%2BTIRS_L1"                            ->  500 results
- 
+
     sat_sen = [
         quote("".join(str(col["dispName"]).split()), safe="")
         for col in col_meta
@@ -65,21 +65,17 @@ def recursive_search(
 ) -> list:
     """Fetch every page of a Bhoonidhi search using the ``srt`` cursor + offset.
 
-    Improvements over the original:
-    - Does NOT mutate the caller's ``payload`` Dict (makes a shallow copy).
-    - Retries transient server errors (5xx, 429) with exponential back-off.
-    - Validates that the response has the expected shape.
-    - Deduplicates scenes by their ``ID`` (or ``sceneId``/``id``) so overlapping
-      pages do not produce duplicates.
-    - Adds jitter to the inter-page sleep to avoid thundering-herds.
-    - Optionally reuses a ``requests.Session`` for connection pooling.
-    - Returns a plain ``List`` of scene Dicts (same public API).
+    Pages are deduplicated by scene ``ID`` (falling back to
+    ``sceneId``/``id``) since overlapping pages can repeat a scene.
+    Transient failures (5xx, 429, network errors) are retried with
+    jittered exponential back-off; 4xx fails fast. The caller's
+    ``payload`` is never mutated.
     """
-    # --- public API: never mutate the caller's payload ---
+    # Shallow copy: per-page offset/srt are set below and must not leak
+    # back to the caller's dict.
     payload = {**payload}
     console = get_console()
 
-    # --- helpers ---
     _post = session.post if session else requests.post
     max_retries = 3
     base_delay = 1.0

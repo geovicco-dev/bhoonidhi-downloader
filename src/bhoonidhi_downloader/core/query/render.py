@@ -11,7 +11,7 @@ def render_query_saved(console: Console, query: QuerySchema) -> None:
     console.print(
         f"\n[bold green]Saved as '{query.slug}'[/] \u2014 {query.name}\n"
         f"[dim]{query.description}[/]\n"
-        f"[dim]Reference it later with: bhoonidhi-downloader query show {query.slug}[/]"
+        f"[dim]Reference it later with: bhd query show {query.slug}[/]"
     )
 
 

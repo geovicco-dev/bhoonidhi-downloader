@@ -77,7 +77,7 @@ def render_status(console: Console, session: SessionSchema, is_valid: bool) -> N
 def render_status_no_session(console: Console) -> None:
     """Display not logged in panel."""
     panel = Panel(
-        "[yellow]Run [bold]bhoonidhi-downloader auth login[/bold] to authenticate[/]",
+        "[yellow]Run [bold]bhd auth login[/bold] to authenticate[/]",
         title="[bold yellow]Not Logged In[/]",
         border_style="yellow",
         padding=(1, 2),

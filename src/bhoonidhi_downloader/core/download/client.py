@@ -29,6 +29,16 @@ MAX_RETRIES = 3
 BASE_BACKOFF = 1.5
 
 
+def _redact(message: str, jwt: str) -> str:
+    """Strip the session token out of an error string.
+
+    The download URL carries ``?token=<jwt>``, and requests' exceptions
+    embed the full URL — so an unredacted error would print a live token
+    to the terminal and into the saved download report.
+    """
+    return message.replace(jwt, "<redacted>") if jwt else message
+
+
 @dataclass
 class DownloadOutcome:
     scene_id: str
@@ -152,7 +162,7 @@ def _download_one(
                 return DownloadOutcome(
                     scene_id=scene_id,
                     status="failed",
-                    error=str(e),
+                    error=_redact(str(e), jwt),
                     restarted_bytes=restarted_bytes,
                 )
             delay = BASE_BACKOFF * (2 ** (attempt - 1)) + random.random()

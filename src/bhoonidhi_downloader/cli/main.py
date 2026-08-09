@@ -40,9 +40,6 @@ app.add_typer(archive_app, name="archive")
 app.add_typer(query_app, name="query")
 
 
-### CLI COMMANDS ####
-
-
 @app.command()
 def version() -> None:
     """Package version."""
