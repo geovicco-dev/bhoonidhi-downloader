@@ -1,6 +1,6 @@
 # bhoonidhi-downloader
 
-[![PyPI version](https://badge.fury.io/py/bhoonidhi-downloader.svg)](https://badge.fury.io/py/bhoonidhi-downloader)
+[![PyPI version](https://img.shields.io/pypi/v/bhoonidhi-downloader.svg?logo=python&logoColor=white&label=PyPI&style=flat)](https://pypi.org/project/bhoonidhi-downloader/)
 [![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://geovicco-dev.github.io/bhoonidhi-downloader/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://www.youtube.com/watch?v=3K6VEqq-CWE)
