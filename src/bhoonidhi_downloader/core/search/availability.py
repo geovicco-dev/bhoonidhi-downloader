@@ -121,7 +121,7 @@ def availability_of(scene: dict) -> Availability:
     return Availability.DIRECT_UNAVAILABLE
 
 
-def is_attemptable(scene: dict) -> bool:
+def is_downloadable(scene: dict) -> bool:
     """True if ``query download`` should try to fetch this scene.
 
     Both DIRECT_* states are attempted. An unstaged scene may still be

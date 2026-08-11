@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from pathlib import PurePosixPath
 
-from ..search.availability import is_attemptable
-
 BASE_URL = "https://bhoonidhi.nrsc.gov.in"
 
 # (satellite, sensor) -> short code the portal's data path expects.
@@ -26,11 +24,6 @@ _SENSOR_REMAP = {
     ("L8", "O"): "O",
     ("L9", "O"): "O",
 }
-
-
-def is_downloadable(scene: dict) -> bool:
-    """True if a scene is worth attempting a direct download for."""
-    return is_attemptable(scene)
 
 
 def download_filename(scene: dict) -> str:
