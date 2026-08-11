@@ -20,6 +20,12 @@ from bhoonidhi_downloader.core.download import (
     render_download_report,
     sha256_of_file,
 )
+from bhoonidhi_downloader.core.search.availability import (
+    AVAILABILITY_LABEL,
+    AVAILABILITY_LABEL_STYLE,
+    Availability,
+    availability_of,
+)
 from bhoonidhi_downloader.core.search.client import SearchManager
 from bhoonidhi_downloader.schemas import (
     AOISchema,
@@ -329,6 +335,38 @@ def _ensure_downloadable_session(console: Console, password: str | None) -> str 
     return session.jwt
 
 
+def _render_selection_summary(console: Console, scenes: list[dict[str, Any]]) -> None:
+    """Break the selection down by availability before downloading."""
+    counts: dict[Availability, int] = {}
+    for scene in scenes:
+        state = availability_of(scene)
+        counts[state] = counts.get(state, 0) + 1
+
+    def described(states: list[Availability]) -> str:
+        return ", ".join(
+            f"[{AVAILABILITY_LABEL_STYLE[s]}]{counts[s]} {AVAILABILITY_LABEL[s]}[/]"
+            for s in states
+            if counts.get(s)
+        )
+
+    attempting = described(
+        [Availability.DIRECT_AVAILABLE, Availability.DIRECT_UNAVAILABLE]
+    )
+    if attempting:
+        caveat = (
+            " [dim](Archived may 404)[/]"
+            if counts.get(Availability.DIRECT_UNAVAILABLE)
+            else ""
+        )
+        console.print(f"Downloading {attempting}{caveat}")
+
+    skipping = described([Availability.ON_ORDER, Availability.PRICED])
+    if skipping:
+        console.print(
+            f"Skipping {skipping} [dim]— request those on the Bhoonidhi portal[/]"
+        )
+
+
 def run_query_download(
     console: Console,
     slug: str,
@@ -340,8 +378,8 @@ def run_query_download(
 ) -> list[DownloadOutcome] | None:
     """Download open-access scenes from a saved query to ``out``.
 
-    Priced/on-order scenes are skipped (metadata/planning-only until the
-    cart/order flow exists). Downloads are verified with a SHA256 written
+    Priced/on-order scenes are skipped — they have to be requested on the
+    Bhoonidhi portal. Downloads are verified with a SHA256 written
     back onto the query's cached scene record, so re-running is fast and
     idempotent unless ``force`` is set. Bhoonidhi's servers don't honor
     HTTP Range requests, so an interrupted download cannot be resumed —
@@ -371,12 +409,7 @@ def run_query_download(
         return None
 
     eligible = [s for s in scenes if is_downloadable(s)]
-    priced = len(scenes) - len(eligible)
-    if priced:
-        console.print(
-            f"[yellow]Skipping {priced} priced/on-order scene(s) "
-            "(direct download not available yet).[/]"
-        )
+    _render_selection_summary(console, scenes)
 
     out_dir = Path(out).expanduser().resolve()
     already_here = 0

@@ -22,6 +22,7 @@ from typing import Any
 
 import requests
 
+from ..search.availability import Availability, availability_of
 from .utils import build_download_url, download_filename, is_downloadable
 
 CHUNK_SIZE = 1024 * 1024  # 1 MiB
@@ -43,7 +44,8 @@ def _redact(message: str, jwt: str) -> str:
 class DownloadOutcome:
     scene_id: str
     status: str
-    # "downloaded" | "skipped_priced" | "already_downloaded" | "cold_storage" | "failed"
+    # "downloaded" | "already_downloaded" | "archived" | "skipped_on_order"
+    # | "skipped_priced" | "failed"
     path: str | None = None
     sha256: str | None = None
     bytes_downloaded: int = 0
@@ -73,7 +75,12 @@ def _download_one(
     scene_id = scene.get("ID", "unknown")
 
     if not is_downloadable(scene):
-        return DownloadOutcome(scene_id=scene_id, status="skipped_priced")
+        status = (
+            "skipped_on_order"
+            if availability_of(scene) is Availability.ON_ORDER
+            else "skipped_priced"
+        )
+        return DownloadOutcome(scene_id=scene_id, status=status)
 
     filename = download_filename(scene)
     out_file = out_dir / filename
@@ -107,20 +114,13 @@ def _download_one(
             resp = requests.get(url, stream=True, timeout=(10, 60))
 
             if resp.status_code == 404:
-                # Bhoonidhi's archiving/cold-storage policy isn't publicly
-                # documented, but scenes past a certain age consistently
-                # 404 on direct download. This CLI only fetches
-                # OpenData_DirectDownload scenes — it has no cart/order
-                # support yet, so a 404'd scene can't be retrieved here at
-                # all, only requested directly on the portal.
                 resp.close()
                 return DownloadOutcome(
                     scene_id=scene_id,
-                    status="cold_storage",
+                    status="archived",
                     error=(
-                        "404 — likely not served directly due to age (Bhoonidhi's "
-                        "archiving policy isn't documented). Request it directly on the "
-                        "Bhoonidhi Browse & Order Portal; this CLI can't fetch it."
+                        "404 — not currently staged for direct download. "
+                        "Request it on the Bhoonidhi portal."
                     ),
                 )
 

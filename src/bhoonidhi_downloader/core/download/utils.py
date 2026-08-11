@@ -4,12 +4,9 @@ from __future__ import annotations
 
 from pathlib import PurePosixPath
 
-BASE_URL = "https://bhoonidhi.nrsc.gov.in"
+from ..search.availability import is_attemptable
 
-# Only scenes with this PRICED value support direct, cart-free download.
-# Anything else (OpenData_OnOrder, Priced_*, ...) is metadata/planning-only
-# until the cart/order flow is implemented.
-DIRECT_DOWNLOAD_PRICED = "OpenData_DirectDownload"
+BASE_URL = "https://bhoonidhi.nrsc.gov.in"
 
 # (satellite, sensor) -> short code the portal's data path expects.
 # Sensors not listed here are used as-is (dynamic path). A few satellites
@@ -32,8 +29,8 @@ _SENSOR_REMAP = {
 
 
 def is_downloadable(scene: dict) -> bool:
-    """True if a scene can be fetched directly, without going through the cart."""
-    return scene.get("PRICED") == DIRECT_DOWNLOAD_PRICED
+    """True if a scene is worth attempting a direct download for."""
+    return is_attemptable(scene)
 
 
 def download_filename(scene: dict) -> str:
