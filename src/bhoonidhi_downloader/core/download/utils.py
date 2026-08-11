@@ -21,8 +21,9 @@ _SENSOR_REMAP = {
     ("SEN2B", "MSI"): "MSI",
     ("SEN1A", "SAR"): "SAR",
     ("SEN1B", "SAR"): "SAR",
-    ("L8", "O"): "O",
-    ("L9", "O"): "O",
+    ("L8", "OLI"): "O",
+    ("L9", "OLI"): "O",
+    ("JP1", "VIR"): "V",
 }
 
 

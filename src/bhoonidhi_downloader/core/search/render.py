@@ -19,12 +19,15 @@ from .availability import (
 from .utils import create_clickable_link, get_quicklook_url, get_scene_meta_url
 
 
-def render_search_results(console: Console, scenes: list) -> None:
+def render_search_results(
+    console: Console, scenes: list, slug: str | None = None
+) -> None:
     """Render the search results table.
 
     The Availability column shows ``Ready``, ``Archived``, ``OnOrder`` or
     ``Priced``, with a legend below giving each one's meaning and the
-    action it needs.
+    action it needs. When ``slug`` is given, the legend's download hint
+    names that query directly instead of the generic ``<slug>`` placeholder.
     """
     table = Table(title="Available Scenes", title_style="bold")
     table.add_column("Index", style="dim", justify="center")
@@ -64,7 +67,7 @@ def render_search_results(console: Console, scenes: list) -> None:
             "unless --force is passed.[/]"
         )
 
-    _render_availability_legend(console, {availability_of(s) for s in scenes})
+    _render_availability_legend(console, {availability_of(s) for s in scenes}, slug)
 
     console.print(
         "\n  [yellow]Cmd-click[/] [dim](macOS)[/] or [yellow]Ctrl-click[/] "
@@ -72,7 +75,9 @@ def render_search_results(console: Console, scenes: list) -> None:
     )
 
 
-def _render_availability_legend(console: Console, states: set[Availability]) -> None:
+def _render_availability_legend(
+    console: Console, states: set[Availability], slug: str | None = None
+) -> None:
     """Print a key for the Availability states present in the results."""
     if not states:
         return
@@ -82,6 +87,8 @@ def _render_availability_legend(console: Console, states: set[Availability]) -> 
         if state not in states:
             continue
         meaning, action = AVAILABILITY_DISPLAY[state]
+        if slug:
+            action = action.replace("<slug>", slug)
         # Pad before styling: markup would otherwise count toward the width.
         label = f"{AVAILABILITY_LABEL[state]:<10}"
         console.print(
