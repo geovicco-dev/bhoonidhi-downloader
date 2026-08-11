@@ -2,7 +2,21 @@
 
 All notable changes to this project are documented here.
 
-## [0.2.0] — August 2026
+## [0.2.1] — 2026-08-12
+
+Replaces the age-based cold-storage guess from 0.2.0 with a real availability signal, and makes downloads talk about scenes the same way search results do.
+
+### Added
+
+- **Scene availability classification.** Search results now read `CURR_SCENE_NO` from the portal response and classify each scene as `Ready`, `Archived`, `OnOrder`, or `Priced`, shown as an Availability column with a legend explaining what each state means and what to do about it. This replaces the old 365-day heuristic, which was wrong in both directions — some year-old scenes are staged and ready, some recent ones aren't.
+- **Pre-flight download summary.** Before `query download` starts fetching, it now breaks the selection down by state (`Downloading 12 Ready, 5 Archived (may 404)` / `Skipping 3 OnOrder, 1 Priced`), so what's about to happen is stated up front.
+
+### Changed
+
+- Download statuses and messaging now match the availability classification instead of guessing by age. `cold_storage` is renamed to `archived`, and the old catch-all `skipped_priced` status is split into `skipped_on_order` and `skipped_priced`, so the download report says which action each scene actually needs — order it, or pay for it.
+- `is_downloadable()` is now a single function (`core/search/availability.py`), reused by both search and download instead of being implemented twice. The two could previously drift out of sync with each other.
+
+## [0.2.0] — 2026-08-10
 
 This version represents a significant departure from the current version (v0.1.21). This release is my attempt to modernise the project — a rewrite of the entire codebase. If you've been using `bhoonidhi-downloader` 0.1.x, **your commands will need to change** — see the migration notes below. Nothing about *what* this tool does has changed; how you talk to it has.
 
@@ -59,12 +73,12 @@ The old `search` command ran once and forgot everything the moment your terminal
 - Requires Python 3.10+ (was 3.8+) — the rewrite uses `X | None` union syntax throughout.
 - No test suite yet — this release was verified by hand against the live portal (login, search, download, re-auth, duplicate detection), not an automated CI run.
 
-## [0.1.21] — July 2024
+## [0.1.21] — 2024-07-24
 
 - Added MkDocs + GitHub Pages workflow — first version of this tool with hosted documentation.
 - Added PyPI and docs badges to the README.
 
-## [0.1.2] — July 2024
+## [0.1.2] — 2024-07-23
 
 - **`archive` command.** New command to list every satellite/sensor Bhoonidhi supports, with results cached locally instead of re-fetched on every run.
 - **Sentinel-1 and Landsat 8/9 support** in the search command, alongside the satellites already supported.
@@ -73,14 +87,14 @@ The old `search` command ran once and forgot everything the moment your terminal
 - Fixed a `while True` loop bug from 0.1.1's multi-select prompt that could hang on bad input.
 - Refactored `search()` and the archive command to cut down on inline `typer.echo()` clutter.
 
-## [0.1.1] — July 2024
+## [0.1.1] — 2024-07-19
 
 - **Multi-scene selection.** `search` could previously only download one scene per run; you can now select several with a comma-separated list (`1,2,3`) instead of downloading them one search at a time.
 - Replaced manual download plumbing with `wget` as a dependency.
 - Added debug logging for the expired-session scenario during download.
 - Set up GitHub Actions workflows for publishing to PyPI (via TestPyPI first).
 
-## [0.1] — July 2024
+## [0.1] — 2024-07-16
 
 First public release. Search Bhoonidhi's archive by bounding box and date range, authenticate, and download a single scene at a time. Started as a `rye`-managed project; the cart/order-viewing command (`show-cart`) that existed during early development was removed before this release since it was never fully wired up.
 
