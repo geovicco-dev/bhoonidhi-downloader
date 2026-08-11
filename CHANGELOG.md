@@ -4,7 +4,7 @@ All notable changes to this project are documented here.
 
 ## [0.2.1] — 2026-08-12
 
-Replaces the age-based cold-storage guess from 0.2.0 with a real availability signal, and makes downloads talk about scenes the same way search results do.
+Replaces the generic age-based scene availability guess from 0.2.0 with a real availability indicator. Search (bhd query create) and downloads (bhd query download) are aware of which Open scenes are available for direct download and which ones are in archive.
 
 ### Added
 
