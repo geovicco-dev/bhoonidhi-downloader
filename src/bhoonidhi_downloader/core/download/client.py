@@ -22,8 +22,8 @@ from typing import Any
 
 import requests
 
-from ..search.availability import Availability, availability_of
-from .utils import build_download_url, download_filename, is_downloadable
+from ..search.availability import Availability, availability_of, is_downloadable
+from .utils import build_download_url, download_filename
 
 CHUNK_SIZE = 1024 * 1024  # 1 MiB
 MAX_RETRIES = 3
