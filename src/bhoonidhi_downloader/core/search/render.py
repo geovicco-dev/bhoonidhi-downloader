@@ -2,71 +2,55 @@
 
 import csv
 import json
-from datetime import datetime, timedelta
 from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
 from tabulate import tabulate
 
+from .availability import (
+    AVAILABILITY_DISPLAY,
+    AVAILABILITY_LABEL,
+    AVAILABILITY_LABEL_STYLE,
+    Availability,
+    availability_label,
+    availability_of,
+)
 from .utils import create_clickable_link, get_quicklook_url, get_scene_meta_url
-
-COLD_STORAGE_THRESHOLD_DAYS = 365
-BHOONIDHI_BROWSE_ORDER_URL = "https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#"
-
-
-def _is_likely_cold_storage(scene: dict) -> bool:
-    """Heuristic: scenes older than ~1 year often age out of hot storage.
-
-    Direct downloads for such scenes commonly 404 and need to be requested
-    via the Bhoonidhi Browse & Order Portal cart first. This is a
-    date-based heuristic, not a portal-confirmed status.
-    """
-    dop = scene.get("DOP")
-    if not dop:
-        return False
-    try:
-        acquired = datetime.strptime(dop, "%d-%b-%Y")
-    except ValueError:
-        return False
-    return (datetime.now() - acquired) > timedelta(days=COLD_STORAGE_THRESHOLD_DAYS)
 
 
 def render_search_results(console: Console, scenes: list) -> None:
-    """Render search results table."""
-    table = Table(title="Available Scenes")
-    table.add_column("Index", style="blue")
-    table.add_column("Scene ID", style="red", overflow="fold")
-    table.add_column("Date", style="blue")
-    table.add_column("Satellite", style="red")
-    table.add_column("Sensor", style="blue")
-    table.add_column("Product", style="red", overflow="fold")
-    table.add_column("Access", style="blue", overflow="fold")
-    table.add_column("Metadata", style="red")
-    table.add_column("Quick View", style="blue")
+    """Render the search results table.
 
-    any_old = False
+    The Availability column shows ``Ready``, ``Archived``, ``OnOrder`` or
+    ``Priced``, with a legend below giving each one's meaning and the
+    action it needs.
+    """
+    table = Table(title="Available Scenes", title_style="bold")
+    table.add_column("Index", style="dim", justify="center")
+    table.add_column("Scene ID", style="cyan", overflow="fold", justify="left")
+    table.add_column("Date", style="blue", justify="center")
+    # No column style: availability_label() styles each cell by its state.
+    table.add_column("Availability", overflow="fold", justify="center")
+    table.add_column("Satellite", style="red", justify="center")
+    table.add_column("Sensor", style="blue", justify="center")
+    table.add_column("Product", style="red", overflow="fold", justify="center")
+    table.add_column("Metadata", style="blue", justify="center")
+    table.add_column("Quick View", style="blue", justify="center")
+
     any_downloaded = False
     for idx, scene in enumerate(scenes):
-        is_old = _is_likely_cold_storage(scene)
-        any_old = any_old or is_old
-        date_cell = (
-            f"{scene.get('DOP', 'N/A')} ⚠" if is_old else scene.get("DOP", "N/A")
-        )
-
-        access = scene.get("PRICED", "N/A")
         if scene.get("_bhx_download"):
             any_downloaded = True
-            access = f"[green]✓ Downloaded[/] ({access})"
 
         table.add_row(
             str(idx + 1),
             scene.get("ID", "N/A"),
-            date_cell,
+            scene.get("DOP", "N/A"),
+            availability_label(scene),
             scene.get("SATELLITE", "N/A"),
             scene.get("SENSOR", "N/A"),
             f"{scene.get('SELECTION', 'N/A')} ({scene.get('PRODTYPE', 'N/A')})",
-            access,
             create_clickable_link(get_scene_meta_url(scene), "View Metadata"),
             create_clickable_link(get_quicklook_url(scene), "Quick View"),
         )
@@ -80,23 +64,30 @@ def render_search_results(console: Console, scenes: list) -> None:
             "unless --force is passed.[/]"
         )
 
-    if any_old:
-        portal_link = create_clickable_link(
-            BHOONIDHI_BROWSE_ORDER_URL, "Bhoonidhi Browse & Order Portal"
-        )
-        console.print(
-            f"\n⚠  [yellow]Scenes older than {COLD_STORAGE_THRESHOLD_DAYS} days are flagged here "
-            "because Bhoonidhi's archiving policy isn't publicly documented, but scenes this old "
-            f"typically aren't served directly and downloads may fail with a 404 error.[/] "
-            f"Request those on the {portal_link} — this CLI only fetches "
-            "OpenData_DirectDownload scenes, not archived ones.",
-            style="dim",
-        )
+    _render_availability_legend(console, {availability_of(s) for s in scenes})
 
-    console.print("\nTo open table links from terminal:", style="yellow")
     console.print(
-        "Click while holding Cmd (on Mac) or Ctrl (on Windows/Linux)\n", style="dim"
+        "\n  [yellow]Cmd-click[/] [dim](macOS)[/] or [yellow]Ctrl-click[/] "
+        "[dim](Windows/Linux)[/] [dim]to open table links.[/]\n"
     )
+
+
+def _render_availability_legend(console: Console, states: set[Availability]) -> None:
+    """Print a key for the Availability states present in the results."""
+    if not states:
+        return
+
+    console.print()
+    for state in Availability:
+        if state not in states:
+            continue
+        meaning, action = AVAILABILITY_DISPLAY[state]
+        # Pad before styling: markup would otherwise count toward the width.
+        label = f"{AVAILABILITY_LABEL[state]:<10}"
+        console.print(
+            f"  [{AVAILABILITY_LABEL_STYLE[state]}]{label}[/]"
+            f"[dim]{meaning:<24}[/][cyan]{action}[/]"
+        )
 
 
 def get_scenes_data_for_export(scenes: list) -> dict:
