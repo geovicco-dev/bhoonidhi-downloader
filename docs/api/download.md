@@ -12,9 +12,9 @@ Bhoonidhi's data endpoint does not honor HTTP Range requests, so an interrupted 
 
 ::: bhoonidhi_downloader.core.download.client.sha256_of_file
 
-## Eligibility & URL helpers
+## URL helpers
 
-::: bhoonidhi_downloader.core.download.utils.is_downloadable
+`is_downloadable` lives in [`core.search.availability`](search.md#bhoonidhi_downloader.core.search.availability.is_downloadable) — the same function search uses to classify a scene's availability.
 
 ::: bhoonidhi_downloader.core.download.utils.build_download_url
 
