@@ -23,6 +23,12 @@ _SENSOR_REMAP = {
     ("SEN1B", "SAR"): "SAR",
     ("L8", "O"): "O",
     ("L9", "O"): "O",
+    # Landsat scenes actually report SENSOR="OLI", not "O" — the entries
+    # above never matched, so requests went to /data/L9/OLI/ and 404'd.
+    ("L8", "OLI"): "O",
+    ("L9", "OLI"): "O",
+    # JPSS1 reports SENSOR="VIR"; the data path expects "V".
+    ("JP1", "VIR"): "V",
 }
 
 
