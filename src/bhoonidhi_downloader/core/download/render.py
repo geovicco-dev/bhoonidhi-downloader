@@ -22,8 +22,9 @@ from .client import DownloadOutcome
 STATUS_STYLE = {
     "downloaded": "bold green",
     "already_downloaded": "cyan",
-    "skipped_priced": "yellow",
-    "cold_storage": "bold magenta",
+    "archived": "dim cyan",
+    "skipped_on_order": "yellow",
+    "skipped_priced": "magenta",
     "failed": "bold red",
 }
 
@@ -77,8 +78,8 @@ def render_download_report(console: Console, outcomes: list[DownloadOutcome]) ->
         )
         if o.status == "failed":
             detail = f"[bold red]{o.error}[/]"
-        elif o.status == "cold_storage":
-            detail = f"[magenta]{o.error}[/]"
+        elif o.status == "archived":
+            detail = f"[cyan]{o.error}[/]"
         elif o.sha256:
             detail = f"{o.sha256[:16]}…"
         else:
@@ -107,13 +108,12 @@ def render_download_report(console: Console, outcomes: list[DownloadOutcome]) ->
             "byte 0 after a prior interruption (e.g. Ctrl+C, dropped connection).\n"
         )
 
-    if counts.get("cold_storage"):
+    if counts.get("archived"):
         portal_link = create_clickable_link(
             BHOONIDHI_BROWSE_ORDER_URL, "Bhoonidhi Browse & Order Portal"
         )
         console.print(
-            "[magenta]Note:[/] scenes marked 'cold_storage' returned HTTP 404. Bhoonidhi's "
-            "archiving policy isn't publicly documented, but scenes this old typically aren't "
-            f"served directly. Request them on the {portal_link} — this CLI only fetches "
-            "OpenData_DirectDownload scenes and has no cart/order support yet (metadata only).\n"
+            "[cyan]Note:[/] scenes marked 'archived' returned HTTP 404 — the portal "
+            f"has not staged them for direct download. Request them on the {portal_link} "
+            "to have them made available.\n"
         )
