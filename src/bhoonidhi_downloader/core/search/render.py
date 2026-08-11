@@ -19,7 +19,9 @@ from .availability import (
 from .utils import create_clickable_link, get_quicklook_url, get_scene_meta_url
 
 
-def render_search_results(console: Console, scenes: list, slug: str | None = None) -> None:
+def render_search_results(
+    console: Console, scenes: list, slug: str | None = None
+) -> None:
     """Render the search results table.
 
     The Availability column shows ``Ready``, ``Archived``, ``OnOrder`` or
