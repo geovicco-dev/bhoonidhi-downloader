@@ -117,7 +117,7 @@ def run_query_create(
     )
     save_query(query)
 
-    render_search_results(console, scenes)
+    render_search_results(console, scenes, slug=slug)
     render_query_saved(console, query)
     return query
 
@@ -138,7 +138,7 @@ def run_query_show(console: Console, slug: str) -> bool:
         return False
 
     console.print(f"\n[bold]{query.name}[/]\n{query.description}\n")
-    render_search_results(console, query.scenes)
+    render_search_results(console, query.scenes, slug=slug)
     return True
 
 
