@@ -9,7 +9,7 @@ from .availability import (
     access_of,
     availability_label,
     availability_of,
-    is_attemptable,
+    is_downloadable,
 )
 from .client import SearchManager
 from .render import (
@@ -34,5 +34,5 @@ __all__ = [
     "availability_of",
     "availability_label",
     "access_of",
-    "is_attemptable",
+    "is_downloadable",
 ]
