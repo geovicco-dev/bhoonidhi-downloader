@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.2]
+
+Two bug fixes surfaced while verifying scene availability against the live portal.
+
+### Fixed
+
+- **Landsat-9 and JPSS1 downloads returned 404 even when marked available.** The sensor short-code lookup was keyed on the wrong value — Landsat scenes report `SENSOR="OLI"`, not `"O"`, and JPSS1 (`SENSOR="VIR"`) had no entry at all — so requests fell through to a data path that doesn't exist. Verified live: both missions now resolve to `/data/L9/O/...` and `/data/JP1/V/...` and return 200.
+- **The availability legend showed a literal `<slug>` placeholder** instead of the query's actual slug in the `bhd query download <slug>` hint printed by `query create` and `query show`.
+
 ## [0.2.1]
 
 Replaces the generic age-based scene availability guess from 0.2.0 with a real availability indicator. Search (bhd query create) and downloads (bhd query download) are aware of which Open scenes are available for direct download and which ones are in archive.
