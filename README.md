@@ -11,7 +11,7 @@ A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoo
 - **Search by bounding box** — filter by satellite, sensor, and date range.
 - **Named, persistent queries** — every search is saved under a short slug (`misty-falcon`), so you can come back to it later, refresh it for new scenes, or download from it without re-querying the portal.
 - **Concurrent, verified downloads** — fetches multiple scenes in parallel, verifies each with a SHA256, and skips anything already downloaded.
-- **Cart staging** — for scenes you can't download directly (priced, on-order, or archived), stage them into the Bhoonidhi cart from a saved query and finish the order in the Browse & Order portal.
+- **Cart staging** — stage scenes into the Bhoonidhi cart from a saved query — priced, on-order, open-but-archived, or direct-download — and finish the order in the Browse & Order portal.
 - **Browse the archive** — list every satellite/sensor Bhoonidhi currently supports, live from the portal.
 - **Session management** — login once, refresh your token when it goes stale, no need to keep re-entering credentials.
 - **Scriptable** — every command has a matching Python function, so you can call searches/downloads directly from a script instead of shelling out.
@@ -81,9 +81,9 @@ Every command supports `--help` for its full option list. This is the short vers
 | `bhd query rename <slug>`                             | Update a saved query's name/description.                                                                                                                                                           |
 | `bhd query rm <slug>`                                 | Delete a saved query.                                                                                                                                                                              |
 
-### `cart` — stage scenes you can't download directly
+### `cart` — stage scenes to the Bhoonidhi cart
 
-For scenes `query download` can't fetch — priced, on-order, or open-but-archived — add them to the Bhoonidhi cart from a saved query, then finish the order in the Browse & Order portal. Each scene is routed automatically to the portal's direct-download, on-order, or priced cart based on its access type.
+For scenes that `query download` can't fetch directly — priced, on-order, or open-but-archived — add them to the Bhoonidhi cart from a saved query, then finish the order in the Browse & Order portal. Direct-download scenes can be downloaded with `query download` *or* staged to the cart; every access type routes automatically to the portal's direct-download, on-order, or priced cart based on its access type.
 
 | Command                          | What it does                                                                                                                                                             |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -141,7 +141,7 @@ A couple of Bhoonidhi-specific quirks worth knowing about going in:
 ## Limitations
 
 - Search is bounding-box only — no point-coordinate or shapefile-based search yet.
-- `query download` fetches only `OpenData_DirectDownload` scenes; priced, on-order, and archived scenes aren't fetched directly, though they (and the direct-download scenes) can all be staged with `bhd cart add`.
+- `query download` fetches only `OpenData_DirectDownload` scenes; priced, on-order, and archived scenes aren't fetched directly. Every access type — including direct-download scenes — can also be staged with `bhd cart add`.
 - Cart support stages scenes only. Placing the order — and any payment for priced data — is finished in the Browse & Order portal; there's no order-placement step in the CLI.
 
 ## Development

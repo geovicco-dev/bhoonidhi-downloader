@@ -86,8 +86,8 @@ AVAILABILITY_DISPLAY: dict[Availability, tuple[str, str]] = {
         "bhd query download <slug>",
     ),
     Availability.DIRECT_UNAVAILABLE: (
-        "open data, cold-stored",
-        "download will likely 404 — request it on the Bhoonidhi portal",
+        "open data, not currently staged",
+        "download may 404 — request it on the Bhoonidhi portal",
     ),
     Availability.ON_ORDER: (
         "must be requested",
