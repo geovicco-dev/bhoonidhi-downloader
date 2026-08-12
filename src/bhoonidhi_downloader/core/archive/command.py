@@ -9,7 +9,12 @@ from .client import ArchiveManager
 from .render import render_archive_full, render_archive_satellite
 
 
-def run_archive_list(console: Console, sat: str | None, refresh: bool = False) -> bool:
+def run_archive_list(
+    console: Console,
+    sat: str | None,
+    refresh: bool = False,
+    interactive: bool | None = None,
+) -> bool:
     """Display satellites/sensors from the archive.
 
     Returns True on success, False on failure.
@@ -19,9 +24,9 @@ def run_archive_list(console: Console, sat: str | None, refresh: bool = False) -
         raw_data = am.archive
 
         if sat:
-            render_archive_satellite(console, raw_data, sat)
+            render_archive_satellite(console, raw_data, sat, interactive)
         else:
-            render_archive_full(console, raw_data)
+            render_archive_full(console, raw_data, interactive)
 
         return True
 
@@ -49,11 +54,11 @@ def run_archive_export(
             console.print(
                 f"[green]Exported archive data for satellite '{sat}' to {path}[/]"
             )
-            render_archive_satellite(console, am.archive, sat)
+            render_archive_satellite(console, am.archive, sat, interactive=False)
         else:
             Path(path).write_text(json.dumps(am.parse(), indent=2))
             console.print(f"[green]Exported full archive data to {path}[/]")
-            render_archive_full(console, am.archive)
+            render_archive_full(console, am.archive, interactive=False)
 
         return True
 

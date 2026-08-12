@@ -68,6 +68,7 @@ def run_query_create(
     sensor: str | None = None,
     name: str | None = None,
     description: str | None = None,
+    interactive: bool | None = None,
 ) -> QuerySchema | None:
     """Run a search and save the result as a new named query.
 
@@ -117,18 +118,20 @@ def run_query_create(
     )
     save_query(query)
 
-    render_search_results(console, scenes, slug=slug)
+    render_search_results(console, scenes, slug=slug, interactive=interactive)
     render_query_saved(console, query)
     return query
 
 
-def run_query_list(console: Console) -> None:
+def run_query_list(console: Console, interactive: bool | None = None) -> None:
     """List all saved queries."""
     queries = list_queries()
-    render_query_list(console, queries)
+    render_query_list(console, queries, interactive=interactive)
 
 
-def run_query_show(console: Console, slug: str) -> bool:
+def run_query_show(
+    console: Console, slug: str, interactive: bool | None = None
+) -> bool:
     """Redisplay a saved query's cached scenes. Returns True if found."""
     from bhoonidhi_downloader.core.search.render import render_search_results
 
@@ -138,7 +141,7 @@ def run_query_show(console: Console, slug: str) -> bool:
         return False
 
     console.print(f"\n[bold]{query.name}[/]\n{query.description}\n")
-    render_search_results(console, query.scenes, slug=slug)
+    render_search_results(console, query.scenes, slug=slug, interactive=interactive)
     return True
 
 
@@ -375,6 +378,7 @@ def run_query_download(
     parallel: int = 4,
     force: bool = False,
     password: str | None = None,
+    interactive: bool | None = None,
 ) -> list[DownloadOutcome] | None:
     """Download open-access scenes from a saved query to ``out``.
 
@@ -495,5 +499,5 @@ def run_query_download(
             }
     save_query(query)
 
-    render_download_report(console, outcomes)
+    render_download_report(console, outcomes, interactive=interactive)
     return outcomes
