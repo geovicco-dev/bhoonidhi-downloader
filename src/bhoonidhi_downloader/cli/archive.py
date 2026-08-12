@@ -31,9 +31,14 @@ def list_archive(
         "--refresh",
         help="Re-fetch archive data from the portal.",
     ),
+    plain: bool = typer.Option(
+        False, "--plain", help="Print the whole table at once instead of scrolling"
+    ),
 ) -> None:
     """List satellites and sensors from the archive."""
-    success = run_archive_list(console, sat, refresh)
+    success = run_archive_list(
+        console, sat, refresh, interactive=False if plain else None
+    )
     if not success:
         raise typer.Exit(code=1)
 

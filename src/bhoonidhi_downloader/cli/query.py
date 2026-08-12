@@ -46,6 +46,9 @@ def create(
     description: str = typer.Option(
         None, "--desc", help="Override the auto-generated description"
     ),
+    plain: bool = typer.Option(
+        False, "--plain", help="Print the whole table at once instead of scrolling"
+    ),
 ) -> None:
     """Search for scenes and save the results as a new named query."""
     result = run_query_create(
@@ -60,21 +63,31 @@ def create(
         sensor=sensor,
         name=name,
         description=description,
+        interactive=False if plain else None,
     )
     if result is None:
         raise typer.Exit(code=1)
 
 
 @query_app.command("list")
-def list_cmd() -> None:
+def list_cmd(
+    plain: bool = typer.Option(
+        False, "--plain", help="Print the whole table at once instead of scrolling"
+    ),
+) -> None:
     """List all saved queries."""
-    run_query_list(console)
+    run_query_list(console, interactive=False if plain else None)
 
 
 @query_app.command("show")
-def show(slug: str = typer.Argument(..., help="Query slug")) -> None:
+def show(
+    slug: str = typer.Argument(..., help="Query slug"),
+    plain: bool = typer.Option(
+        False, "--plain", help="Print the whole table at once instead of scrolling"
+    ),
+) -> None:
     """Show a saved query's scenes."""
-    if not run_query_show(console, slug):
+    if not run_query_show(console, slug, interactive=False if plain else None):
         raise typer.Exit(code=1)
 
 
@@ -139,6 +152,9 @@ def download(
         help="Password to re-authenticate with if the session has expired "
         "(non-interactive use only; omit to be prompted instead).",
     ),
+    plain: bool = typer.Option(
+        False, "--plain", help="Print the whole table at once instead of scrolling"
+    ),
 ) -> None:
     """Download scenes from a saved query.
 
@@ -146,7 +162,16 @@ def download(
     Re-authenticates automatically if the session has expired.
     """
     if (
-        run_query_download(console, slug, out, select, parallel, force, password)
+        run_query_download(
+            console,
+            slug,
+            out,
+            select,
+            parallel,
+            force,
+            password,
+            interactive=False if plain else None,
+        )
         is None
     ):
         raise typer.Exit(code=1)
