@@ -66,11 +66,11 @@ $ bhd query download misty-falcon --out ./downloads --select 1,3,5
 
 ```console
 $ bhd cart add misty-falcon --select 2,4      # stage specific scenes
-$ bhd cart list                                # see the direct-download cart
+$ bhd cart list                                # see everything staged
 $ bhd cart rm --select 1                        # remove a staged row by its number
 ```
 
-Each scene is routed automatically to the portal's direct-download, on-order, or priced cart based on its access type — a query mixing all three works in one command. `cart list` with no options shows today's direct-download cart; because the portal files items by the date they were added, use `--last "1 week"` (or `--since`/`--until`) to see scenes staged on earlier days. To see the priced or on-order cart, pass the search ID printed when you added the scenes: `bhd cart list --srt <search-id> --kind priced`.
+Each scene is routed automatically to the portal's direct-download, on-order, or priced cart based on its access type — a query mixing all three works in one command. `bhd cart list` merges all three carts into one table: each row shows which cart it's in and whether it's ready or archived, its satellite and sensor, the date it was added, and whether the order has been placed, alongside Metadata and Quick View links. Because the portal files items by the date they were added, `cart list` with no options shows today only; use `--last "1 week"` (or `--since`/`--until`) to see scenes staged on earlier days, and `--kind direct|order|priced` to limit the view to one cart.
 
 ## Calling it from a script
 
@@ -106,7 +106,7 @@ query = run_query_create(
 run_query_download(console, slug=query.slug, out="./downloads")
 ```
 
-Command handlers live under `core/<domain>/command.py` (`auth`, `archive`, `search`, `query`, `download`) — each one takes a `rich.console.Console` (get one via `bhoonidhi_downloader.logger.get_console()`) and returns plain data (a `QuerySchema`, a list of scenes, a bool) rather than printing-and-exiting like a CLI would. The `render.py` modules alongside them turn that data into the tables you see on screen — skip them entirely and just work with the returned objects if you're scripting.
+Command handlers live under `core/<domain>/command.py` (`auth`, `archive`, `search`, `query`, `download`, `cart`) — each one takes a `rich.console.Console` (get one via `bhoonidhi_downloader.logger.get_console()`) and returns plain data (a `QuerySchema`, a list of scenes, a bool) rather than printing-and-exiting like a CLI would. The `render.py` modules alongside them turn that data into the tables you see on screen — skip them entirely and just work with the returned objects if you're scripting.
 
 See the [API Reference](api/index.md) for the full set of classes and functions this exposes.
 
