@@ -242,3 +242,30 @@ def create_clickable_link(url: str, text: str) -> str:
     from rich.markup import escape
 
     return f"[link={url}]{escape(text)}[/link]"
+
+
+def full_satellite(scene: dict) -> str:
+    """The satellite's full name, e.g. 'ResourceSat-2A' not 'R2A'.
+
+    Search and cart records carry ``SELECTION`` (like
+    ``ResourceSat-2A_AWIFS_BOA-Archives``) alongside the short ``SATELLITE``
+    code. The full name is the first underscore-separated part; falls back
+    to the short code when ``SELECTION`` is missing.
+    """
+    selection = scene.get("SELECTION") or ""
+    if selection:
+        return selection.split("_")[0]
+    return scene.get("SATELLITE", "N/A")
+
+
+def full_sensor(scene: dict) -> str:
+    """The sensor's full name, e.g. 'AWIFS' not 'AWIF'.
+
+    The second part of ``SELECTION``; falls back to the short ``SENSOR``
+    code when ``SELECTION`` is absent.
+    """
+    selection = scene.get("SELECTION") or ""
+    parts = selection.split("_")
+    if len(parts) >= 2 and parts[1]:
+        return parts[1]
+    return scene.get("SENSOR", "N/A")

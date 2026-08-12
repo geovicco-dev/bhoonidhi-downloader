@@ -15,6 +15,7 @@ nav:
       - Search: api/search.md
       - Query: api/query.md
       - Download: api/download.md
+      - Cart: api/cart.md
       - Schemas: api/schemas.md
   - Changelog: CHANGELOG.md
 

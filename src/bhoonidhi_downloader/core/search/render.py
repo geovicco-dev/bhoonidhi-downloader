@@ -21,7 +21,13 @@ from .availability import (
     availability_label,
     availability_of,
 )
-from .utils import create_clickable_link, get_quicklook_url, get_scene_meta_url
+from .utils import (
+    create_clickable_link,
+    full_satellite,
+    full_sensor,
+    get_quicklook_url,
+    get_scene_meta_url,
+)
 
 
 def search_columns() -> list[Column]:
@@ -37,9 +43,9 @@ def search_columns() -> list[Column]:
             justify="center",
         ),
         Column(
-            "Satellite", lambda s, _i: s.get("SATELLITE", "N/A"), style="red", width=11
+            "Satellite", lambda s, _i: full_satellite(s), style="red", width=16
         ),
-        Column("Sensor", lambda s, _i: s.get("SENSOR", "N/A"), style="blue", width=9),
+        Column("Sensor", lambda s, _i: full_sensor(s), style="blue", width=12),
         Column(
             "Product",
             lambda s, _i: f"{s.get('SELECTION', 'N/A')} ({s.get('PRODTYPE', 'N/A')})",
@@ -66,6 +72,7 @@ def render_search_results(
     scenes: list,
     slug: str | None = None,
     interactive: bool | None = None,
+    header_srt: bool = False,
 ) -> None:
     """Show search results in a scrollable table.
 
@@ -74,17 +81,26 @@ def render_search_results(
     and what to do about it; if ``slug`` is given, it points at that
     specific saved query instead of a generic placeholder. The legend
     stays visible while scrolling as a static element.
+
+    ``header_srt`` shows the search id in the table header — used by
+    ``query create``, where every scene comes from the one fresh search.
     """
     if not scenes:
         console.print("[yellow]No scenes found.[/]")
         return
+
+    title = "Available Scenes"
+    if header_srt:
+        srts = {s.get("srt") for s in scenes if s.get("srt")}
+        if len(srts) == 1:
+            title = f"Available Scenes  ·  Search ID: {srts.pop()}"
 
     footer = _search_footer(scenes, slug)
     show_table(
         console,
         scenes,
         search_columns(),
-        "Available Scenes",
+        title,
         interactive,
         footer=footer,
     )

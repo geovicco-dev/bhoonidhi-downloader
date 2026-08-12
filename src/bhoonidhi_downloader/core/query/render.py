@@ -25,6 +25,16 @@ def _query_list_columns() -> list[Column]:
             f"{q.end_date.strftime('%Y-%m-%d')}"
         )
 
+    def _search_ids(q: QuerySchema, _i: int) -> str:
+        # A query refreshed one or more times holds scenes from several
+        # searches, each with its own search id; list every distinct one.
+        seen: list[str] = []
+        for scene in q.scenes:
+            srt = scene.get("srt")
+            if srt and srt not in seen:
+                seen.append(srt)
+        return "\n".join(seen) if seen else "N/A"
+
     return [
         Column("Slug", lambda q, _i: q.slug, style="cyan", width=20),
         Column("Name", lambda q, _i: q.name, style="white", width=30),
@@ -37,6 +47,7 @@ def _query_list_columns() -> list[Column]:
             width=8,
             justify="right",
         ),
+        Column("Search IDs", _search_ids, style="dim", width=20),
         Column(
             "Created",
             lambda q, _i: q.created_at.strftime("%Y-%m-%d %H:%M"),

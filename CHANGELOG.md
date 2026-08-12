@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.0]
+
+Scenes that `bhd query download` can't fetch — open-but-archived, on-order, and priced — can now be staged from the terminal. Add them to the Bhoonidhi cart straight from a saved query and finish the order in the Browse & Order portal, so you skip re-searching for the same scenes by hand.
+
+### Added
+
+- **`bhd cart add <slug>`** stages scenes from a saved query into the portal's cart. Use `--select` with the 1-based numbers or scene IDs from `query show` to pick specific scenes (`--select 1,3,7`), or omit it to add the whole query. The portal keeps three separate carts — direct download, on-order, and priced — and each scene is routed to the right one automatically based on its access type, so a query mixing all three just works in one command. A progress bar tracks the run and a results table lists what was added, what each scene's cart is, and the reason for anything that didn't add.
+- **`bhd cart list`** shows everything staged — the portal's three carts (direct download, on-order, and priced) merged into one table. Each row shows which cart it's in and, for direct-download scenes, whether they're ready or still archived; the satellite and sensor names; the date it was added; and whether the order has been placed (from the item's `STATUS`), alongside Metadata and Quick View links. Because items are filed by the date they were added, `--since`/`--until` (YYYY-MM-DD) take an explicit span and `--last` takes a preset like `10 days`, `2 weeks`, or `1 month`; with nothing set it shows today, so scenes staged earlier need a wider window. `--kind direct|order|priced` limits the view to one cart. Rows are numbered for `cart rm` and open in the same scrollable viewer as search results (`--plain` to dump everything at once).
+- **`bhd cart rm`** removes scenes — by cart row number (`cart rm --select 1,2`) or by a saved query's scenes (`cart rm <slug> --select 1`).
+
+### Changed
+
+- Search-result tables (`query create`, `query show`) and the cart table now show full satellite and sensor names — `ResourceSat-2A` / `AWIFS` instead of the short `R2A` / `AWIF` codes.
+- `bhd query list` now has a Search IDs column listing every search a saved query holds — a query refreshed one or more times gathers scenes from several searches, and each search's ID is shown. `bhd query create` shows the single search's ID in its results-table header.
+- The project now has a test suite (pytest), covering the cart's scene-identifier derivation and request-routing rules — the parts that fail silently against the live portal if they drift.
+
 ## [0.2.3]
 
 Every table you'd previously have to scroll past all at once — search

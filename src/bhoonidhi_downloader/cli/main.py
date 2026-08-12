@@ -7,6 +7,7 @@ import typer
 
 from bhoonidhi_downloader.cli.archive import archive_app
 from bhoonidhi_downloader.cli.auth import auth_app
+from bhoonidhi_downloader.cli.cart import cart_app
 from bhoonidhi_downloader.cli.query import query_app
 
 
@@ -14,7 +15,7 @@ def _get_version() -> str:
     try:
         return importlib.metadata.version("bhoonidhi-downloader")
     except importlib.metadata.PackageNotFoundError:
-        return "0.2.0rc1 (development)"
+        return "unknown (not installed)"
 
 
 def _main_callback(ctx: typer.Context) -> None:
@@ -38,6 +39,7 @@ app = typer.Typer(
 app.add_typer(auth_app, name="auth")
 app.add_typer(archive_app, name="archive")
 app.add_typer(query_app, name="query")
+app.add_typer(cart_app, name="cart")
 
 
 @app.command()
