@@ -129,20 +129,19 @@ Command handlers live under `core/<domain>/command.py` (`auth`, `archive`, `sear
 
 ## What's actually downloadable
 
-Bhoonidhi's archive covers far more than what this tool can fetch directly. Every scene is searchable and shows up in results — but only scenes marked `OpenData_DirectDownload` (typically the more recent ones) can actually be pulled by `query download`. Anything priced, on-order, or open-but-archived can't be downloaded directly, but you can stage it with `bhd cart add` and finish the order in the Browse & Order portal.
+Every scene is searchable and shows up in results. Scenes marked `OpenData_DirectDownload` can be pulled straight to disk with `query download`. The other access types — priced, on-order, and open-but-archived — can't be fetched directly by the CLI, but all of them, including the direct-download ones, can be staged with `bhd cart add` and finished in the Browse & Order portal. So the cart is a single collection path for every scene regardless of access type; `query download` is just the shortcut for the subset that's immediately fetchable.
 
 The satellite/sensor list itself isn't hardcoded anywhere in this tool — `bhd archive list` fetches it live from the portal every time, so it's always current. Run it to see exactly what's searchable today rather than relying on a list here that would just go stale.
 
 A couple of Bhoonidhi-specific quirks worth knowing about going in:
 
 - **No resumable downloads.** The portal doesn't honor HTTP Range requests, so an interrupted download restarts from byte 0 rather than picking up where it left off. `query download` reports this explicitly (`↺ restarted from scratch`) when it happens.
-- **Cold storage.** Scenes older than roughly a year often fail with a 404 error on direct download — Bhoonidhi's archiving policy isn't publicly documented, but this age threshold is a consistent pattern. The download report flags these as `cold_storage` rather than a generic failure. `query download` can only fetch `OpenData_DirectDownload` scenes; a 404'd scene can't be retrieved that way. Instead, stage it with `bhd cart add` and complete the request on the [Bhoonidhi Browse & Order Portal](https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#).
 - **Already have it somewhere else?** `query download` checks if a scene's already downloaded and SHA-verified in a different folder before re-fetching it — if it finds one, it'll tell you and ask before wasting bandwidth. `--force` skips the check and downloads anyway.
 
 ## Limitations
 
 - Search is bounding-box only — no point-coordinate or shapefile-based search yet.
-- `query download` only fetches `OpenData_DirectDownload` scenes; priced, on-order, and archived scenes show up in search results but are skipped on download (see above).
+- `query download` fetches only `OpenData_DirectDownload` scenes; priced, on-order, and archived scenes aren't fetched directly, though they (and the direct-download scenes) can all be staged with `bhd cart add`.
 - Cart support stages scenes only. Placing the order — and any payment for priced data — is finished in the Browse & Order portal; there's no order-placement step in the CLI.
 
 ## Development
