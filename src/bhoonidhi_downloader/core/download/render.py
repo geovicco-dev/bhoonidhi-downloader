@@ -12,9 +12,9 @@ from rich.progress import (
     TimeRemainingColumn,
     TransferSpeedColumn,
 )
-from rich.table import Table
 
 from bhoonidhi_downloader.logger import CUSTOM_THEME
+from bhoonidhi_downloader.viewer import Column, show_table
 
 from ..search.utils import create_clickable_link
 from .client import DownloadOutcome
@@ -57,25 +57,13 @@ def make_progress() -> Progress:
     )
 
 
-def render_download_report(console: Console, outcomes: list[DownloadOutcome]) -> None:
-    """Render a per-scene table + status summary for a completed download batch."""
-    table = Table(title="Download Report")
-    table.add_column("Scene ID", style="white", overflow="fold")
-    table.add_column("Status")
-    table.add_column("Size", justify="right")
-    table.add_column("SHA256 / Error", style="dim", overflow="fold")
-    table.add_column("Path", style="dim", overflow="fold")
+def _report_columns() -> list[Column]:
+    def _size(o: DownloadOutcome, _i: int) -> str:
+        if not o.bytes_downloaded:
+            return "-"
+        return f"{o.bytes_downloaded / (1024 * 1024):.1f} MB"
 
-    counts: dict[str, int] = {}
-    any_restarted = False
-    for o in outcomes:
-        counts[o.status] = counts.get(o.status, 0) + 1
-        style = STATUS_STYLE.get(o.status, "white")
-        size = (
-            f"{o.bytes_downloaded / (1024 * 1024):.1f} MB"
-            if o.bytes_downloaded
-            else "-"
-        )
+    def _detail(o: DownloadOutcome, _i: int) -> str:
         if o.status == "failed":
             detail = f"[bold red]{o.error}[/]"
         elif o.status == "archived":
@@ -85,18 +73,37 @@ def render_download_report(console: Console, outcomes: list[DownloadOutcome]) ->
         else:
             detail = "-"
         if o.restarted_bytes:
-            any_restarted = True
             restarted_mb = o.restarted_bytes / (1024 * 1024)
-            detail = f"{detail}\n[yellow]↺ restarted from scratch ({restarted_mb:.0f} MB lost)[/]"
-        table.add_row(
-            o.scene_id,
-            f"[{style}]{o.status}[/]",
-            size,
-            detail,
-            o.path or "-",
-        )
+            detail = f"{detail} [yellow]↺ restarted ({restarted_mb:.0f} MB lost)[/]"
+        return detail
 
-    console.print(table)
+    def _status(o: DownloadOutcome, _i: int) -> str:
+        style = STATUS_STYLE.get(o.status, "white")
+        return f"[{style}]{o.status}[/]"
+
+    return [
+        Column("Scene ID", lambda o, _i: o.scene_id, style="white", width=46),
+        Column("Status", _status, width=20),
+        Column("Size", _size, width=10, justify="right"),
+        Column("SHA256 / Error", _detail, style="dim", width=40),
+        Column("Path", lambda o, _i: o.path or "-", style="dim", width=50),
+    ]
+
+
+def render_download_report(
+    console: Console,
+    outcomes: list[DownloadOutcome],
+    interactive: bool | None = None,
+) -> None:
+    """Render a scrollable per-scene table + status summary for a completed download batch."""
+    show_table(console, outcomes, _report_columns(), "Download Report", interactive)
+
+    counts: dict[str, int] = {}
+    any_restarted = False
+    for o in outcomes:
+        counts[o.status] = counts.get(o.status, 0) + 1
+        if o.restarted_bytes:
+            any_restarted = True
 
     summary = ", ".join(f"{v} {k}" for k, v in counts.items())
     console.print(f"\n[bold]Summary:[/] {summary}\n")
