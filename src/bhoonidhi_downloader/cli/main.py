@@ -14,7 +14,7 @@ def _get_version() -> str:
     try:
         return importlib.metadata.version("bhoonidhi-downloader")
     except importlib.metadata.PackageNotFoundError:
-        return "0.2.0rc1 (development)"
+        return "unknown (not installed)"
 
 
 def _main_callback(ctx: typer.Context) -> None:
