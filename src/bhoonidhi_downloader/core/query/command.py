@@ -248,7 +248,7 @@ def run_query_refresh(console: Console, slug: str) -> QuerySchema | None:
     return query
 
 
-def _resolve_scene_selection(
+def resolve_scene_selection(
     scenes: list[dict[str, Any]], select: list[str] | None
 ) -> list[dict[str, Any]]:
     """Resolve a --select list (1-based indices and/or scene IDs) to scenes.
@@ -282,7 +282,7 @@ def _resolve_scene_selection(
     return resolved
 
 
-def _ensure_downloadable_session(console: Console, password: str | None) -> str | None:
+def ensure_session(console: Console, password: str | None) -> str | None:
     """Get a working JWT for download, re-authenticating if the stored one is stale.
 
     The password is never persisted — it only lives in memory for the
@@ -390,7 +390,7 @@ def run_query_download(
     a leftover partial file is discarded and the scene is re-fetched from
     scratch. If the stored session has expired, this re-authenticates
     automatically (prompting interactively on a CLI, or using ``password``
-    if given — see ``_ensure_downloadable_session``). Returns the list of
+    if given — see ``ensure_session``). Returns the list of
     per-scene DownloadOutcome, or None if the query, scene selection, or
     authentication couldn't be resolved.
     """
@@ -403,12 +403,12 @@ def run_query_download(
         console.print(f"[yellow]'{slug}' has no scenes to download.[/]")
         return None
 
-    scenes = _resolve_scene_selection(query.scenes, select)
+    scenes = resolve_scene_selection(query.scenes, select)
     if not scenes:
         console.print("[yellow]No scenes matched the given --select values.[/]")
         return None
 
-    jwt = _ensure_downloadable_session(console, password)
+    jwt = ensure_session(console, password)
     if not jwt:
         return None
 
