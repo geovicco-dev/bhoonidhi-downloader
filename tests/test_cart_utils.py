@@ -1,8 +1,7 @@
 """Tests for the portal's cart-routing and request-encoding rules.
 
-These lock in behaviour that was reverse-engineered from the live portal
-(see docs/portal-api.md). They are pure-function tests — nothing here
-touches the network.
+These lock in behaviour observed from the live portal. They are
+pure-function tests — nothing here touches the network.
 """
 
 import json
@@ -152,7 +151,7 @@ def test_priced_add_payload_uses_the_derived_sat_spec():
     """selSats is the derived SAT_SPEC, matching what the portal sends.
 
     Search results carry SELECTION, not SAT_SPEC; the portal computes the
-    latter client-side before adding, so we do too.
+    latter client-side before adding, and this payload matches.
     """
     _, payload = build_add_payload(PRICED_SCENE, "ONL_user")
     assert payload["selSats"] == "C03_PAN_SP"

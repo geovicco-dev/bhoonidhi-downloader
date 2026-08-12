@@ -3,7 +3,7 @@
 The R2A/AWiFS expectations are ground truth: they are the SAT_SPEC and
 SCENE_SPEC values the portal itself wrote onto a cart record when the same
 scene was added through the web UI. If this port drifts, the portal's cart
-table silently drops our rows — the failure is invisible server-side, so
+table silently drops the row — the failure is invisible server-side, so
 these assertions are the guard.
 """
 

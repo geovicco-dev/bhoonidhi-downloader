@@ -60,6 +60,18 @@ To grab specific scenes instead of the whole query, use `--select` with the 1-ba
 $ bhd query download misty-falcon --out ./downloads --select 1,3,5
 ```
 
+### 6. Stage what you can't download directly
+
+`query download` only fetches scenes marked `Ready`. For everything else — open scenes that aren't staged, on-order, or priced — add them to the Bhoonidhi cart and finish the order in the Browse & Order portal:
+
+```console
+$ bhd cart add misty-falcon --select 2,4      # stage specific scenes
+$ bhd cart list                                # see the direct-download cart
+$ bhd cart rm --select 1                        # remove a staged row by its number
+```
+
+Each scene is routed automatically to the portal's direct-download, on-order, or priced cart based on its access type — a query mixing all three works in one command. `cart list` with no options shows today's direct-download cart; because the portal files items by the date they were added, use `--last "1 week"` (or `--since`/`--until`) to see scenes staged on earlier days. To see the priced or on-order cart, pass the search ID printed when you added the scenes: `bhd cart list --srt <search-id> --kind priced`.
+
 ## Calling it from a script
 
 Every CLI command is a thin wrapper around a plain Python function — nothing about the underlying logic depends on being invoked from a terminal. If you're scripting a bulk ingestion pipeline or wiring this into a notebook, call into `bhoonidhi_downloader.core` directly instead of shelling out:

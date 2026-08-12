@@ -28,13 +28,10 @@ def cart_progress(description: str) -> Progress:
     """A spinner + bar + N-of-M counter for stepping through cart scenes.
 
     Counts scenes done, not bytes — cart add/remove is one quick request
-    per scene, so what the user wants is "12 of 40", not a transfer rate.
+    per scene, so the useful signal is "12 of 40", not a transfer rate.
 
-    Like the download progress, this uses a fresh auto-sized console
-    rather than the app's shared width=300 one: Rich redraws a live
-    display in place by moving the cursor up by however many rows it
-    thinks it drew, and a wrong width breaks that into a wall of repeated
-    frames.
+    Uses a fresh auto-sized console rather than the app's shared width=300
+    one, so the live display redraws in place instead of repeating frames.
     """
     progress_console = Console(theme=CUSTOM_THEME, force_terminal=True)
     return Progress(
@@ -116,8 +113,8 @@ def cart_columns(srt_to_slug: dict[str, str]) -> list[Column]:
         if status == "CLOSED":
             return "[green]confirmed[/]"
         if status == "ADDED":
-            # The asterisk flags that "staged" is our reading of STATUS=ADDED,
-            # not the portal saying the order is placed — see the legend.
+            # The asterisk marks "staged" as a reading of STATUS=ADDED, not
+            # the portal confirming the order is placed — see the legend.
             return "[yellow]staged[/] *"
         return "[dim]—[/]"
 
@@ -363,8 +360,9 @@ def _short_reason(reason: str) -> str:
     """Shorten a portal error message for the Detail column.
 
     The portal phrases some failures verbosely (e.g. "Product already
-    added to Priced Cart"). Map the ones we've seen to a brief line;
-    anything unrecognised is shown as-is so no information is lost.
+    added to Priced Cart"). Known verbose phrasings are shortened to a
+    brief line; anything unrecognised is shown as-is so no information is
+    lost.
     """
     lowered = reason.lower()
     if "already added" in lowered or "already in" in lowered:

@@ -1,8 +1,7 @@
 """HTTP layer for the portal's three carts.
 
-Request shaping lives in :mod:`.utils` and is unit tested; this module is
-the thin, untested-by-design network wrapper around it. See
-``docs/portal-api.md`` for the observed contract.
+Request shaping lives in :mod:`.utils`; this module is the thin network
+wrapper around it.
 """
 
 import logging

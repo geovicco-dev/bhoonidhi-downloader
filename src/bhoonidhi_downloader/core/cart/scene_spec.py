@@ -16,7 +16,7 @@ row entirely, so the item is invisible in the web UI.
 The derivation is pure string manipulation over fields already present on
 the scene, so it is reproduced here rather than round-tripped through a
 browser. Structure and branch order follow the original closely to keep the
-two diffable; see ``docs/portal-api.md``.
+two diffable.
 """
 
 import logging
@@ -297,6 +297,8 @@ def make_interface_obj(scene: dict) -> dict:
     enriched["SCENE_ID"] = enriched.get("ID")
 
     suffix = {"SMETA": ".jpeg", "PMETA": ".jpg"}.get(_s(enriched.get("TABLETYPE")), "")
-    enriched["IMG_PATH"] = f"{_s(enriched.get('DIRPATH'))}/{_s(enriched.get('FILENAME'))}{suffix}"
+    dirpath = _s(enriched.get("DIRPATH"))
+    filename = _s(enriched.get("FILENAME"))
+    enriched["IMG_PATH"] = f"{dirpath}/{filename}{suffix}"
 
     return enriched

@@ -1,9 +1,8 @@
 """Pure request-shaping rules for the portal's three carts.
 
 Everything here mirrors logic in the portal's own front-end (``odap.js``,
-``LoginVals.js``) and is deliberately side-effect free so it can be unit
-tested without touching the network. See ``docs/portal-api.md`` for how
-these rules were derived and verified.
+``LoginVals.js``) and is side-effect free so it can be unit tested without
+touching the network.
 """
 
 import json
@@ -104,9 +103,9 @@ _MONTHS = (
 def cart_date_short(when: datetime) -> str:
     """Cart date as GETSRT_IDS wants it, e.g. ``10-AUG-2026``.
 
-    The day is deliberately *not* zero-padded — that matches the portal's
-    own ``getDate() + "-" + getMonth(...)`` in odap.js. This is the form
-    the priced/on-order search-id enumeration expects for its date window.
+    The day is *not* zero-padded, matching the portal's own
+    ``getDate() + "-" + getMonth(...)`` in odap.js. This is the form the
+    priced/on-order search-id enumeration expects for its date window.
     """
     return f"{when.day}-{_MONTHS[when.month - 1]}-{when.year}"
 
@@ -159,8 +158,8 @@ def resolve_cart_dates(
     """Work out which cart dates to read, newest first.
 
     The portal files cart items by the date they were added, and only
-    lets you read one date at a time. So to show a span, we read each day
-    in it. The window is chosen like this:
+    lets you read one date at a time. Reading a span therefore means
+    reading each day in it. The window is chosen like this:
 
     - ``last`` (e.g. ``"1 week"``): from that far back up to ``until`` (or
       today);

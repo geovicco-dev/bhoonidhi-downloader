@@ -173,7 +173,9 @@ def _collect_carts(
     merged: list[dict] = []
     seen: set[tuple[str, str]] = set()
 
-    def add(item: dict, kind: CartKind, when: datetime | None, srt: str | None = None) -> None:
+    def add(
+        item: dict, kind: CartKind, when: datetime | None, srt: str | None = None
+    ) -> None:
         # Cart rows name the scene SCENE_ID and the search SRT_ID, but the
         # rest of the code (selection, delete payloads) keys off ID/srt.
         # Normalise here so a listed row can be removed the same way a
