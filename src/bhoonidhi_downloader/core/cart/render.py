@@ -15,6 +15,8 @@ from rich.text import Text
 
 from bhoonidhi_downloader.core.search.utils import (
     create_clickable_link,
+    full_satellite,
+    full_sensor,
     get_quicklook_url,
     get_scene_meta_url,
 )
@@ -148,14 +150,14 @@ def cart_columns(srt_to_slug: dict[str, str]) -> list[Column]:
         ),
         Column(
             "Satellite",
-            lambda r, _i: _full_satellite(r),
+            lambda r, _i: full_satellite(r),
             style="red",
             width=16,
             justify="center",
         ),
         Column(
             "Sensor",
-            lambda r, _i: _full_sensor(r),
+            lambda r, _i: full_sensor(r),
             style="blue",
             width=12,
             justify="center",
@@ -189,33 +191,6 @@ def cart_columns(srt_to_slug: dict[str, str]) -> list[Column]:
             justify="center",
         ),
     ]
-
-
-def _full_satellite(item: dict) -> str:
-    """The satellite's full name, e.g. 'ResourceSat-2A' not 'R2A'.
-
-    Cart and search records carry ``SELECTION`` (like
-    ``ResourceSat-2A_AWIFS_BOA-Archives``) alongside the short ``SATELLITE``
-    code. The full name is the first underscore-separated part; fall back
-    to the short code if ``SELECTION`` is missing.
-    """
-    selection = item.get("SELECTION") or ""
-    if selection:
-        return selection.split("_")[0]
-    return item.get("SATELLITE", "—")
-
-
-def _full_sensor(item: dict) -> str:
-    """The sensor's full name, e.g. 'AWIFS' not 'AWIF'.
-
-    The second part of ``SELECTION``; falls back to the short ``SENSOR``
-    code when ``SELECTION`` is absent.
-    """
-    selection = item.get("SELECTION") or ""
-    parts = selection.split("_")
-    if len(parts) >= 2 and parts[1]:
-        return parts[1]
-    return item.get("SENSOR", "—")
 
 
 def _cart_status(item: dict) -> str:

@@ -14,6 +14,8 @@ Scenes that `bhd query download` can't fetch — open-but-archived, on-order, an
 
 ### Changed
 
+- Search-result tables (`query create`, `query show`) and the cart table now show full satellite and sensor names — `ResourceSat-2A` / `AWIFS` instead of the short `R2A` / `AWIF` codes.
+- `bhd query list` now has a Search IDs column listing every search a saved query holds — a query refreshed one or more times gathers scenes from several searches, and each search's ID is shown. `bhd query create` shows the single search's ID in its results-table header.
 - The project now has a test suite (pytest), covering the cart's scene-identifier derivation and request-routing rules — the parts that fail silently against the live portal if they drift.
 
 ## [0.2.3]

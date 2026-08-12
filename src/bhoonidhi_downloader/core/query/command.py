@@ -118,7 +118,9 @@ def run_query_create(
     )
     save_query(query)
 
-    render_search_results(console, scenes, slug=slug, interactive=interactive)
+    render_search_results(
+        console, scenes, slug=slug, interactive=interactive, header_srt=True
+    )
     render_query_saved(console, query)
     return query
 
