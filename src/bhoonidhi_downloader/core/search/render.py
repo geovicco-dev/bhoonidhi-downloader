@@ -4,9 +4,14 @@ import csv
 import json
 from pathlib import Path
 
-from rich.console import Console
+from rich.align import Align
+from rich.console import Console, ConsoleRenderable, Group
+from rich.rule import Rule
 from rich.table import Table
+from rich.text import Text
 from tabulate import tabulate
+
+from bhoonidhi_downloader.viewer import Column, show_table
 
 from .availability import (
     AVAILABILITY_DISPLAY,
@@ -19,82 +24,129 @@ from .availability import (
 from .utils import create_clickable_link, get_quicklook_url, get_scene_meta_url
 
 
+def search_columns() -> list[Column]:
+    """Every search-result column, in scroll order."""
+    return [
+        Column("#", lambda _s, i: str(i + 1), style="dim", width=5, justify="center"),
+        Column("Scene ID", lambda s, _i: s.get("ID", "N/A"), style="cyan", width=46),
+        Column("Date", lambda s, _i: s.get("DOP", "N/A"), style="blue", width=13),
+        Column(
+            "Availability",
+            lambda s, _i: availability_label(s),
+            width=12,
+            justify="center",
+        ),
+        Column(
+            "Satellite", lambda s, _i: s.get("SATELLITE", "N/A"), style="red", width=11
+        ),
+        Column("Sensor", lambda s, _i: s.get("SENSOR", "N/A"), style="blue", width=9),
+        Column(
+            "Product",
+            lambda s, _i: f"{s.get('SELECTION', 'N/A')} ({s.get('PRODTYPE', 'N/A')})",
+            style="red",
+            width=34,
+        ),
+        Column(
+            "Metadata",
+            lambda s, _i: create_clickable_link(get_scene_meta_url(s), "Metadata"),
+            style="blue",
+            width=12,
+        ),
+        Column(
+            "Quick View",
+            lambda s, _i: create_clickable_link(get_quicklook_url(s), "Quick View"),
+            style="blue",
+            width=12,
+        ),
+    ]
+
+
 def render_search_results(
-    console: Console, scenes: list, slug: str | None = None
+    console: Console,
+    scenes: list,
+    slug: str | None = None,
+    interactive: bool | None = None,
 ) -> None:
-    """Render the search results table.
+    """Show search results in a scrollable table.
 
-    The Availability column shows ``Ready``, ``Archived``, ``OnOrder`` or
-    ``Priced``, with a legend below giving each one's meaning and the
-    action it needs. When ``slug`` is given, the legend's download hint
-    names that query directly instead of the generic ``<slug>`` placeholder.
+    Every row and column can be reached — you scroll to see them. Below
+    the table is a legend explaining what each Availability state means
+    and what to do about it; if ``slug`` is given, it points at that
+    specific saved query instead of a generic placeholder. The legend
+    stays visible while scrolling as a static element.
     """
-    table = Table(title="Available Scenes", title_style="bold")
-    table.add_column("Index", style="dim", justify="center")
-    table.add_column("Scene ID", style="cyan", overflow="fold", justify="left")
-    table.add_column("Date", style="blue", justify="center")
-    # No column style: availability_label() styles each cell by its state.
-    table.add_column("Availability", overflow="fold", justify="center")
-    table.add_column("Satellite", style="red", justify="center")
-    table.add_column("Sensor", style="blue", justify="center")
-    table.add_column("Product", style="red", overflow="fold", justify="center")
-    table.add_column("Metadata", style="blue", justify="center")
-    table.add_column("Quick View", style="blue", justify="center")
+    if not scenes:
+        console.print("[yellow]No scenes found.[/]")
+        return
 
-    any_downloaded = False
-    for idx, scene in enumerate(scenes):
-        if scene.get("_bhx_download"):
-            any_downloaded = True
-
-        table.add_row(
-            str(idx + 1),
-            scene.get("ID", "N/A"),
-            scene.get("DOP", "N/A"),
-            availability_label(scene),
-            scene.get("SATELLITE", "N/A"),
-            scene.get("SENSOR", "N/A"),
-            f"{scene.get('SELECTION', 'N/A')} ({scene.get('PRODTYPE', 'N/A')})",
-            create_clickable_link(get_scene_meta_url(scene), "View Metadata"),
-            create_clickable_link(get_quicklook_url(scene), "Quick View"),
-        )
-
-    console.print(table)
-
-    if any_downloaded:
-        console.print(
-            "\n[green]✓[/] [dim]Already downloaded in a previous "
-            "'query download' run — re-downloading will skip-fast "
-            "unless --force is passed.[/]"
-        )
-
-    _render_availability_legend(console, {availability_of(s) for s in scenes}, slug)
-
-    console.print(
-        "\n  [yellow]Cmd-click[/] [dim](macOS)[/] or [yellow]Ctrl-click[/] "
-        "[dim](Windows/Linux)[/] [dim]to open table links.[/]\n"
+    footer = _search_footer(scenes, slug)
+    show_table(
+        console,
+        scenes,
+        search_columns(),
+        "Available Scenes",
+        interactive,
+        footer=footer,
     )
 
 
-def _render_availability_legend(
-    console: Console, states: set[Availability], slug: str | None = None
-) -> None:
-    """Print a key for the Availability states present in the results."""
-    if not states:
-        return
+def _search_footer(scenes: list, slug: str | None) -> ConsoleRenderable:
+    """Legend + hints shown below the table, centered to the terminal."""
+    items: list[ConsoleRenderable] = []
 
-    console.print()
+    if any(s.get("_bhx_download") for s in scenes):
+        items.append(
+            Text.from_markup(
+                "[green]✓[/] [dim]Already downloaded in a previous "
+                "'query download' run — re-downloading will skip-fast "
+                "unless --force is passed.[/]",
+                justify="center",
+            )
+        )
+
+    legend = _availability_legend(scenes, slug)
+    if legend is not None:
+        items.append(Align.center(legend))
+
+    items.append(Rule(style="dim"))
+    items.append(_link_hint())
+    return Group(*items)
+
+
+def _link_hint() -> Text:
+    """One-line instruction on opening the Metadata/Quick View links."""
+    return Text.from_markup(
+        "[bold yellow]💡 Tip:[/] [italic]Cmd-click[/] [dim](macOS)[/] or "
+        "[italic]Ctrl-click[/] [dim](Windows/Linux)[/] a link to open it.",
+        justify="center",
+    )
+
+
+def _availability_legend(scenes: list, slug: str | None) -> Table | None:
+    """A centered table explaining each Availability state present."""
+    states = {availability_of(s) for s in scenes}
+    if not states:
+        return None
+
+    table = Table(
+        title="Availability Legend", show_header=False, box=None, padding=(0, 2)
+    )
+    table.add_column("Mark", justify="center")
+    table.add_column("Meaning", justify="left")
+    table.add_column("Action", justify="left")
+
     for state in Availability:
         if state not in states:
             continue
         meaning, action = AVAILABILITY_DISPLAY[state]
         if slug:
             action = action.replace("<slug>", slug)
-        # Pad before styling: markup would otherwise count toward the width.
-        label = f"{AVAILABILITY_LABEL[state]:<10}"
-        console.print(
-            f"  [{AVAILABILITY_LABEL_STYLE[state]}]{label}[/]"
-            f"[dim]{meaning:<24}[/][cyan]{action}[/]"
+        table.add_row(
+            f"[{AVAILABILITY_LABEL_STYLE[state]}]{AVAILABILITY_LABEL[state]}[/]",
+            f"[dim]{meaning}[/]",
+            f"[cyan]{action}[/]",
         )
+    return table
 
 
 def get_scenes_data_for_export(scenes: list) -> dict:
