@@ -2,6 +2,29 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.3]
+
+Every table you'd previously have to scroll past all at once — search
+results, saved queries, the archive, download reports — is now a
+scrollable viewer you move around with vim-style keys.
+
+### Added
+
+- **Scrollable table viewer with vim-style navigation.** `query create`,
+  `query list`, `query show`, `query download`, and `archive list` now
+  open results in a table you scroll with `j`/`k` (rows), `h`/`l`
+  (columns), `f`/`b` (page), `g`/`G` (top/end), `0`/`$` (first/last
+  column), and `q` to quit. A controls table and status line are always
+  visible so you don't lose track of where you are.
+- **`--plain` flag.** Every command above accepts `--plain` to print the
+  full table at once instead of opening the scrollable view — useful for
+  piping into `grep` or a file. Output automatically falls back to this
+  when it isn't going to a real terminal anyway.
+- Search results now show a centered Availability Legend table (what
+  each state means and what to do about it) and a one-line tip on how to
+  open the Metadata/Quick View links — both stay visible while scrolling
+  instead of disappearing off screen or only showing up after you quit.
+
 ## [0.2.2]
 
 Two bug fixes surfaced while verifying scene availability against the live portal.
