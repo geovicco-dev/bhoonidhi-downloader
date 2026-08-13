@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 
 from bhoonidhi_downloader.core.download import DownloadOutcome
 from bhoonidhi_downloader.core.query import command as _query
-from bhoonidhi_downloader.exceptions import BhoonidhiAuthError
 from bhoonidhi_downloader.schemas import QuerySchema
 from bhoonidhi_downloader.sdk._select import normalize_select
 
@@ -118,11 +117,7 @@ class QueryNamespace:
             BhoonidhiValidationError: if a ``select`` entry isn't a plain
                 index or scene ID.
         """
-        account = self._client.account
-        if not (account and account.jwt):
-            raise BhoonidhiAuthError(
-                "Not authenticated. Call client.login(...) before downloading."
-            )
+        account = self._client.require_account()
         return _query.run_query_download(
             slug,
             out,

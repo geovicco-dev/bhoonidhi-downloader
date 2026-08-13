@@ -16,6 +16,7 @@ you'd type is the method you'd call.
 
 from bhoonidhi_downloader.core.auth import command as _auth
 from bhoonidhi_downloader.core.auth.utils import load_session_info
+from bhoonidhi_downloader.exceptions import BhoonidhiAuthError
 from bhoonidhi_downloader.schemas import SessionSchema
 from bhoonidhi_downloader.sdk.archive import ArchiveNamespace
 from bhoonidhi_downloader.sdk.cart import CartNamespace
@@ -50,6 +51,21 @@ class BhoonidhiClient:
         """True when a session with a token is held."""
         account = self.account
         return bool(account and account.jwt)
+
+    def require_account(self) -> SessionSchema:
+        """Return the held session, or raise if there's no usable token.
+
+        The single authentication gate the namespaces call before any
+        portal action, so the "not logged in" behaviour and message live
+        in one place.
+
+        Raises:
+            BhoonidhiAuthError: if no session with a token is held.
+        """
+        account = self.account
+        if not (account and account.jwt):
+            raise BhoonidhiAuthError("Not authenticated. Call client.login(...) first.")
+        return account
 
     def login(self, username: str, password: str, save: bool = True) -> SessionSchema:
         """Authenticate and remember the session.

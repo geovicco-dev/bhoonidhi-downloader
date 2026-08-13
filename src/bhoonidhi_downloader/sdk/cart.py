@@ -32,11 +32,7 @@ class CartNamespace:
 
     def _cart_client(self) -> CartClient:
         """Build a portal CartClient from the held session, or raise."""
-        account = self._client.account
-        if not (account and account.jwt):
-            raise BhoonidhiAuthError(
-                "Not authenticated. Call client.login(...) before using the cart."
-            )
+        account = self._client.require_account()
         if not account.userId:
             raise BhoonidhiAuthError(
                 "The current session has no user id — log in again."
