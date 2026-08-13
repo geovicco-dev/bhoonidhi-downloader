@@ -8,15 +8,15 @@ Every `bhd` command is now callable from Python through a single client, so the 
 
 ### Added
 
-- **Python SDK.** `from bhoonidhi_downloader.sdk import BhoonidhiClient` gives one object whose namespaces mirror the CLI one-to-one: `client.archive`, `client.query`, `client.cart`, plus the auth methods (`login`, `logout`, `whoami`, `status`, `refresh`). Methods return plain data or raise a typed error — no terminal rendering. The client holds the session in memory and reuses the saved one at `~/.bhoonidhi/session`, so a script logs in once.
-- **`BhoonidhiError` base exception.** A single `except BhoonidhiError` catches any portal failure; the subclasses (`BhoonidhiAuthError`, `BhoonidhiValidationError`, `BhoonidhiNotFoundError`, `BhoonidhiAPIError`) keep their matching built-in bases, so existing `except ValueError`/`except LookupError` handlers still work.
-- **`py.typed` marker**, so a consumer's type checker reads the package's type hints instead of treating it as untyped.
-- **Runnable example notebooks** — one per namespace (`auth`, `archive`, `query`, `cart`), built into the documentation site as pages under the API Reference ( Notebook examples) so they read inline, not as side files.
+- **Python SDK.** `from bhoonidhi_downloader.sdk import BhoonidhiClient` gives one object whose namespaces mirror the CLI one-to-one: `client.archive`, `client.query`, `client.cart`, plus the auth methods (`login`, `logout`, `whoami`, `status`, `refresh`). Methods return plain data or raise a typed error instead of rendering to the terminal. The client holds the session in memory and reuses the one saved at `~/.bhoonidhi/session`, so a script logs in once.
+- **`BhoonidhiError` base exception.** A single `except BhoonidhiError` catches any portal failure. Its subclasses (`BhoonidhiAuthError`, `BhoonidhiValidationError`, `BhoonidhiNotFoundError`, `BhoonidhiAPIError`) keep their matching built-in bases, so existing `except ValueError`/`except LookupError` handlers still work.
+- **`py.typed` marker.** A consumer's type checker now reads the package's type hints instead of treating it as untyped.
+- **Runnable example notebooks.** One per namespace (`auth`, `archive`, `query`, `cart`), built into the documentation site as pages under API Reference → Notebook examples, so they read inline rather than as side files.
 
 ### Fixed
 
-- **`bhd archive export` failed after writing the file.** The post-write summary crashed on a full export and showed an empty table for a single satellite, because it rendered reformatted data using the raw field names. The file was always written correctly; now the summary renders and the command exits cleanly.
-- **`bhd archive` calls had no request timeout**, so a hung portal connection could block the archive fetch indefinitely.
+- **`bhd archive export` failed after writing the file.** The post-write summary crashed on a full export and showed an empty table for a single satellite, because it rendered reformatted data using the raw field names. The file itself was always written correctly; now the summary renders and the command exits cleanly.
+- **`bhd archive` calls had no request timeout.** A hung portal connection could block the archive fetch indefinitely.
 
 ## [0.3.1]
 
