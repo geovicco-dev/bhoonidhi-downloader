@@ -56,8 +56,8 @@ def run_status() -> tuple[SessionSchema, bool] | None:
     """Return the stored session and whether its token still validates.
 
     Returns None if there is no stored session (or it carries no token).
-    A network failure while probing the token counts as invalid rather
-    than an error, matching how the CLI has always treated it.
+    A network failure while probing the token is treated as invalid rather
+    than an error.
     """
     if not SESSION_FILE.exists():
         return None
@@ -85,10 +85,9 @@ def run_whoami() -> str | None:
 def run_refresh() -> SessionSchema | None:
     """Renew the current session's JWT without re-entering credentials.
 
-    Only works if the current token is still within Bhoonidhi's refresh
-    window (confirmed live: works right after login, fails once the
-    token's aged past some threshold — exact window unknown). If it
-    fails, 'auth logout' + 'auth login' is the only fallback.
+    Succeeds only while the token is still inside Bhoonidhi's refresh
+    window; once it ages out, a full 'auth logout' + 'auth login' is the
+    only way back.
 
     Returns the session with its refreshed token, or None if there is no
     session to refresh.
