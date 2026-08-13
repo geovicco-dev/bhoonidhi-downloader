@@ -17,6 +17,11 @@ nav:
       - Cart: api/cart.md
       - Errors: api/errors.md
       - Data models: api/schemas.md
+      - Notebook examples:
+          - Auth: api/notebooks/auth.ipynb
+          - Archive: api/notebooks/archive.ipynb
+          - Query: api/notebooks/query.ipynb
+          - Cart: api/notebooks/cart.ipynb
   - Changelog: CHANGELOG.md
 
 theme:
@@ -54,6 +59,7 @@ theme:
 
 plugins:
   - search
+  - mkdocs-jupyter
   - mkdocstrings:
       handlers:
         python:

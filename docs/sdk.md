@@ -195,13 +195,13 @@ except BhoonidhiAuthError:
 
 ## Runnable notebooks
 
-Worked, runnable examples for each namespace live in the repository under
-[`examples/`](https://github.com/geovicco-dev/bhoonidhi-downloader/tree/main/examples):
+Worked, runnable examples for each namespace — open them in Jupyter and run the
+cells against your own session:
 
-- `auth_demo.ipynb` — logging in and the session lifecycle
-- `archive_demo.ipynb` — browsing and exporting the catalogue
-- `query_demo.ipynb` — search, saved queries, and downloads
-- `cart_demo.ipynb` — staging, listing, and removing cart items
+- [Auth](api/notebooks/auth.ipynb) — logging in and the session lifecycle
+- [Archive](api/notebooks/archive.ipynb) — browsing and exporting the catalogue
+- [Query](api/notebooks/query.ipynb) — search, saved queries, and downloads
+- [Cart](api/notebooks/cart.ipynb) — staging, listing, and removing cart items
 
 See the [API Reference](api/index.md) for every method, argument, and return
 type.
