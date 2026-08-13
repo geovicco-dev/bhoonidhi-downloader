@@ -3,8 +3,8 @@
 import typer
 
 from bhoonidhi_downloader.core.archive.command import (
-    run_archive_export,
     run_archive_list,
+    write_archive_export,
 )
 from bhoonidhi_downloader.core.archive.render import (
     render_archive_full,
@@ -66,8 +66,8 @@ def export_archive(
 ) -> None:
     """Export archive data to a JSON file."""
     try:
-        run_archive_export(out, sat, refresh)
-        data = run_archive_list(refresh=False)
+        data = run_archive_list(refresh=refresh)
+        write_archive_export(data, out, sat)
     except (BhoonidhiError, OSError) as e:
         console.print(f"[bold red]Error exporting archive data:[/] {e}")
         raise typer.Exit(code=1) from e
