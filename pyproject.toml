@@ -49,6 +49,9 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bhoonidhi_downloader"]
+# Ship the PEP 561 marker so installed consumers' type checkers read the
+# package's type hints instead of treating it as untyped.
+force-include = { "src/bhoonidhi_downloader/py.typed" = "bhoonidhi_downloader/py.typed" }
 
 [tool.ruff.lint]
 ignore = [
