@@ -177,6 +177,7 @@ downloads
 >>>>>>> rye-cli
 
 *ipynb
+!examples/*.ipynb
 secrets.yaml
 downloads
 .DS_Store
