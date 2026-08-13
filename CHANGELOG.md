@@ -4,19 +4,19 @@ All notable changes to this project are documented here.
 
 ## [0.3.3]
 
-Every `bhd` command is now callable from Python through a single client, so the tool can be scripted or dropped into a data pipeline without shelling out.
+Every `bhd` command was already a thin wrapper over plain Python functions, but calling into them meant reaching past a `console`/`rich` rendering layer built for the terminal, not for a script. This release splits that apart: command logic that returns data lives in `core/`, terminal rendering moves entirely into `cli/`, and a new `sdk/` package sits on top of the same core the CLI calls — so the two entry points can't drift, and scripting no longer means fighting the CLI's own plumbing.
 
 ### Added
 
-- **Python SDK.** `from bhoonidhi_downloader.sdk import BhoonidhiClient` gives one object whose namespaces mirror the CLI one-to-one: `client.archive`, `client.query`, `client.cart`, plus the auth methods (`login`, `logout`, `whoami`, `status`, `refresh`). Methods return plain data or raise a typed error instead of rendering to the terminal. The client holds the session in memory and reuses the one saved at `~/.bhoonidhi/session`, so a script logs in once.
-- **`BhoonidhiError` base exception.** A single `except BhoonidhiError` catches any portal failure. Its subclasses (`BhoonidhiAuthError`, `BhoonidhiValidationError`, `BhoonidhiNotFoundError`, `BhoonidhiAPIError`) keep their matching built-in bases, so existing `except ValueError`/`except LookupError` handlers still work.
-- **`py.typed` marker.** A consumer's type checker now reads the package's type hints instead of treating it as untyped.
-- **Runnable example notebooks.** One per namespace (`auth`, `archive`, `query`, `cart`), built into the documentation site as pages under API Reference → Notebook examples, so they read inline rather than as side files.
+- **`bhoonidhi_downloader.sdk.BhoonidhiClient`** gives one object whose namespaces mirror the CLI one-to-one — `client.archive`, `client.query`, `client.cart`, plus the auth methods (`login`, `logout`, `whoami`, `status`, `refresh`). Methods return plain data or raise a typed error instead of rendering to the terminal, and the client holds the session in memory and reuses the one saved at `~/.bhoonidhi/session`, so a script logs in once. SDK inputs are typed to their own shape rather than the CLI's wire format — `select` takes `[1, 2, 3]` (indices or scene IDs), `filter_by` takes a bare string or a list — so a caller never has to know the CLI accepts `--select 1,2,3` as one comma-joined string.
+- **`BhoonidhiError` base exception**, so a single `except BhoonidhiError` catches any portal failure. Its subclasses (`BhoonidhiAuthError`, `BhoonidhiValidationError`, `BhoonidhiNotFoundError`, `BhoonidhiAPIError`) keep their matching built-in bases, so existing `except ValueError`/`except LookupError` handlers still work.
+- **A `py.typed` marker**, so a consumer's type checker reads the package's type hints instead of treating it as untyped — confirmed by building the wheel and checking a fresh import with pyright, which previously showed every SDK method as `Unknown`.
+- **Runnable example notebooks** — one per namespace (`auth`, `archive`, `query`, `cart`) — built into the documentation site as pages under API Reference → Notebook examples via `mkdocs-jupyter`, instead of living as side files in the repo that the docs only linked to.
 
 ### Fixed
 
-- **`bhd archive export` failed after writing the file.** The post-write summary crashed on a full export and showed an empty table for a single satellite, because it rendered reformatted data using the raw field names. The file itself was always written correctly; now the summary renders and the command exits cleanly.
-- **`bhd archive` calls had no request timeout.** A hung portal connection could block the archive fetch indefinitely.
+- **`bhd archive export` failed after writing the file.** The command reformats the archive's raw field names before writing the export, then re-ran the summary render against that already-reformatted data — which crashed on a full export and printed an empty table for a single-satellite export. The file itself was always written correctly; the summary now renders from the original data before it's reshaped.
+- **`bhd archive` calls had no request timeout.** Every other portal call in the codebase set one; this one didn't, so a hung connection to the archive endpoint could block indefinitely instead of failing.
 
 ## [0.3.1]
 
