@@ -74,10 +74,10 @@ Every command supports `--help` for its full option list. This is the short vers
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bhd query create <bbox> <dates> --sat ... --sen ...` | Search and save the results as a new named query.                                                                                                                                                  |
 | `bhd query list`                                      | List all your saved queries.                                                                                                                                                                       |
-| `bhd query show <slug>`                               | Redisplay a saved query's scenes.                                                                                                                                                                  |
+| `bhd query show <slug>`                               | Redisplay a saved query's scenes. `--filter ready\|archived\|onorder\|priced` narrows the table to one or more states.                                                                              |
 | `bhd query refresh <slug>`                            | Check for new scenes matching an existing query.                                                                                                                                                   |
 | `bhd query fork <slug>`                               | Clone a query under a new name, without re-searching.                                                                                                                                              |
-| `bhd query download <slug> --out <dir>`               | Download scenes from a saved query. Add `--select` to pick specific scenes, `--parallel` to control concurrency, `--force` to re-download. Re-logs you in automatically if your session's expired. |
+| `bhd query download <slug> --out <dir>`               | Download scenes from a saved query. Add `--select` to pick specific scenes, `--parallel` to control concurrency, `--force` to re-download, `--dry-run` to preview without fetching. Re-logs you in automatically if your session's expired. |
 | `bhd query rename <slug>`                             | Update a saved query's name/description.                                                                                                                                                           |
 | `bhd query rm <slug>`                                 | Delete a saved query.                                                                                                                                                                              |
 
@@ -88,8 +88,8 @@ For scenes that `query download` can't fetch directly — priced, on-order, or o
 | Command                          | What it does                                                                                                                                                             |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bhd cart add <slug>`            | Stage a saved query's scenes into the cart. Add `--select` to pick specific scenes; omit it to add the whole query.                                                     |
-| `bhd cart list`                  | Show everything staged — all three carts in one table. `--last`/`--since`/`--until` widen the date window, `--kind direct\|order\|priced` limits it to one cart.          |
-| `bhd cart rm`                    | Remove scenes — by cart row number (`--select 1,2`) or by a saved query's scenes (`<slug> --select 1`).                                                                 |
+| `bhd cart list`                  | Show everything staged — all three carts in one table. `--last`/`--since`/`--until` widen the date window; `--filter ready\|archived\|onorder\|priced` narrows to one or more states (and only reads the carts that could match). |
+| `bhd cart rm`                    | Remove scenes — by cart row number (`--select 1,2`) or by a saved query's scenes (`<slug> --select 1`). Takes the same `--filter` as `cart list` to narrow which rows a number refers to. |
 
 
 ## Calling it from a script
