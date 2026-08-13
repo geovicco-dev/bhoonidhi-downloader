@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://youtu.be/Y3naYuyr3NA)
 
-A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/). Every command is also callable from a Python script.
+A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/). Every command is also callable from Python through the `bhoonidhi_downloader.sdk` package — a single `BhoonidhiClient` that mirrors the CLI one-to-one.
 
 ## Features
 
@@ -15,7 +15,7 @@ A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoo
 - **Cart staging** — stage scenes into the Bhoonidhi cart from a saved query — priced, on-order, open-but-archived, or direct-download — and finish the order in the Browse & Order portal.
 - **Browse the archive** — list every satellite/sensor Bhoonidhi currently supports, live from the portal.
 - **Session management** — login once, refresh your token when it goes stale, no need to keep re-entering credentials.
-- **Scriptable** — every command has a matching Python function, so you can call searches/downloads directly from a script instead of shelling out.
+- **Scriptable** — every command has a matching method on `BhoonidhiClient`, so you can drive searches and downloads from a Python script or notebook instead of shelling out.
 
 ## Installation
 
@@ -93,40 +93,33 @@ For scenes that `query download` can't fetch directly — priced, on-order, or o
 | `bhd cart rm`                    | Remove scenes — by cart row number (`--select 1,2`) or by a saved query's scenes (`<slug> --select 1`). Takes the same `--filter` as `cart list` to narrow which rows a number refers to. |
 
 
-## Calling it from a script
+## Calling it from Python
 
-Every CLI command is a thin wrapper around a plain Python function — nothing about the underlying logic depends on being invoked from a terminal. If you're scripting a bulk ingestion pipeline or wiring this into a notebook, call into `bhoonidhi_downloader.core` directly instead of shelling out:
+Every command shown above is also available from Python through the
+`BhoonidhiClient` — same behaviour, no subprocess. This is the way to script
+bulk ingestion or wire Bhoonidhi into a pipeline:
 
 ```python
-from bhoonidhi_downloader.core.archive import ArchiveManager
-from bhoonidhi_downloader.core.query.command import run_query_create, run_query_download
-from bhoonidhi_downloader.logger import get_console
 from datetime import datetime
 
-console = get_console()
+from bhoonidhi_downloader.sdk import BhoonidhiClient
 
-# Browse the archive programmatically
-manifest = ArchiveManager().build_manifest()
-print(manifest["Sentinel-2A"].keys())  # -> dict_keys(['MSI'])
+client = BhoonidhiClient()
+client.login("my-username", "my-password")
 
-# Search + save a query (same thing `bhd query create` does)
-query = run_query_create(
-    console,
-    minx=91.77,
-    maxx=92,
-    miny=25.496,
-    maxy=25.695,
-    start_date=datetime(2025, 12, 1),
-    end_date=datetime(2025, 12, 30),
-    satellite="Sentinel-2A",
-    sensor="MSI",
+query = client.query.create(
+    91.77, 92.0, 25.496, 25.695,
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    satellite="Sentinel-2A", sensor="MSI",
 )
 
-# Download everything it found
-run_query_download(console, slug=query.slug, out="./downloads")
+client.query.download(query.slug, "./downloads")
 ```
 
-Command handlers live under `core/<domain>/command.py` (`auth`, `archive`, `search`, `query`, `download`) — each one takes a `rich.console.Console` (get one via `bhoonidhi_downloader.logger.get_console()`) and returns plain data (a `QuerySchema`, a list of scenes, a bool) rather than printing-and-exiting like a CLI would. The `render.py` modules alongside them are what turn that data into the tables you see on screen — you can skip them entirely and just work with the returned objects.
+See the [Python SDK guide](https://geovicco-dev.github.io/bhoonidhi-downloader/sdk/)
+for the full walkthrough, the [API Reference](https://geovicco-dev.github.io/bhoonidhi-downloader/api/)
+for every method, and the [notebook examples](https://geovicco-dev.github.io/bhoonidhi-downloader/api/notebooks/auth/)
+for runnable worksheets.
 
 ## What's actually downloadable
 

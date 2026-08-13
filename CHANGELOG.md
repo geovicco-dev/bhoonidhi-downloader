@@ -11,7 +11,7 @@ Every `bhd` command is now callable from Python through a single client, so the 
 - **Python SDK.** `from bhoonidhi_downloader.sdk import BhoonidhiClient` gives one object whose namespaces mirror the CLI one-to-one: `client.archive`, `client.query`, `client.cart`, plus the auth methods (`login`, `logout`, `whoami`, `status`, `refresh`). Methods return plain data or raise a typed error — no terminal rendering. The client holds the session in memory and reuses the saved one at `~/.bhoonidhi/session`, so a script logs in once.
 - **`BhoonidhiError` base exception.** A single `except BhoonidhiError` catches any portal failure; the subclasses (`BhoonidhiAuthError`, `BhoonidhiValidationError`, `BhoonidhiNotFoundError`, `BhoonidhiAPIError`) keep their matching built-in bases, so existing `except ValueError`/`except LookupError` handlers still work.
 - **`py.typed` marker**, so a consumer's type checker reads the package's type hints instead of treating it as untyped.
-- **Runnable example notebooks** under `examples/` for each namespace, and a rebuilt documentation site with a task-based SDK guide and an API reference generated from the source.
+- **Runnable example notebooks** — one per namespace (`auth`, `archive`, `query`, `cart`), built into the documentation site as pages under the API Reference ( Notebook examples) so they read inline, not as side files.
 
 ### Fixed
 
