@@ -8,8 +8,4 @@ Pydantic models shared across all domains, under `bhoonidhi_downloader.schemas`.
 
 ::: bhoonidhi_downloader.schemas.query.QuerySchema
 
-::: bhoonidhi_downloader.schemas.scene.SceneSchema
-
 ::: bhoonidhi_downloader.schemas.session.SessionSchema
-
-::: bhoonidhi_downloader.schemas.download.DownloadSchema
