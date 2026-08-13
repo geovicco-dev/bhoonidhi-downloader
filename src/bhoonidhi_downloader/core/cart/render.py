@@ -13,6 +13,7 @@ from rich.progress import (
 )
 from rich.text import Text
 
+from bhoonidhi_downloader.core.search.availability import Availability
 from bhoonidhi_downloader.core.search.utils import (
     create_clickable_link,
     full_satellite,
@@ -23,7 +24,7 @@ from bhoonidhi_downloader.core.search.utils import (
 from bhoonidhi_downloader.logger import CUSTOM_THEME
 from bhoonidhi_downloader.viewer import Column, show_table
 
-from .utils import CartKind
+from .utils import CartKind, cart_availability_of
 
 
 def cart_progress(description: str) -> Progress:
@@ -60,6 +61,7 @@ def render_cart_items(
     title: str,
     srt_to_slug: dict[str, str] | None = None,
     interactive: bool | None = None,
+    filter_states: set[Availability] | None = None,
 ) -> None:
     """Show the cart in a scrollable viewer.
 
@@ -67,7 +69,18 @@ def render_cart_items(
     rather than anything being dropped. ``srt_to_slug`` maps a search id
     back to the saved query it came from, so a cart row can be traced to
     what put it there.
+
+    ``filter_states``, when given, keeps only rows whose
+    :func:`.utils.cart_availability_of` is one of the given states — the
+    "empty" message distinguishes an empty cart from everything being
+    filtered out.
     """
+    if filter_states is not None:
+        items = [r for r in items if cart_availability_of(r) in filter_states]
+        if not items:
+            console.print(f"[yellow]{title}: nothing matches that filter.[/]")
+            return
+
     if not items:
         console.print(f"[yellow]{title}: empty.[/]")
         return

@@ -131,3 +131,43 @@ def is_downloadable(scene: dict) -> bool:
         Availability.DIRECT_AVAILABLE,
         Availability.DIRECT_UNAVAILABLE,
     )
+
+
+#: The words a --filter flag accepts, normalised (lowercase, no separators)
+#: to the Availability state they mean. Matches the words already shown in
+#: the Availability column and the cart's Cart column, so a user filtering
+#: by what they read on screen doesn't have to guess a different spelling.
+AVAILABILITY_ALIASES: dict[str, Availability] = {
+    "ready": Availability.DIRECT_AVAILABLE,
+    "archived": Availability.DIRECT_UNAVAILABLE,
+    "onorder": Availability.ON_ORDER,
+    "priced": Availability.PRICED,
+}
+
+
+def parse_availability_filter(values: list[str] | None) -> set[Availability] | None:
+    """Turn a --filter option's values into a set of Availability states.
+
+    Accepts the same words the Availability/Cart columns show
+    (case-insensitive, ``-``/``_`` ignored so ``on-order`` and ``onOrder``
+    both work): ``ready``, ``archived``, ``onorder``, ``priced``.
+    Comma-separated (``-f ready,archived``) and repeated flags
+    (``-f ready -f archived``) both work, matching ``--select`` elsewhere
+    in the CLI. Returns None (no filter) when ``values`` is empty/None.
+
+    Raises:
+        ValueError: on an unrecognised word, naming the valid ones.
+    """
+    if not values:
+        return None
+
+    tokens = [t.strip() for raw in values for t in raw.split(",") if t.strip()]
+    states: set[Availability] = set()
+    for token in tokens:
+        key = token.lower().replace("-", "").replace("_", "")
+        state = AVAILABILITY_ALIASES.get(key)
+        if state is None:
+            valid = ", ".join(sorted(AVAILABILITY_ALIASES))
+            raise ValueError(f"Unknown filter '{token}'. Valid values: {valid}.")
+        states.add(state)
+    return states

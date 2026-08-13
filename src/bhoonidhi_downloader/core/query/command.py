@@ -134,9 +134,20 @@ def run_query_list(console: Console, interactive: bool | None = None) -> None:
 
 
 def run_query_show(
-    console: Console, slug: str, interactive: bool | None = None
+    console: Console,
+    slug: str,
+    interactive: bool | None = None,
+    filter_by: list[str] | None = None,
 ) -> bool:
-    """Redisplay a saved query's cached scenes. Returns True if found."""
+    """Redisplay a saved query's cached scenes. Returns True if found.
+
+    ``filter_by`` narrows the table to one or more availability states
+    (``ready``, ``archived``, ``onorder``, ``priced``) — see
+    ``parse_availability_filter``.
+    """
+    from bhoonidhi_downloader.core.search.availability import (
+        parse_availability_filter,
+    )
     from bhoonidhi_downloader.core.search.render import render_search_results
 
     query = load_query(slug)
@@ -144,8 +155,17 @@ def run_query_show(
         render_query_not_found(console, slug)
         return False
 
+    try:
+        filter_states = parse_availability_filter(filter_by)
+    except ValueError as e:
+        console.print(f"[bold red]{e}[/]")
+        return False
+
     console.print(f"\n[bold]{query.name}[/]\n{query.description}\n")
-    render_search_results(console, query.scenes, slug=slug, interactive=interactive)
+    render_search_results(
+        console, query.scenes, slug=slug, interactive=interactive,
+        filter_states=filter_states,
+    )
     return True
 
 

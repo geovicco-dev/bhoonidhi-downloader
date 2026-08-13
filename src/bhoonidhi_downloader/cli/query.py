@@ -82,12 +82,27 @@ def list_cmd(
 @query_app.command("show")
 def show(
     slug: str = typer.Argument(..., help="Query slug"),
+    filter_by: list[str] = typer.Option(
+        None,
+        "--filter",
+        "-f",
+        help="Show only scenes in these states: ready, archived, onorder, "
+        "priced. Comma-separated (-f ready,archived) or repeat the flag.",
+    ),
     plain: bool = typer.Option(
         False, "--plain", help="Print the whole table at once instead of scrolling"
     ),
 ) -> None:
-    """Show a saved query's scenes."""
-    if not run_query_show(console, slug, interactive=False if plain else None):
+    """Show a saved query's scenes.
+
+    Examples:
+      bhd query show velvet-wren                    # everything
+      bhd query show velvet-wren -f ready            # only what's ready to download
+      bhd query show velvet-wren -f onorder,priced   # only what needs the portal
+    """
+    if not run_query_show(
+        console, slug, interactive=False if plain else None, filter_by=filter_by
+    ):
         raise typer.Exit(code=1)
 
 

@@ -77,10 +77,12 @@ def list_cart(
         "--last",
         help="Look back a preset window, e.g. '10 days', '2 weeks', '1 month'",
     ),
-    kind: str = typer.Option(
+    filter_by: list[str] = typer.Option(
         None,
-        "--kind",
-        help="Show only one cart: 'direct', 'order', or 'priced' (default: all three)",
+        "--filter",
+        "-f",
+        help="Show only rows in these states: ready, archived, onorder, "
+        "priced. Comma-separated (-f ready,archived) or repeat the flag.",
     ),
     plain: bool = typer.Option(
         False, "--plain", help="Print the whole table at once instead of scrolling"
@@ -96,7 +98,8 @@ def list_cart(
       bhd cart list                       # everything added today
       bhd cart list --last "1 week"       # added in the past 7 days
       bhd cart list --since 2026-08-01    # added on/after a date
-      bhd cart list --kind priced         # just the priced cart
+      bhd cart list --filter priced       # just the priced cart
+      bhd cart list -f ready,archived     # only direct-download rows
 
     Caveat: the portal files items by the date they were added, so with
     no date option this shows today only — widen it with --since/--until
@@ -104,11 +107,11 @@ def list_cart(
     """
     if not run_cart_list(
         console,
-        kind=kind,
         since=since,
         until=until,
         last=last,
         interactive=False if plain else None,
+        filter_by=filter_by,
     ):
         raise typer.Exit(code=1)
 
@@ -124,9 +127,6 @@ def rm(
         "-s",
         help="What to remove: 1-based numbers and/or scene IDs",
     ),
-    kind: str = typer.Option(
-        None, "--kind", help="Limit to one cart: 'direct', 'order', or 'priced'"
-    ),
     since: datetime = typer.Option(
         None, "--since", formats=["%Y-%m-%d"], help="Window start (YYYY-MM-DD)"
     ),
@@ -136,6 +136,13 @@ def rm(
     last: str = typer.Option(
         None, "--last", help="Look back a preset, e.g. '1 week'"
     ),
+    filter_by: list[str] = typer.Option(
+        None,
+        "--filter",
+        "-f",
+        help="Limit to rows in these states: ready, archived, onorder, "
+        "priced. Comma-separated (-f ready,archived) or repeat the flag.",
+    ),
 ) -> None:
     """Remove scenes from the cart.
 
@@ -144,10 +151,16 @@ def rm(
       - by the row numbers 'cart list' printed:  bhd cart rm -s 1,2
 
     Caveat: those row numbers are only stable for the same view. When
-    removing by number, pass the same --kind and date window you listed
-    with, so the numbering lines up.
+    removing by number, pass the same --filter and date window you
+    listed with, so the numbering lines up.
     """
     if not run_cart_rm(
-        console, slug, select, kind=kind, since=since, until=until, last=last
+        console,
+        slug,
+        select,
+        since=since,
+        until=until,
+        last=last,
+        filter_by=filter_by,
     ):
         raise typer.Exit(code=1)
