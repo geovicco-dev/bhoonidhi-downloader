@@ -6,8 +6,9 @@ rows are tagged and de-duplicated) is exercised without any network.
 
 from datetime import datetime
 
-from bhoonidhi_downloader.core.cart.command import _collect_carts, _kinds_to_read
-from bhoonidhi_downloader.core.cart.utils import CartKind
+from bhoonidhi_downloader.core.cart.command import _collect_carts
+from bhoonidhi_downloader.core.cart.utils import CartKind, cart_kinds_for_states
+from bhoonidhi_downloader.core.search.availability import Availability
 
 
 class FakeCartClient:
@@ -29,16 +30,23 @@ class FakeCartClient:
         return list(self._order if kind is CartKind.ORDER else self._priced)
 
 
-def test_kinds_to_read_defaults_to_all_three():
-    assert _kinds_to_read(None) == [
+def test_kinds_for_states_defaults_to_all_three_with_no_filter():
+    assert cart_kinds_for_states(None) == [
         CartKind.DIRECT,
         CartKind.ORDER,
         CartKind.PRICED,
     ]
 
 
-def test_kinds_to_read_honours_a_filter():
-    assert _kinds_to_read("priced") == [CartKind.PRICED]
+def test_kinds_for_states_narrows_to_the_cart_a_state_can_come_from():
+    assert cart_kinds_for_states({Availability.PRICED}) == [CartKind.PRICED]
+
+
+def test_kinds_for_states_both_direct_states_stay_one_cart():
+    # DIRECT_AVAILABLE and DIRECT_UNAVAILABLE are both the direct cart —
+    # asking for either (or both) never reads a second cart for them.
+    states = {Availability.DIRECT_AVAILABLE, Availability.DIRECT_UNAVAILABLE}
+    assert cart_kinds_for_states(states) == [CartKind.DIRECT]
 
 
 def test_collect_merges_all_three_carts_and_tags_each_row():

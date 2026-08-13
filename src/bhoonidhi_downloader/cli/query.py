@@ -82,12 +82,27 @@ def list_cmd(
 @query_app.command("show")
 def show(
     slug: str = typer.Argument(..., help="Query slug"),
+    filter_by: list[str] = typer.Option(
+        None,
+        "--filter",
+        "-f",
+        help="Show only scenes in these states: ready, archived, onorder, "
+        "priced. Comma-separated (-f ready,archived) or repeat the flag.",
+    ),
     plain: bool = typer.Option(
         False, "--plain", help="Print the whole table at once instead of scrolling"
     ),
 ) -> None:
-    """Show a saved query's scenes."""
-    if not run_query_show(console, slug, interactive=False if plain else None):
+    """Show a saved query's scenes.
+
+    Examples:
+      bhd query show velvet-wren                    # everything
+      bhd query show velvet-wren -f ready            # only what's ready to download
+      bhd query show velvet-wren -f onorder,priced   # only what needs the portal
+    """
+    if not run_query_show(
+        console, slug, interactive=False if plain else None, filter_by=filter_by
+    ):
         raise typer.Exit(code=1)
 
 
@@ -155,11 +170,24 @@ def download(
     plain: bool = typer.Option(
         False, "--plain", help="Print the whole table at once instead of scrolling"
     ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Show what would be downloaded without downloading anything "
+        "or requiring a session",
+    ),
 ) -> None:
     """Download scenes from a saved query.
 
     Priced scenes are skipped; interrupted downloads restart from scratch.
     Re-authenticates automatically if the session has expired.
+
+    Examples:
+      bhd query download velvet-wren -o ./scenes            # download it
+      bhd query download velvet-wren -o ./scenes --dry-run   # preview only
+
+    --dry-run prints what would happen — attempted, skipped, or already
+    present — without touching the network or needing to be logged in.
     """
     if (
         run_query_download(
@@ -171,6 +199,7 @@ def download(
             force,
             password,
             interactive=False if plain else None,
+            dry_run=dry_run,
         )
         is None
     ):

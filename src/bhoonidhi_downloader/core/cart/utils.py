@@ -10,10 +10,34 @@ import re
 import urllib.parse
 from datetime import datetime, timedelta
 from enum import Enum
+from zoneinfo import ZoneInfo
 
-from bhoonidhi_downloader.core.search.availability import Access, access_of
+from bhoonidhi_downloader.core.search.availability import (
+    Access,
+    Availability,
+    access_of,
+)
 
 from .scene_spec import make_interface_obj
+
+#: The portal files every cart record under the server's own clock, which
+#: is IST (Asia/Kolkata) — not the caller's local time zone. A cart action
+#: that defaults to local "now" can file under the wrong date for anyone
+#: outside IST (e.g. UTC+10 querying "today" gets yesterday's IST date and
+#: sees an empty cart even though the add succeeded). Every cart date
+#: default goes through here instead of a bare ``datetime.now()``.
+_IST = ZoneInfo("Asia/Kolkata")
+
+
+def ist_now() -> datetime:
+    """The current date/time in IST, naive (tzinfo stripped).
+
+    Naive because the rest of the cart date-handling (``cart_date_long``,
+    ``cart_date_short``, ``resolve_cart_dates``) works with naive
+    ``datetime`` objects throughout — this just anchors "now" to the
+    portal's clock before entering that naive arithmetic.
+    """
+    return datetime.now(_IST).replace(tzinfo=None)
 
 
 class CartKind(str, Enum):
@@ -67,6 +91,53 @@ def cart_kind_for(scene: dict) -> CartKind:
     out of sync.
     """
     return _ACCESS_TO_CART[access_of(scene)]
+
+
+def cart_availability_of(item: dict) -> Availability:
+    """Classify a cart row the same way ``cart list``'s Cart column does.
+
+    Cart rows are already tagged with ``_cart`` (which cart they came
+    from) by the collector in ``core/cart/command.py``, so this reads that
+    tag directly rather than re-deriving it from ``PRICED`` — a cart
+    row's own pricing field isn't reliably present the way a fresh search
+    result's is. Only the direct-download cart's staging varies
+    (Ready/Archived); on-order and priced rows are that state outright,
+    matching :func:`bhoonidhi_downloader.core.cart.render._cart_status`.
+    """
+    kind = item.get("_cart")
+    if kind is CartKind.ORDER:
+        return Availability.ON_ORDER
+    if kind is CartKind.PRICED:
+        return Availability.PRICED
+    # DIRECT (or an untagged/legacy row): fall back to staging.
+    if item.get("CURR_SCENE_NO") == "Y":
+        return Availability.DIRECT_AVAILABLE
+    return Availability.DIRECT_UNAVAILABLE
+
+
+#: Availability state -> the cart it can only ever come from. Both
+#: DIRECT_AVAILABLE and DIRECT_UNAVAILABLE map to the direct-download
+#: cart — its two states are staging, not a different cart.
+_AVAILABILITY_TO_CART: dict[Availability, CartKind] = {
+    Availability.DIRECT_AVAILABLE: CartKind.DIRECT,
+    Availability.DIRECT_UNAVAILABLE: CartKind.DIRECT,
+    Availability.ON_ORDER: CartKind.ORDER,
+    Availability.PRICED: CartKind.PRICED,
+}
+
+
+def cart_kinds_for_states(states: set[Availability] | None) -> list[CartKind]:
+    """Which carts to read for a given set of ``--filter`` states.
+
+    Reading only the carts a filter could actually match avoids fetching
+    ones that would just be discarded afterwards — e.g. ``--filter
+    priced`` only ever needs the priced cart. With no filter, all three
+    are read, same as before ``--filter`` existed.
+    """
+    if not states:
+        return [CartKind.DIRECT, CartKind.ORDER, CartKind.PRICED]
+    kinds = {_AVAILABILITY_TO_CART[state] for state in states}
+    return [k for k in (CartKind.DIRECT, CartKind.ORDER, CartKind.PRICED) if k in kinds]
 
 
 def encode_article(article: dict) -> dict[str, str]:
@@ -166,13 +237,17 @@ def resolve_cart_dates(
     - ``since``/``until``: an explicit span, either end optional;
     - nothing set: just today.
 
+    "Today" means the current date in IST (:func:`ist_now`), matching the
+    date the portal itself files new cart items under, not the caller's
+    local time zone.
+
     ``today`` is injectable so the logic can be tested without depending
     on the clock.
 
     Raises:
         ValueError: if ``since`` is after ``until``.
     """
-    today = today or datetime.now()
+    today = today or ist_now()
     end = until or today
 
     if last is not None:

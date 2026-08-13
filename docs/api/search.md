@@ -16,6 +16,8 @@ Used internally by `bhd query create` — queries the Bhoonidhi search endpoint 
 
 ::: bhoonidhi_downloader.core.search.availability.is_downloadable
 
+::: bhoonidhi_downloader.core.search.availability.parse_availability_filter
+
 ## Rendering & export
 
 ::: bhoonidhi_downloader.core.search.render.render_search_results

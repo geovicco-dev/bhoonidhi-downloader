@@ -22,6 +22,7 @@ from .utils import (
     cart_date_short,
     compact_json,
     encode_article,
+    ist_now,
 )
 
 logger = logging.getLogger(__name__)
@@ -106,8 +107,13 @@ class CartClient:
         return kind, msg
 
     def view_direct(self, when: datetime | None = None) -> list[dict[str, Any]]:
-        """List the direct-download cart, which is addressed by date."""
-        when = when or datetime.now()
+        """List the direct-download cart, which is addressed by date.
+
+        Defaults to today in IST — the server's own clock — not the
+        caller's local time zone, since that's the date the portal filed
+        today's adds under.
+        """
+        when = when or ist_now()
         payload = self._post(
             "CartServlet",
             {
@@ -179,8 +185,12 @@ class CartClient:
         return list(seen)
 
     def remove(self, scene: dict, when: datetime | None = None) -> str:
-        """Remove one scene from whichever cart it belongs to."""
-        when = when or datetime.now()
+        """Remove one scene from whichever cart it belongs to.
+
+        ``when`` (for the direct-download cart's ``cartDate``) defaults to
+        today in IST, matching the date the item was filed under.
+        """
+        when = when or ist_now()
         kind, article = build_delete_payload(scene, self.user_id, when)
         payload = self._post(CART_ENDPOINTS[kind]["servlet"], article)
         return self._first_result(payload).get("MSG", "")

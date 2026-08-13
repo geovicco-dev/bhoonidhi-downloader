@@ -73,6 +73,7 @@ def render_search_results(
     slug: str | None = None,
     interactive: bool | None = None,
     header_srt: bool = False,
+    filter_states: set[Availability] | None = None,
 ) -> None:
     """Show search results in a scrollable table.
 
@@ -84,7 +85,18 @@ def render_search_results(
 
     ``header_srt`` shows the search id in the table header — used by
     ``query create``, where every scene comes from the one fresh search.
+
+    ``filter_states``, when given, keeps only scenes whose
+    :func:`.availability.availability_of` is one of the given states —
+    the "no scenes found" message distinguishes an empty result from
+    everything being filtered out.
     """
+    if filter_states is not None:
+        scenes = [s for s in scenes if availability_of(s) in filter_states]
+        if not scenes:
+            console.print("[yellow]No scenes match that filter.[/]")
+            return
+
     if not scenes:
         console.print("[yellow]No scenes found.[/]")
         return

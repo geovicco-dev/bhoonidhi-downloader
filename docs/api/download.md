@@ -12,6 +12,12 @@ Bhoonidhi's data endpoint does not honor HTTP Range requests, so an interrupted 
 
 ::: bhoonidhi_downloader.core.download.client.sha256_of_file
 
+## Dry-run preview
+
+::: bhoonidhi_downloader.core.download.preview.build_preview
+
+::: bhoonidhi_downloader.core.download.preview.DownloadPreview
+
 ## URL helpers
 
 `is_downloadable` lives in [`core.search.availability`](search.md#bhoonidhi_downloader.core.search.availability.is_downloadable) — the same function search uses to classify a scene's availability.
@@ -23,3 +29,5 @@ Bhoonidhi's data endpoint does not honor HTTP Range requests, so an interrupted 
 ## Rendering
 
 ::: bhoonidhi_downloader.core.download.render.render_download_report
+
+::: bhoonidhi_downloader.core.download.render.render_download_preview

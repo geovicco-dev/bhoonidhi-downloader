@@ -14,6 +14,10 @@ Backs `bhd cart` — stage scenes from a saved query into the Bhoonidhi Browse &
 
 ::: bhoonidhi_downloader.core.cart.utils.cart_kind_for
 
+::: bhoonidhi_downloader.core.cart.utils.cart_availability_of
+
+::: bhoonidhi_downloader.core.cart.utils.cart_kinds_for_states
+
 ::: bhoonidhi_downloader.core.cart.utils.build_add_payload
 
 ::: bhoonidhi_downloader.core.cart.utils.build_delete_payload

@@ -12,6 +12,9 @@ from bhoonidhi_downloader.core.query.command import (
     resolve_scene_selection,
 )
 from bhoonidhi_downloader.core.query.render import render_query_not_found
+from bhoonidhi_downloader.core.search.availability import (
+    parse_availability_filter,
+)
 
 from .client import CartClient
 from .render import (
@@ -22,7 +25,14 @@ from .render import (
     render_no_session,
     render_removed_summary,
 )
-from .utils import CartKind, cart_kind_for, parse_srt_date, resolve_cart_dates
+from .utils import (
+    CartKind,
+    cart_availability_of,
+    cart_kind_for,
+    cart_kinds_for_states,
+    parse_srt_date,
+    resolve_cart_dates,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -114,12 +124,12 @@ def _srt_to_slug() -> dict[str, str]:
 
 def run_cart_list(
     console: Console,
-    kind: str | None = None,
     since: datetime | None = None,
     until: datetime | None = None,
     last: str | None = None,
     password: str | None = None,
     interactive: bool | None = None,
+    filter_by: list[str] | None = None,
 ) -> bool:
     """Show everything in the cart — all three carts in one table.
 
@@ -132,15 +142,24 @@ def run_cart_list(
     Because cart items are filed by the date they were added, the date
     window controls how far back to look: nothing set means today,
     ``since``/``until`` an explicit span, ``last`` a preset like
-    ``"1 week"``. Pass ``kind`` to limit the view to one cart.
+    ``"1 week"``. ``filter_by`` narrows the view by state (``ready``,
+    ``archived``, ``onorder``, ``priced``) — since each state can only
+    ever come from one cart, this also limits which carts are read, so
+    filtering to ``priced`` only ever fetches the priced cart.
     """
+    try:
+        filter_states = parse_availability_filter(filter_by)
+    except ValueError as e:
+        console.print(f"[bold red]{e}[/]")
+        return False
+
     client = _client(console, password)
     if client is None:
         return False
 
     try:
         dates = resolve_cart_dates(since=since, until=until, last=last)
-        kinds = _kinds_to_read(kind)
+        kinds = cart_kinds_for_states(filter_states)
         items = _collect_carts(client, kinds, dates)
     except Exception as e:
         render_cart_error(console, str(e))
@@ -148,16 +167,14 @@ def run_cart_list(
 
     title = _cart_title(kinds, dates)
     render_cart_items(
-        console, items, title, srt_to_slug=_srt_to_slug(), interactive=interactive
+        console,
+        items,
+        title,
+        srt_to_slug=_srt_to_slug(),
+        interactive=interactive,
+        filter_states=filter_states,
     )
     return True
-
-
-def _kinds_to_read(kind: str | None) -> list[CartKind]:
-    """Resolve a --kind filter to the carts to read (all three by default)."""
-    if kind:
-        return [CartKind(kind)]
-    return [CartKind.DIRECT, CartKind.ORDER, CartKind.PRICED]
 
 
 def _collect_carts(
@@ -232,11 +249,11 @@ def run_cart_rm(
     console: Console,
     slug: str | None = None,
     select: list[str] | None = None,
-    kind: str | None = None,
     since: datetime | None = None,
     until: datetime | None = None,
     last: str | None = None,
     password: str | None = None,
+    filter_by: list[str] | None = None,
 ) -> bool:
     """Remove scenes from the portal cart.
 
@@ -245,10 +262,17 @@ def run_cart_rm(
     with what ``cart list`` prints:
 
     - without ``slug``: ``select`` indexes the merged cart itself, matching
-      the numbers shown by ``cart list``. The same ``kind`` and date window
-      options narrow it to the same rows;
+      the numbers shown by ``cart list``. The same ``filter_by`` and date
+      window options narrow it to the same rows, so the numbering lines
+      up with what was listed;
     - with ``slug``: ``select`` indexes that saved query's scenes.
     """
+    try:
+        filter_states = parse_availability_filter(filter_by)
+    except ValueError as e:
+        console.print(f"[bold red]{e}[/]")
+        return False
+
     client = _client(console, password)
     if client is None:
         return False
@@ -256,11 +280,14 @@ def run_cart_rm(
     if slug is None:
         try:
             dates = resolve_cart_dates(since=since, until=until, last=last)
-            kinds = _kinds_to_read(kind)
+            kinds = cart_kinds_for_states(filter_states)
             items = _collect_carts(client, kinds, dates)
         except Exception as e:
             render_cart_error(console, str(e))
             return False
+
+        if filter_states is not None:
+            items = [r for r in items if cart_availability_of(r) in filter_states]
 
         if not items:
             console.print("[yellow]Cart is empty — nothing to remove.[/]")

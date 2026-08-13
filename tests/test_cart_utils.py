@@ -5,7 +5,7 @@ pure-function tests — nothing here touches the network.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -17,6 +17,7 @@ from bhoonidhi_downloader.core.cart.utils import (
     cart_kind_for,
     compact_json,
     encode_article,
+    ist_now,
 )
 
 # --------------------------------------------------------------------------
@@ -200,3 +201,23 @@ def test_priced_delete_uses_scene_id_and_srt_without_date():
         "action": "DELETE",
         "userId": "ONL_user",
     }
+
+
+# --------------------------------------------------------------------------
+# ist_now — cart actions default to IST, not the caller's local clock
+# --------------------------------------------------------------------------
+
+
+def test_ist_now_is_roughly_five_thirty_ahead_of_utc():
+    # The offset check tolerates the two calls not landing in the exact
+    # same instant, without being so loose it'd miss a wrong time zone.
+    now = ist_now()
+    utc_now = datetime.now(timezone.utc).replace(tzinfo=None)
+    delta_hours = (now - utc_now).total_seconds() / 3600
+    assert 5.4 < delta_hours < 5.6
+
+
+def test_ist_now_returns_a_naive_datetime():
+    # Naive so it composes with cart_date_long/short and resolve_cart_dates,
+    # which all work on naive datetimes throughout.
+    assert ist_now().tzinfo is None

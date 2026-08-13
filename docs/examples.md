@@ -60,6 +60,12 @@ To grab specific scenes instead of the whole query, use `--select` with the 1-ba
 $ bhd query download misty-falcon --out ./downloads --select 1,3,5
 ```
 
+Not sure what a run will do first? `--dry-run` shows the same table without fetching anything or needing a session:
+
+```console
+$ bhd query download misty-falcon --out ./downloads --dry-run
+```
+
 ### 6. Stage what you can't download directly
 
 `query download` only fetches scenes marked `Ready`. For everything else — open scenes that aren't staged, on-order, or priced — add them to the Bhoonidhi cart and finish the order in the Browse & Order portal:
@@ -70,7 +76,14 @@ $ bhd cart list                                # see everything staged
 $ bhd cart rm --select 1                        # remove a staged row by its number
 ```
 
-Each scene is routed automatically to the portal's direct-download, on-order, or priced cart based on its access type — a query mixing all three works in one command. `bhd cart list` merges all three carts into one table: each row shows which cart it's in and whether it's ready or archived, its satellite and sensor, the date it was added, and whether the order has been placed, alongside Metadata and Quick View links. Because the portal files items by the date they were added, `cart list` with no options shows today only; use `--last "1 week"` (or `--since`/`--until`) to see scenes staged on earlier days, and `--kind direct|order|priced` to limit the view to one cart.
+Each scene is routed automatically to the portal's direct-download, on-order, or priced cart based on its access type — a query mixing all three works in one command. `bhd cart list` merges all three carts into one table: each row shows which cart it's in and whether it's ready or archived, its satellite and sensor, the date it was added, and whether the order has been placed, alongside Metadata and Quick View links. Because the portal files items by the date they were added, `cart list` with no options shows today only; use `--last "1 week"` (or `--since`/`--until`) to see scenes staged on earlier days.
+
+`--filter ready|archived|onorder|priced` narrows either `query show` or `cart list`/`cart rm` to one or more states — comma-separated or repeatable — using the same words shown in the Availability/Cart columns:
+
+```console
+$ bhd query show misty-falcon --filter ready       # only what's downloadable now
+$ bhd cart list --filter priced                    # only the priced cart
+```
 
 ## Calling it from a script
 
