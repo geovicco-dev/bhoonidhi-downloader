@@ -9,11 +9,16 @@ Three fixes surfaced while using the cart and download commands day to day.
 ### Added
 
 - **`bhd query download --dry-run`** shows what a download would do — which scenes would be attempted, which would be skipped and why, which are already downloaded — without fetching anything or requiring a session. Uses the exact same classification rules as a real download, so a dry run never disagrees with what actually happens.
+- **`-f`/`--filter`** on `bhd query show`, `bhd cart list`, and `bhd cart rm` narrows the table to one or more availability states — `ready`, `archived`, `onorder`, `priced` (comma-separated or repeatable). On the cart commands it also limits which of the portal's three carts get fetched, so `--filter priced` only ever reads the priced cart.
+
+### Changed
+
+- **`bhd cart list`/`bhd cart rm` no longer take `--kind`.** It did the same thing `--filter` now does — `--kind priced` and `--filter priced` selected identical rows — so `--filter` replaces it: `--filter ready,archived` in place of `--kind direct`, `--filter onorder` in place of `--kind order`, `--filter priced` unchanged.
 
 ### Fixed
 
 - **Cart actions used the caller's local time instead of IST.** The portal files every cart record under IST — its own server date — but `cart list`/`cart rm`'s date window and the cart's add/remove calls defaulted to local `datetime.now()`. Outside IST, an add could succeed server-side while `cart list` queried the wrong date and showed nothing.
-- **Searching a satellite with no sensor failed with an opaque "Search failed".** A bare `assert cfg.sensor is not None` raised `AssertionError` for any satellite-only search. It now searches every sensor under that satellite instead, matching how the portal's own UI treats a satellite-only search.
+- **Searching a satellite with no sensor failed with an opaque "Search failed".** It now searches every sensor under that satellite instead, matching how the portal's own UI treats a satellite-only search.
 
 ## [0.3.0]
 
