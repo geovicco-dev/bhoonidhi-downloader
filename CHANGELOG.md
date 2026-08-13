@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [0.3.2]
+## [0.3.3]
 
 Every `bhd` command is now callable from Python through a single client, so the tool can be scripted or dropped into a data pipeline without shelling out.
 
