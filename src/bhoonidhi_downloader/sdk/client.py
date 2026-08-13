@@ -18,6 +18,8 @@ from bhoonidhi_downloader.core.auth import command as _auth
 from bhoonidhi_downloader.core.auth.utils import load_session_info
 from bhoonidhi_downloader.schemas import SessionSchema
 from bhoonidhi_downloader.sdk.archive import ArchiveNamespace
+from bhoonidhi_downloader.sdk.cart import CartNamespace
+from bhoonidhi_downloader.sdk.query import QueryNamespace
 
 
 class BhoonidhiClient:
@@ -31,6 +33,8 @@ class BhoonidhiClient:
     def __init__(self, session: SessionSchema | None = None) -> None:
         self._session = session
         self.archive = ArchiveNamespace()
+        self.query = QueryNamespace(self)
+        self.cart = CartNamespace(self)
 
     @property
     def account(self) -> SessionSchema | None:
