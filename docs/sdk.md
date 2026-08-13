@@ -198,10 +198,10 @@ except BhoonidhiAuthError:
 Worked, runnable examples for each namespace live in the repository under
 [`examples/`](https://github.com/geovicco-dev/bhoonidhi-downloader/tree/main/examples):
 
-- `sdk_auth_demo.ipynb` — logging in and the session lifecycle
-- `sdk_archive_demo.ipynb` — browsing and exporting the catalogue
-- `sdk_query_demo.ipynb` — search, saved queries, and downloads
-- `sdk_cart_demo.ipynb` — staging, listing, and removing cart items
+- `auth_demo.ipynb` — logging in and the session lifecycle
+- `archive_demo.ipynb` — browsing and exporting the catalogue
+- `query_demo.ipynb` — search, saved queries, and downloads
+- `cart_demo.ipynb` — staging, listing, and removing cart items
 
 See the [API Reference](api/index.md) for every method, argument, and return
 type.
