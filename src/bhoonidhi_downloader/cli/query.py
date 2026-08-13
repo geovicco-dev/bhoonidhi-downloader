@@ -155,11 +155,24 @@ def download(
     plain: bool = typer.Option(
         False, "--plain", help="Print the whole table at once instead of scrolling"
     ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Show what would be downloaded without downloading anything "
+        "or requiring a session",
+    ),
 ) -> None:
     """Download scenes from a saved query.
 
     Priced scenes are skipped; interrupted downloads restart from scratch.
     Re-authenticates automatically if the session has expired.
+
+    Examples:
+      bhd query download velvet-wren -o ./scenes            # download it
+      bhd query download velvet-wren -o ./scenes --dry-run   # preview only
+
+    --dry-run prints what would happen — attempted, skipped, or already
+    present — without touching the network or needing to be logged in.
     """
     if (
         run_query_download(
@@ -171,6 +184,7 @@ def download(
             force,
             password,
             interactive=False if plain else None,
+            dry_run=dry_run,
         )
         is None
     ):

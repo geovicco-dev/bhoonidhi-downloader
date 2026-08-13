@@ -18,6 +18,7 @@ from bhoonidhi_downloader.viewer import Column, show_table
 
 from ..search.utils import create_clickable_link
 from .client import DownloadOutcome
+from .preview import DownloadPreview
 
 STATUS_STYLE = {
     "downloaded": "bold green",
@@ -26,6 +27,24 @@ STATUS_STYLE = {
     "skipped_on_order": "yellow",
     "skipped_priced": "magenta",
     "failed": "bold red",
+}
+
+PREVIEW_STATUS_STYLE = {
+    "would_download": "bold green",
+    "may_404": "dim cyan",
+    "already_here": "cyan",
+    "already_elsewhere": "yellow",
+    "skipped_on_order": "yellow",
+    "skipped_priced": "magenta",
+}
+
+PREVIEW_STATUS_LABEL = {
+    "would_download": "Would download",
+    "may_404": "Archived (may 404)",
+    "already_here": "Already here",
+    "already_elsewhere": "Already downloaded elsewhere",
+    "skipped_on_order": "Skipped (on-order)",
+    "skipped_priced": "Skipped (priced)",
 }
 
 BHOONIDHI_BROWSE_ORDER_URL = "https://bhoonidhi.nrsc.gov.in/bhoonidhi/index.html#"
@@ -124,3 +143,56 @@ def render_download_report(
             f"has not staged them for direct download. Request them on the {portal_link} "
             "to have them made available.\n"
         )
+
+
+def _preview_columns() -> list[Column]:
+    def _status(p: DownloadPreview, _i: int) -> str:
+        style = PREVIEW_STATUS_STYLE.get(p.status, "white")
+        label = PREVIEW_STATUS_LABEL.get(p.status, p.status)
+        return f"[{style}]{label}[/]"
+
+    def _note(p: DownloadPreview, _i: int) -> str:
+        return p.note or "-"
+
+    return [
+        Column("Scene ID", lambda p, _i: p.scene_id, style="white", width=46),
+        Column("Status", _status, width=30),
+        Column("Filename", lambda p, _i: p.filename, style="dim", width=40),
+        Column("Note", _note, style="yellow", width=50),
+    ]
+
+
+def render_download_preview(
+    console: Console,
+    previews: list[DownloadPreview],
+    out_dir: str,
+    interactive: bool | None = None,
+) -> None:
+    """Render a dry-run table: what 'query download' would do, without doing it.
+
+    Same table/summary shape as the real download report, so reading a
+    dry run and reading a real run feel the same — only the verbs change.
+    """
+    show_table(
+        console, previews, _preview_columns(), "Download Preview (dry run)", interactive
+    )
+
+    counts: dict[str, int] = {}
+    for p in previews:
+        counts[p.status] = counts.get(p.status, 0) + 1
+
+    would_download = counts.get("would_download", 0) + counts.get("may_404", 0)
+    console.print(
+        f"\n[bold]Would attempt {would_download} download(s)[/] into {out_dir}"
+    )
+
+    summary = ", ".join(
+        f"{v} {PREVIEW_STATUS_LABEL.get(k, k).lower()}" for k, v in counts.items()
+    )
+    if summary:
+        console.print(f"[dim]{summary}[/]")
+
+    console.print(
+        "\n[dim]This is a preview only — nothing was downloaded. Re-run without "
+        "--dry-run to fetch these scenes.[/]\n"
+    )

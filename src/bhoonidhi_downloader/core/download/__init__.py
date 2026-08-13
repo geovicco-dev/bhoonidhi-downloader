@@ -2,7 +2,8 @@
 
 from ..search.availability import is_downloadable
 from .client import DownloadManager, DownloadOutcome, sha256_of_file
-from .render import make_progress, render_download_report
+from .preview import DownloadPreview, build_preview
+from .render import make_progress, render_download_preview, render_download_report
 from .utils import build_download_url, download_filename
 
 __all__ = [
@@ -14,7 +15,11 @@ __all__ = [
     "DownloadManager",
     "DownloadOutcome",
     "sha256_of_file",
+    # Preview (dry run)
+    "DownloadPreview",
+    "build_preview",
     # Render functions
     "make_progress",
+    "render_download_preview",
     "render_download_report",
 ]

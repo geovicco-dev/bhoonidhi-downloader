@@ -15,8 +15,10 @@ from bhoonidhi_downloader.core.auth.utils import load_session_info, save_session
 from bhoonidhi_downloader.core.download import (
     DownloadManager,
     DownloadOutcome,
+    build_preview,
     is_downloadable,
     make_progress,
+    render_download_preview,
     render_download_report,
     sha256_of_file,
 )
@@ -381,6 +383,7 @@ def run_query_download(
     force: bool = False,
     password: str | None = None,
     interactive: bool | None = None,
+    dry_run: bool = False,
 ) -> list[DownloadOutcome] | None:
     """Download open-access scenes from a saved query to ``out``.
 
@@ -395,6 +398,15 @@ def run_query_download(
     if given — see ``ensure_session``). Returns the list of
     per-scene DownloadOutcome, or None if the query, scene selection, or
     authentication couldn't be resolved.
+
+    ``dry_run`` prints what would happen — which scenes would be
+    attempted, which would be skipped and why, which are already
+    downloaded — without fetching anything. It needs no authentication,
+    since it never calls the portal; it classifies scenes with the exact
+    same rules a real download uses (availability, on-disk duplicates,
+    recorded duplicates elsewhere), just without the network request.
+    Always returns an empty list on success — the preview table is the
+    report, there's no per-scene outcome to add to it.
     """
     query = load_query(slug)
     if query is None:
@@ -409,6 +421,14 @@ def run_query_download(
     if not scenes:
         console.print("[yellow]No scenes matched the given --select values.[/]")
         return None
+
+    if dry_run:
+        out_dir = Path(out).expanduser().resolve()
+        previews = build_preview(scenes, out_dir, force=force)
+        render_download_preview(
+            console, previews, str(out_dir), interactive=interactive
+        )
+        return []
 
     jwt = ensure_session(console, password)
     if not jwt:
