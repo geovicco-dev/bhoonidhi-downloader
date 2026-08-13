@@ -14,8 +14,17 @@ def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
     sdate: str = cfg.start_date.strftime("%b%%2F%d%%2F%Y").upper()
     edate: str = cfg.end_date.strftime("%b%%2F%d%%2F%Y").upper()
     assert cfg.satellite is not None
-    assert cfg.sensor is not None
-    col_meta = manifest[cfg.satellite][cfg.sensor]
+
+    # No sensor given: search every sensor under this satellite instead of
+    # failing. The portal itself treats a satellite-only search as "all
+    # sensors" — this just matches that instead of erroring with a bare
+    # AssertionError (which surfaced to users as an opaque "Search failed").
+    if cfg.sensor:
+        col_meta = manifest[cfg.satellite][cfg.sensor]
+    else:
+        col_meta = [
+            col for cols in manifest[cfg.satellite].values() for col in cols
+        ]
 
     # The portal URL-decodes selSats server-side (that's why the comma
     # separator has to be sent as %2C rather than a literal ","). Any
