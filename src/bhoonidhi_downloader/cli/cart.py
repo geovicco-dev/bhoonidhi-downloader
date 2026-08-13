@@ -4,11 +4,29 @@ from datetime import datetime
 
 import typer
 
+from bhoonidhi_downloader.cli._session import ensure_session
+from bhoonidhi_downloader.core.auth.utils import load_session_info
+from bhoonidhi_downloader.core.cart.client import CartClient
 from bhoonidhi_downloader.core.cart.command import (
+    cart_title,
+    collect_removable,
+    resolve_add_scenes,
     run_cart_add,
     run_cart_list,
     run_cart_rm,
+    srt_to_slug,
 )
+from bhoonidhi_downloader.core.cart.render import (
+    cart_progress,
+    render_add_summary,
+    render_cart_error,
+    render_cart_items,
+    render_no_session,
+    render_removed_summary,
+)
+from bhoonidhi_downloader.core.query.render import render_query_not_found
+from bhoonidhi_downloader.core.search.availability import parse_availability_filter
+from bhoonidhi_downloader.exceptions import BhoonidhiError, BhoonidhiNotFoundError
 from bhoonidhi_downloader.logger import get_console
 
 cart_app = typer.Typer(
@@ -19,6 +37,25 @@ cart_app = typer.Typer(
 )
 
 console = get_console()
+
+
+def _build_client(password: str | None = None) -> CartClient | None:
+    """Build a CartClient from the saved session, re-authenticating if needed.
+
+    Reuses the shared interactive session handling so cart commands behave
+    the same way ``query download`` does — prompting on an expired session
+    when interactive, and failing cleanly when not.
+    """
+    jwt = ensure_session(console, password)
+    if not jwt:
+        return None
+
+    user_id = load_session_info().get("userId")
+    if not user_id:
+        render_no_session(console)
+        return None
+
+    return CartClient(jwt=jwt, user_id=user_id)
 
 
 @cart_app.command("add")
@@ -52,9 +89,34 @@ def add(
     no ordering step in the CLI. An expired session re-authenticates
     automatically when run interactively.
     """
-    if not run_cart_add(
-        console, slug, select, interactive=False if plain else None
-    ):
+    interactive = False if plain else None
+
+    try:
+        scenes = resolve_add_scenes(slug, select)
+    except BhoonidhiNotFoundError as e:
+        render_query_not_found(console, slug)
+        raise typer.Exit(code=1) from e
+
+    if not scenes:
+        console.print("[yellow]No scenes matched that selection.[/]")
+        raise typer.Exit(code=1)
+
+    client = _build_client()
+    if client is None:
+        raise typer.Exit(code=1)
+
+    with cart_progress("Adding to cart") as progress:
+        task = progress.add_task("add", total=len(scenes))
+
+        def on_progress(_scene_id: str) -> None:
+            progress.advance(task)
+
+        added, failed, srt = run_cart_add(
+            client, slug, select=select, on_progress=on_progress
+        )
+
+    render_add_summary(console, added, failed, srt=srt, interactive=interactive)
+    if not added:
         raise typer.Exit(code=1)
 
 
@@ -105,15 +167,34 @@ def list_cart(
     no date option this shows today only — widen it with --since/--until
     or --last to see scenes staged on earlier days.
     """
-    if not run_cart_list(
-        console,
-        since=since,
-        until=until,
-        last=last,
-        interactive=False if plain else None,
-        filter_by=filter_by,
-    ):
+    interactive = False if plain else None
+
+    try:
+        filter_states = parse_availability_filter(filter_by)
+    except ValueError as e:
+        console.print(f"[bold red]{e}[/]")
+        raise typer.Exit(code=1) from e
+
+    client = _build_client()
+    if client is None:
         raise typer.Exit(code=1)
+
+    try:
+        items, kinds, dates = run_cart_list(
+            client, since=since, until=until, last=last, filter_states=filter_states
+        )
+    except BhoonidhiError as e:
+        render_cart_error(console, str(e))
+        raise typer.Exit(code=1) from e
+
+    render_cart_items(
+        console,
+        items,
+        cart_title(kinds, dates),
+        srt_to_slug=srt_to_slug(),
+        interactive=interactive,
+        filter_states=filter_states,
+    )
 
 
 @cart_app.command("rm")
@@ -133,9 +214,7 @@ def rm(
     until: datetime = typer.Option(
         None, "--until", formats=["%Y-%m-%d"], help="Window end (YYYY-MM-DD)"
     ),
-    last: str = typer.Option(
-        None, "--last", help="Look back a preset, e.g. '1 week'"
-    ),
+    last: str = typer.Option(None, "--last", help="Look back a preset, e.g. '1 week'"),
     filter_by: list[str] = typer.Option(
         None,
         "--filter",
@@ -154,13 +233,51 @@ def rm(
     removing by number, pass the same --filter and date window you
     listed with, so the numbering lines up.
     """
-    if not run_cart_rm(
-        console,
-        slug,
-        select,
-        since=since,
-        until=until,
-        last=last,
-        filter_by=filter_by,
-    ):
+    try:
+        filter_states = parse_availability_filter(filter_by)
+    except ValueError as e:
+        console.print(f"[bold red]{e}[/]")
+        raise typer.Exit(code=1) from e
+
+    client = _build_client()
+    if client is None:
+        raise typer.Exit(code=1)
+
+    try:
+        scenes = collect_removable(
+            client,
+            slug,
+            select,
+            since=since,
+            until=until,
+            last=last,
+            filter_states=filter_states,
+        )
+    except BhoonidhiNotFoundError as e:
+        render_query_not_found(console, slug)
+        raise typer.Exit(code=1) from e
+    except BhoonidhiError as e:
+        render_cart_error(console, str(e))
+        raise typer.Exit(code=1) from e
+
+    if not scenes:
+        if slug is None:
+            console.print(
+                "[yellow]No cart rows matched that selection.[/] "
+                "Run [bold]bhd cart list[/bold] to see the numbers."
+            )
+        else:
+            console.print("[yellow]No scenes matched that selection.[/]")
+        raise typer.Exit(code=1)
+
+    with cart_progress("Removing from cart") as progress:
+        task = progress.add_task("rm", total=len(scenes))
+
+        def on_progress(_scene_id: str) -> None:
+            progress.advance(task)
+
+        removed, failed = run_cart_rm(client, scenes, on_progress=on_progress)
+
+    render_removed_summary(console, removed, failed)
+    if not removed:
         raise typer.Exit(code=1)
