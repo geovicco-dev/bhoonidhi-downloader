@@ -8,15 +8,20 @@ edit_uri: edit/main/docs/
 nav:
   - Home: index.md
   - Examples: examples.md
+  - Python SDK: sdk.md
   - API Reference:
       - Overview: api/index.md
-      - Auth: api/auth.md
+      - Client: api/client.md
       - Archive: api/archive.md
-      - Search: api/search.md
       - Query: api/query.md
-      - Download: api/download.md
       - Cart: api/cart.md
-      - Schemas: api/schemas.md
+      - Errors: api/errors.md
+      - Data models: api/schemas.md
+      - Notebook examples:
+          - Auth: api/notebooks/auth.ipynb
+          - Archive: api/notebooks/archive.ipynb
+          - Query: api/notebooks/query.ipynb
+          - Cart: api/notebooks/cart.ipynb
   - Changelog: CHANGELOG.md
 
 theme:
@@ -54,6 +59,7 @@ theme:
 
 plugins:
   - search
+  - mkdocs-jupyter
   - mkdocstrings:
       handlers:
         python:

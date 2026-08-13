@@ -1,15 +1,13 @@
-# Schemas
+# Data models
 
-Pydantic models shared across all domains, under `bhoonidhi_downloader.schemas`.
-
-::: bhoonidhi_downloader.schemas.aoi.AOISchema
-
-::: bhoonidhi_downloader.schemas.search.SearchSchema
+The Pydantic models the SDK returns, under `bhoonidhi_downloader.schemas`. A
+`QuerySchema` comes back from `client.query.create`, `.show`, `.fork`, and
+`.refresh`; the others describe the values it carries.
 
 ::: bhoonidhi_downloader.schemas.query.QuerySchema
 
-::: bhoonidhi_downloader.schemas.scene.SceneSchema
+::: bhoonidhi_downloader.schemas.search.SearchSchema
+
+::: bhoonidhi_downloader.schemas.aoi.AOISchema
 
 ::: bhoonidhi_downloader.schemas.session.SessionSchema
-
-::: bhoonidhi_downloader.schemas.download.DownloadSchema

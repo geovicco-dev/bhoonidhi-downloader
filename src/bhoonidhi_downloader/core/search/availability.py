@@ -15,6 +15,8 @@ not.
 
 from enum import Enum
 
+from bhoonidhi_downloader.exceptions import BhoonidhiValidationError
+
 DIRECT_DOWNLOAD_PRICED = "OpenData_DirectDownload"
 ON_ORDER_PRICED = "OpenData_OnOrder"
 
@@ -156,7 +158,9 @@ def parse_availability_filter(values: list[str] | None) -> set[Availability] | N
     in the CLI. Returns None (no filter) when ``values`` is empty/None.
 
     Raises:
-        ValueError: on an unrecognised word, naming the valid ones.
+        BhoonidhiValidationError: on an unrecognised word, naming the valid
+            ones. Subclasses ``ValueError``, so existing ``except ValueError``
+            handlers still catch it.
     """
     if not values:
         return None
@@ -168,6 +172,8 @@ def parse_availability_filter(values: list[str] | None) -> set[Availability] | N
         state = AVAILABILITY_ALIASES.get(key)
         if state is None:
             valid = ", ".join(sorted(AVAILABILITY_ALIASES))
-            raise ValueError(f"Unknown filter '{token}'. Valid values: {valid}.")
+            raise BhoonidhiValidationError(
+                f"Unknown filter '{token}'. Valid values: {valid}."
+            )
         states.add(state)
     return states

@@ -1,13 +1,15 @@
 # Archive
 
-Backs `bhd archive` — fetching and caching the live satellite/sensor catalog from Bhoonidhi.
+Reachable as `client.archive`. Browse and export the portal's satellite and
+sensor catalogue. No login required.
 
-## Client
+```python
+records = client.archive.list()
+client.archive.export("archive.json")
+```
 
-::: bhoonidhi_downloader.core.archive.client.ArchiveManager
-
-## Command handlers
-
-::: bhoonidhi_downloader.core.archive.command.run_archive_list
-
-::: bhoonidhi_downloader.core.archive.command.run_archive_export
+::: bhoonidhi_downloader.sdk.archive.ArchiveNamespace
+    options:
+      members:
+        - list
+        - export

@@ -1,39 +1,28 @@
-"""Query command handlers: create, list, show, rename, fork, export, refresh, rm, download."""
+"""Query command handlers: create, list, show, rename, fork, refresh, rm, download.
 
-import getpass
+Command logic is pure: it returns plain data or raises a typed
+:class:`~bhoonidhi_downloader.exceptions.BhoonidhiError`. Rendering, progress
+bars, and interactive prompts live in the CLI layer (``cli/query.py``).
+"""
+
 import logging
-import sys
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from rich.console import Console
-
 from bhoonidhi_downloader.core.archive import ArchiveManager
-from bhoonidhi_downloader.core.auth.client import AuthManager
-from bhoonidhi_downloader.core.auth.utils import load_session_info, save_session_info
 from bhoonidhi_downloader.core.download import (
     DownloadManager,
     DownloadOutcome,
-    build_preview,
     is_downloadable,
-    make_progress,
-    render_download_preview,
-    render_download_report,
-    sha256_of_file,
-)
-from bhoonidhi_downloader.core.search.availability import (
-    AVAILABILITY_LABEL,
-    AVAILABILITY_LABEL_STYLE,
-    Availability,
-    availability_of,
 )
 from bhoonidhi_downloader.core.search.client import SearchManager
+from bhoonidhi_downloader.exceptions import BhoonidhiNotFoundError
 from bhoonidhi_downloader.schemas import (
     AOISchema,
     QuerySchema,
     SearchSchema,
-    SessionSchema,
 )
 
 from .client import (
@@ -45,21 +34,16 @@ from .client import (
     load_query,
     save_query,
 )
-from .render import (
-    render_query_deleted,
-    render_query_list,
-    render_query_not_found,
-    render_query_saved,
-    render_refresh_result,
-)
 
 logger = logging.getLogger(__name__)
 
 REFRESH_LOOKBACK_DAYS = 3
 
+# scene_id, bytes_so_far, total_bytes (None if unknown)
+ProgressCallback = Callable[[str, int, "int | None"], None]
+
 
 def run_query_create(
-    console: Console,
     minx: float,
     maxx: float,
     miny: float,
@@ -70,32 +54,29 @@ def run_query_create(
     sensor: str | None = None,
     name: str | None = None,
     description: str | None = None,
-    interactive: bool | None = None,
 ) -> QuerySchema | None:
     """Run a search and save the result as a new named query.
 
-    Returns the saved QuerySchema on success, None on failure.
-    """
-    from bhoonidhi_downloader.core.search.render import render_search_results
+    Returns the saved query, or None if the search matched no scenes (in
+    which case nothing is saved).
 
+    Raises:
+        BhoonidhiAPIError: if the search request fails.
+        BhoonidhiValidationError: if the satellite/sensor is invalid.
+    """
     aoi = AOISchema(name="aoi", max_lat=maxy, min_lat=miny, max_lon=maxx, min_lon=minx)
 
-    try:
-        config = SearchSchema(
-            aoi=aoi,
-            satellite=satellite,
-            sensor=sensor,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        manifest = ArchiveManager().build_manifest()
-        scenes = SearchManager(config, manifest).search()
-    except Exception as e:
-        console.print(f"[bold red]Search failed:[/] {e}")
-        return None
+    config = SearchSchema(
+        aoi=aoi,
+        satellite=satellite,
+        sensor=sensor,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    manifest = ArchiveManager().build_manifest()
+    scenes = SearchManager(config, manifest).search()
 
     if not scenes:
-        console.print("No scenes found.")
         return None
 
     scenes.sort(
@@ -119,85 +100,57 @@ def run_query_create(
         scenes=scenes,
     )
     save_query(query)
-
-    render_search_results(
-        console, scenes, slug=slug, interactive=interactive, header_srt=True
-    )
-    render_query_saved(console, query)
     return query
 
 
-def run_query_list(console: Console, interactive: bool | None = None) -> None:
-    """List all saved queries."""
-    queries = list_queries()
-    render_query_list(console, queries, interactive=interactive)
+def run_query_list() -> list[QuerySchema]:
+    """Return every saved query."""
+    return list_queries()
 
 
-def run_query_show(
-    console: Console,
-    slug: str,
-    interactive: bool | None = None,
-    filter_by: list[str] | None = None,
-) -> bool:
-    """Redisplay a saved query's cached scenes. Returns True if found.
+def run_query_show(slug: str) -> QuerySchema:
+    """Return a saved query by slug.
 
-    ``filter_by`` narrows the table to one or more availability states
-    (``ready``, ``archived``, ``onorder``, ``priced``) — see
-    ``parse_availability_filter``.
+    Raises:
+        BhoonidhiNotFoundError: if no query has that slug.
     """
-    from bhoonidhi_downloader.core.search.availability import (
-        parse_availability_filter,
-    )
-    from bhoonidhi_downloader.core.search.render import render_search_results
-
     query = load_query(slug)
     if query is None:
-        render_query_not_found(console, slug)
-        return False
-
-    try:
-        filter_states = parse_availability_filter(filter_by)
-    except ValueError as e:
-        console.print(f"[bold red]{e}[/]")
-        return False
-
-    console.print(f"\n[bold]{query.name}[/]\n{query.description}\n")
-    render_search_results(
-        console, query.scenes, slug=slug, interactive=interactive,
-        filter_states=filter_states,
-    )
-    return True
+        raise BhoonidhiNotFoundError(slug)
+    return query
 
 
 def run_query_rename(
-    console: Console, slug: str, name: str | None = None, description: str | None = None
-) -> bool:
-    """Update a saved query's name/description in place. Returns True if found."""
+    slug: str, name: str | None = None, description: str | None = None
+) -> QuerySchema:
+    """Update a saved query's name/description in place and return it.
+
+    Raises:
+        BhoonidhiNotFoundError: if no query has that slug.
+    """
     query = load_query(slug)
     if query is None:
-        render_query_not_found(console, slug)
-        return False
+        raise BhoonidhiNotFoundError(slug)
 
     if name:
         query.name = name
     if description:
         query.description = description
     save_query(query)
-    console.print(f"[green]Updated '{slug}'.[/]")
-    return True
+    return query
 
 
-def run_query_fork(
-    console: Console, slug: str, name: str | None = None
-) -> QuerySchema | None:
+def run_query_fork(slug: str, name: str | None = None) -> QuerySchema:
     """Clone a saved query's params + scenes under a new slug (no re-query).
 
-    Returns the new QuerySchema on success, None if the source wasn't found.
+    Returns the new query.
+
+    Raises:
+        BhoonidhiNotFoundError: if the source query doesn't exist.
     """
     source = load_query(slug)
     if source is None:
-        render_query_not_found(console, slug)
-        return None
+        raise BhoonidhiNotFoundError(slug)
 
     new_slug = generate_slug()
     fork = source.model_copy(
@@ -208,53 +161,53 @@ def run_query_fork(
         }
     )
     save_query(fork)
-    console.print(f"[green]Forked '{slug}' \u2192 '{new_slug}'.[/]")
     return fork
 
 
-def run_query_rm(console: Console, slug: str) -> bool:
-    """Delete a saved query. Returns True if it existed."""
-    if delete_query(slug):
-        render_query_deleted(console, slug)
-        return True
-    render_query_not_found(console, slug)
-    return False
+def run_query_rm(slug: str) -> None:
+    """Delete a saved query.
+
+    Raises:
+        BhoonidhiNotFoundError: if no query has that slug.
+    """
+    if not delete_query(slug):
+        raise BhoonidhiNotFoundError(slug)
 
 
-def run_query_refresh(console: Console, slug: str) -> QuerySchema | None:
+def run_query_refresh(slug: str) -> tuple[QuerySchema, int | None]:
     """Re-query the portal for scenes newer than the query's stored end_date.
 
-    AOI, satellite, and sensor stay fixed. Only the date window advances \u2014
-    from (stored end_date - lookback buffer) through today \u2014 to catch
+    AOI, satellite, and sensor stay fixed. Only the date window advances —
+    from (stored end_date - lookback buffer) through today — to catch
     late-arriving archive backfill without re-fetching the full history.
-    New scenes are deduped by ID and appended. Returns the updated
-    QuerySchema on success, None if the query wasn't found.
+    New scenes are deduped by ID and appended.
+
+    Returns ``(query, added)`` where ``added`` is the count of new scenes,
+    or ``None`` when the query was already up to date (no re-query run).
+
+    Raises:
+        BhoonidhiNotFoundError: if no query has that slug.
+        BhoonidhiAPIError: if the search request fails.
     """
     query = load_query(slug)
     if query is None:
-        render_query_not_found(console, slug)
-        return None
+        raise BhoonidhiNotFoundError(slug)
 
     refresh_start = query.end_date - timedelta(days=REFRESH_LOOKBACK_DAYS)
     refresh_end = datetime.now()
 
     if refresh_start >= refresh_end:
-        console.print(f"[yellow]'{slug}' is already up to date.[/]")
-        return query
+        return query, None
 
-    try:
-        config = SearchSchema(
-            aoi=query.aoi,
-            satellite=query.satellite,
-            sensor=query.sensor,
-            start_date=refresh_start,
-            end_date=refresh_end,
-        )
-        manifest = ArchiveManager().build_manifest()
-        new_scenes = SearchManager(config, manifest).search()
-    except Exception as e:
-        console.print(f"[bold red]Refresh failed:[/] {e}")
-        return None
+    config = SearchSchema(
+        aoi=query.aoi,
+        satellite=query.satellite,
+        sensor=query.sensor,
+        start_date=refresh_start,
+        end_date=refresh_end,
+    )
+    manifest = ArchiveManager().build_manifest()
+    new_scenes = SearchManager(config, manifest).search()
 
     seen_ids = {s.get("ID") for s in query.scenes if s.get("ID")}
     added: list[dict[str, Any]] = [
@@ -267,9 +220,7 @@ def run_query_refresh(console: Console, slug: str) -> QuerySchema | None:
     )
     query.end_date = refresh_end
     save_query(query)
-
-    render_refresh_result(console, slug, len(added), len(query.scenes))
-    return query
+    return query, len(added)
 
 
 def resolve_scene_selection(
@@ -306,229 +257,33 @@ def resolve_scene_selection(
     return resolved
 
 
-def ensure_session(console: Console, password: str | None) -> str | None:
-    """Get a working JWT for download, re-authenticating if the stored one is stale.
-
-    The password is never persisted — it only lives in memory for the
-    duration of the call. Two paths, depending on how this is invoked:
-
-    - Interactive terminal: if the session's expired, prompt for the
-      password here via ``getpass`` and log in fresh, so no separate
-      'auth login' step is needed.
-    - Non-interactive (script, cron, CI): no prompting. Callers pass
-      ``password`` explicitly to opt into the same re-auth, or handle a
-      ``None`` return themselves — blocking on stdin would hang a script
-      that isn't expecting to be asked for input.
-
-    Returns a valid JWT, or None if no working session could be obtained.
-    """
-    session_dict = load_session_info()
-    jwt = session_dict.get("jwt")
-    username = session_dict.get("username")
-
-    if jwt:
-        try:
-            if AuthManager(cfg=SessionSchema(username=username)).validate_session(jwt):
-                return jwt
-        except Exception:
-            logger.debug("Stored session failed validation; falling back to re-auth.")
-
-    if password is None:
-        if not sys.stdin.isatty():
-            console.print(
-                "[bold red]Not authenticated.[/] Run 'auth login' first, or "
-                "pass password= to re-authenticate automatically when calling "
-                "this from a script."
-            )
-            return None
-        if not username:
-            console.print("[bold red]Not authenticated.[/] Run 'auth login' first.")
-            return None
-        console.print(
-            f"[yellow]Session expired.[/] Re-enter the password for '{username}' "
-            "to continue (nothing is written to disk):"
-        )
-        password = getpass.getpass("Password: ")
-
-    try:
-        am = AuthManager(cfg=SessionSchema(username=username, password=password))
-        session = am.login()
-    except Exception as e:
-        console.print(f"[bold red]Re-authentication failed:[/] {e}")
-        return None
-
-    save_session_info(dict(session))
-    console.print("[green]✓[/] Re-authenticated.")
-    return session.jwt
-
-
-def _render_selection_summary(console: Console, scenes: list[dict[str, Any]]) -> None:
-    """Break the selection down by availability before downloading."""
-    counts: dict[Availability, int] = {}
-    for scene in scenes:
-        state = availability_of(scene)
-        counts[state] = counts.get(state, 0) + 1
-
-    def described(states: list[Availability]) -> str:
-        return ", ".join(
-            f"[{AVAILABILITY_LABEL_STYLE[s]}]{counts[s]} {AVAILABILITY_LABEL[s]}[/]"
-            for s in states
-            if counts.get(s)
-        )
-
-    attempting = described(
-        [Availability.DIRECT_AVAILABLE, Availability.DIRECT_UNAVAILABLE]
-    )
-    if attempting:
-        caveat = (
-            " [dim](Archived may 404)[/]"
-            if counts.get(Availability.DIRECT_UNAVAILABLE)
-            else ""
-        )
-        console.print(f"Downloading {attempting}{caveat}")
-
-    skipping = described([Availability.ON_ORDER, Availability.PRICED])
-    if skipping:
-        console.print(
-            f"Skipping {skipping} [dim]— request those on the Bhoonidhi portal[/]"
-        )
-
-
-def run_query_download(
-    console: Console,
-    slug: str,
+def execute_download(
+    query: QuerySchema,
+    eligible: list[dict[str, Any]],
+    jwt: str,
     out: str,
-    select: list[str] | None = None,
     parallel: int = 4,
     force: bool = False,
-    password: str | None = None,
-    interactive: bool | None = None,
-    dry_run: bool = False,
-) -> list[DownloadOutcome] | None:
-    """Download open-access scenes from a saved query to ``out``.
+    on_progress: ProgressCallback | None = None,
+) -> list[DownloadOutcome]:
+    """Download the given open-access scenes and record the results.
 
-    Priced/on-order scenes are skipped — they have to be requested on the
-    Bhoonidhi portal. Downloads are verified with a SHA256 written
-    back onto the query's cached scene record, so re-running is fast and
-    idempotent unless ``force`` is set. Bhoonidhi's servers don't honor
-    HTTP Range requests, so an interrupted download cannot be resumed —
-    a leftover partial file is discarded and the scene is re-fetched from
-    scratch. If the stored session has expired, this re-authenticates
-    automatically (prompting interactively on a CLI, or using ``password``
-    if given — see ``ensure_session``). Returns the list of
-    per-scene DownloadOutcome, or None if the query, scene selection, or
-    authentication couldn't be resolved.
+    The caller resolves and filters the scenes (``eligible`` must already be
+    downloadable). Download state (path/sha256/downloaded_at) is written back
+    onto the query's cached scene records so re-runs are skip-fast, and the
+    query is saved. ``on_progress(scene_id, downloaded, total)`` is invoked as
+    bytes arrive, if given.
 
-    ``dry_run`` prints what would happen — which scenes would be
-    attempted, which would be skipped and why, which are already
-    downloaded — without fetching anything. It needs no authentication,
-    since it never calls the portal; it classifies scenes with the exact
-    same rules a real download uses (availability, on-disk duplicates,
-    recorded duplicates elsewhere), just without the network request.
-    Always returns an empty list on success — the preview table is the
-    report, there's no per-scene outcome to add to it.
+    Returns the per-scene outcomes (empty if ``eligible`` was empty).
     """
-    query = load_query(slug)
-    if query is None:
-        render_query_not_found(console, slug)
-        return None
-
-    if not query.scenes:
-        console.print(f"[yellow]'{slug}' has no scenes to download.[/]")
-        return None
-
-    scenes = resolve_scene_selection(query.scenes, select)
-    if not scenes:
-        console.print("[yellow]No scenes matched the given --select values.[/]")
-        return None
-
-    if dry_run:
-        out_dir = Path(out).expanduser().resolve()
-        previews = build_preview(scenes, out_dir, force=force)
-        render_download_preview(
-            console, previews, str(out_dir), interactive=interactive
-        )
-        return []
-
-    jwt = ensure_session(console, password)
-    if not jwt:
-        return None
-
-    eligible = [s for s in scenes if is_downloadable(s)]
-    _render_selection_summary(console, scenes)
-
-    out_dir = Path(out).expanduser().resolve()
-    already_here = 0
-    elsewhere: list[tuple[dict[str, Any], Path]] = []
-    for s in eligible:
-        record = s.get("_bhx_download") if not force else None
-        if not record or not record.get("path"):
-            continue
-        recorded_path = Path(record["path"]).expanduser().resolve()
-        if recorded_path.parent == out_dir:
-            already_here += 1
-        elif recorded_path.exists() and record.get("sha256") == sha256_of_file(
-            recorded_path
-        ):
-            elsewhere.append((s, recorded_path))
-        # else: recorded elsewhere but the file's missing or corrupted (SHA
-        # mismatch) -- treat as not-a-duplicate, download normally instead
-        # of warning about a file that's effectively gone.
-
-    if already_here:
-        console.print(
-            f"[cyan]{already_here} scene(s) already downloaded previously to "
-            f"{out_dir} (will skip-fast unless --force).[/]"
-        )
-
-    if elsewhere:
-        console.print(
-            f"\n[yellow]{len(elsewhere)} scene(s) are already downloaded and "
-            f"verified elsewhere:[/]"
-        )
-        for s, path in elsewhere:
-            console.print(f"  \u2022 {s.get('ID')} \u2192 {path}")
-        console.print(
-            f"\nDownloading again to {out_dir} will re-fetch "
-            f"{len(elsewhere)} file(s) unnecessarily."
-        )
-        if not sys.stdin.isatty():
-            console.print(
-                "[bold red]Refusing to proceed non-interactively.[/] Re-run with "
-                "--force to download anyway, or point --out at the existing location."
-            )
-            return None
-        proceed = input("Download to the new location anyway? [y/N] ").strip().lower()
-        if proceed not in ("y", "yes"):
-            console.print("[yellow]Aborted.[/]")
-            return None
-
     if not eligible:
-        console.print("[yellow]No open-access scenes in the selection.[/]")
         return []
 
     manager = DownloadManager(
         jwt=jwt, out_dir=Path(out), parallel=parallel, force=force
     )
-    progress = make_progress()
-    tasks: dict[str, Any] = {}
+    outcomes = manager.run(eligible, on_progress=on_progress)
 
-    def on_progress(scene_id: str, downloaded: int, total: int | None) -> None:
-        if scene_id not in tasks:
-            tasks[scene_id] = progress.add_task(
-                "download", scene_id=scene_id, total=total or 0
-            )
-        task_id = tasks[scene_id]
-        if total and progress.tasks[task_id].total != total:
-            progress.update(task_id, total=total)
-        progress.update(task_id, completed=downloaded)
-
-    with progress:
-        outcomes = manager.run(eligible, on_progress=on_progress)
-
-    # Write download state (path/sha256/downloaded_at) back onto the
-    # query's cached scene records so 'query show' can reflect it and
-    # re-downloads are skip-fast.
     outcomes_by_id = {o.scene_id: o for o in outcomes}
     for scene in query.scenes:
         scene_id = scene.get("ID")
@@ -540,6 +295,41 @@ def run_query_download(
                 "downloaded_at": datetime.now().isoformat(),
             }
     save_query(query)
-
-    render_download_report(console, outcomes, interactive=interactive)
     return outcomes
+
+
+def run_query_download(
+    slug: str,
+    out: str,
+    jwt: str,
+    select: list[str] | None = None,
+    parallel: int = 4,
+    force: bool = False,
+    on_progress: ProgressCallback | None = None,
+) -> list[DownloadOutcome]:
+    """Download open-access scenes from a saved query to ``out``.
+
+    Priced/on-order scenes are skipped automatically, and scenes already
+    present in ``out`` are skip-fast unless ``force`` is set. Requires a
+    valid ``jwt`` — this never prompts for credentials; obtain a token via
+    ``BhoonidhiClient.login`` first. Returns the per-scene outcomes (empty
+    if the query, selection, or eligibility resolved to nothing).
+
+    Raises:
+        BhoonidhiNotFoundError: if no query has that slug.
+    """
+    query = load_query(slug)
+    if query is None:
+        raise BhoonidhiNotFoundError(slug)
+
+    scenes = resolve_scene_selection(query.scenes, select)
+    eligible = [s for s in scenes if is_downloadable(s)]
+    return execute_download(
+        query,
+        eligible,
+        jwt,
+        out,
+        parallel=parallel,
+        force=force,
+        on_progress=on_progress,
+    )

@@ -174,9 +174,7 @@ wheels/
 .venv
 
 downloads
->>>>>>> rye-cli
 
-*ipynb
 secrets.yaml
 downloads
 .DS_Store

@@ -1,25 +1,24 @@
 # Cart
 
-Backs `bhd cart` — stage scenes from a saved query into the Bhoonidhi Browse & Order cart. Scenes are routed automatically to the portal's direct-download, on-order, or priced cart based on their access type.
+Reachable as `client.cart`. Stage scenes into the Bhoonidhi cart, list what's
+staged, and remove items. All three reach the portal and need a login.
 
-## Command handlers
+```python
+added, failed, srt = client.cart.add("misty-falcon", select=[2, 4])
+client.cart.list(filter_by="priced")
+client.cart.rm(select=[1])
+```
 
-::: bhoonidhi_downloader.core.cart.command.run_cart_add
+::: bhoonidhi_downloader.sdk.cart.CartNamespace
+    options:
+      members:
+        - add
+        - list
+        - rm
 
-::: bhoonidhi_downloader.core.cart.command.run_cart_list
+## Cart kinds
 
-::: bhoonidhi_downloader.core.cart.command.run_cart_rm
+`add` and `rm` report which of the portal's three carts each scene landed in,
+as a `CartKind`.
 
-## Routing and request shaping
-
-::: bhoonidhi_downloader.core.cart.utils.cart_kind_for
-
-::: bhoonidhi_downloader.core.cart.utils.cart_availability_of
-
-::: bhoonidhi_downloader.core.cart.utils.cart_kinds_for_states
-
-::: bhoonidhi_downloader.core.cart.utils.build_add_payload
-
-::: bhoonidhi_downloader.core.cart.utils.build_delete_payload
-
-::: bhoonidhi_downloader.core.cart.scene_spec.make_interface_obj
+::: bhoonidhi_downloader.core.cart.utils.CartKind

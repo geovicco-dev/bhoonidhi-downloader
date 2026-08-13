@@ -11,6 +11,8 @@ from .client import (
     save_query,
 )
 from .command import (
+    execute_download,
+    resolve_scene_selection,
     run_query_create,
     run_query_download,
     run_query_fork,
@@ -19,13 +21,6 @@ from .command import (
     run_query_rename,
     run_query_rm,
     run_query_show,
-)
-from .render import (
-    render_query_deleted,
-    render_query_list,
-    render_query_not_found,
-    render_query_saved,
-    render_refresh_result,
 )
 
 __all__ = [
@@ -47,10 +42,7 @@ __all__ = [
     "run_query_rm",
     "run_query_refresh",
     "run_query_download",
-    # Render functions
-    "render_query_saved",
-    "render_query_list",
-    "render_query_not_found",
-    "render_query_deleted",
-    "render_refresh_result",
+    # Shared helpers
+    "resolve_scene_selection",
+    "execute_download",
 ]

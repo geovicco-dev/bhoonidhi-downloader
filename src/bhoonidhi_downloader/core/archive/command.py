@@ -1,67 +1,53 @@
-"""Archive command handlers."""
+"""Archive command handlers.
+
+Pure logic: these return plain data or raise a typed
+:class:`~bhoonidhi_downloader.exceptions.BhoonidhiError`. Rendering lives in
+the CLI layer (``cli/archive.py``).
+"""
 
 import json
 from pathlib import Path
-
-from rich.console import Console
+from typing import Any
 
 from .client import ArchiveManager
-from .render import render_archive_full, render_archive_satellite
 
 
-def run_archive_list(
-    console: Console,
-    sat: str | None,
-    refresh: bool = False,
-    interactive: bool | None = None,
-) -> bool:
-    """Display satellites/sensors from the archive.
+def run_archive_list(refresh: bool = False) -> list[dict[str, Any]]:
+    """Return the raw archive records (every satellite the portal supports).
 
-    Returns True on success, False on failure.
+    Raises:
+        BhoonidhiAPIError: if the archive can't be fetched.
     """
-    try:
-        am = ArchiveManager(refresh=refresh)
-        raw_data = am.archive
-
-        if sat:
-            render_archive_satellite(console, raw_data, sat, interactive)
-        else:
-            render_archive_full(console, raw_data, interactive)
-
-        return True
-
-    except Exception as e:
-        console.print(f"[bold red]Error fetching archive data:[/] {e}")
-        return False
+    return ArchiveManager(refresh=refresh).archive
 
 
 def run_archive_export(
-    console: Console,
-    path: str,
-    sat: str | None = None,
-    refresh: bool = False,
-) -> bool:
-    """Export archive data (optionally filtered by satellite) to a JSON file.
+    path: str, sat: str | None = None, refresh: bool = False
+) -> list[dict[str, Any]]:
+    """Write the parsed archive (optionally one satellite) to ``path`` as JSON.
 
-    Returns True on success, False on failure.
+    Returns the parsed records that were written.
+
+    Raises:
+        BhoonidhiAPIError: if the archive can't be fetched.
+        OSError: if the file can't be written.
     """
-    try:
-        am = ArchiveManager(refresh=refresh)
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
+    archive = ArchiveManager(refresh=refresh).archive
+    return write_archive_export(archive, path, sat)
 
-        if sat:
-            Path(path).write_text(json.dumps(am.parse(sat), indent=2))
-            console.print(
-                f"[green]Exported archive data for satellite '{sat}' to {path}[/]"
-            )
-            render_archive_satellite(console, am.archive, sat, interactive=False)
-        else:
-            Path(path).write_text(json.dumps(am.parse(), indent=2))
-            console.print(f"[green]Exported full archive data to {path}[/]")
-            render_archive_full(console, am.archive, interactive=False)
 
-        return True
+def write_archive_export(
+    archive: list[dict[str, Any]], path: str, sat: str | None = None
+) -> list[dict[str, Any]]:
+    """Format an already-loaded archive and write it to ``path`` as JSON.
 
-    except Exception as e:
-        console.print(f"[bold red]Error exporting archive data:[/] {e}")
-        return False
+    Returns the parsed records that were written. Lets a caller that already
+    holds the raw archive export it without re-reading it.
+
+    Raises:
+        OSError: if the file can't be written.
+    """
+    parsed = ArchiveManager.format_archive(archive, sat)
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    Path(path).write_text(json.dumps(parsed, indent=2))
+    return parsed

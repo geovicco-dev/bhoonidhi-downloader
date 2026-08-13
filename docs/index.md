@@ -1,6 +1,6 @@
 # Bhoonidhi Downloader
 
-A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/). Every command is also callable from a Python script.
+A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/). Every command is also callable from Python through the `bhoonidhi_downloader.sdk` package — a single `BhoonidhiClient` that mirrors the CLI one-to-one.
 
 [![PyPI version](https://img.shields.io/pypi/v/bhoonidhi-downloader.svg?logo=python&logoColor=white&label=PyPI&style=flat)](https://pypi.org/project/bhoonidhi-downloader/)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://youtu.be/Y3naYuyr3NA)
@@ -19,7 +19,7 @@ A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoo
 - **Cart staging** — stage scenes into the Bhoonidhi cart from a saved query — priced, on-order, open-but-archived, or direct-download — and finish the order in the Browse & Order portal.
 - **Browse the archive** — list every satellite/sensor Bhoonidhi currently supports, live from the portal.
 - **Session management** — log in once, refresh your token when it goes stale; no need to keep re-entering credentials.
-- **Scriptable** — every command has a matching Python function, so you can call searches and downloads directly from a script instead of shelling out.
+- **Scriptable** — every command has a matching method on `BhoonidhiClient`, so you can drive searches and downloads from a Python script or notebook instead of shelling out.
 
 ## Installation
 
@@ -46,17 +46,44 @@ bhd query download misty-falcon --out ./downloads
 
 `query create` prints the scenes it found in a table and tells you what slug it saved them under (here, `misty-falcon` — yours will be different). You don't have to download right away: come back anytime with `bhd query show misty-falcon`, or `bhd query refresh misty-falcon` to check for newly published scenes in the same area.
 
+## Quickstart from Python
+
+The same three steps, from a script — one client, no subprocess:
+
+```python
+from datetime import datetime
+
+from bhoonidhi_downloader.sdk import BhoonidhiClient
+
+client = BhoonidhiClient()
+client.login("my-username", "my-password")
+
+query = client.query.create(
+    91.77, 92.0, 25.496, 25.695,
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    satellite="Sentinel-2A", sensor="MSI",
+)
+
+client.query.download(query.slug, "./downloads")
+```
+
+See the [Python SDK guide](sdk.md) for the full walkthrough and the [API Reference](api/index.md) for every method.
+
 ## Where to go next
 
 <div class="grid cards" markdown>
 
+- :material-language-python: **[Python SDK](sdk.md)**
+
+    The user-facing SDK guide — install, authenticate, search, download, and use the cart from Python.
+
 - :material-code-tags: **[Examples](examples.md)**
 
-    Worked walkthroughs of the CLI, including calling it from a script.
+    Worked walkthroughs of the CLI, including calling it from Python.
 
 - :material-api: **[API Reference](api/index.md)**
 
-    Class and function documentation generated from the source, for calling into the CLI's internals directly.
+    Class and function documentation generated from the source, covering every SDK method.
 
 - :material-file-document-outline: **[Changelog](CHANGELOG.md)**
 

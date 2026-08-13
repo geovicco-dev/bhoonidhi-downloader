@@ -53,7 +53,7 @@ class ArchiveManager:
 
         url = "https://bhoonidhi.nrsc.gov.in/bhoonidhi/SatSenServlet"
         payload = {"userId": "T", "action": "GETAVCONFIG", "userEmail": "abc@xyz.com"}
-        response = requests.post(url, json=payload)
+        response = requests.post(url, json=payload, timeout=30)
 
         if response.status_code != 200:
             raise BhoonidhiAPIError(

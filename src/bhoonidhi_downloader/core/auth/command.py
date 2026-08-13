@@ -1,144 +1,108 @@
-"""Auth command handlers."""
+"""Auth command handlers.
 
-from rich.console import Console
-from rich.status import Status
+These functions carry the auth logic only: they return plain data or raise
+a typed :class:`~bhoonidhi_downloader.exceptions.BhoonidhiError`. All terminal
+rendering lives in the CLI layer (``cli/auth.py``), so the same functions can
+be called directly from a Python script without a console.
+"""
+
+import requests
 
 from bhoonidhi_downloader.core.auth.client import AuthManager
-from bhoonidhi_downloader.core.auth.render import (
-    render_login_error,
-    render_login_success,
-    render_logout_no_session,
-    render_logout_success,
-    render_refresh_error,
-    render_refresh_success,
-    render_status,
-    render_status_no_session,
-)
 from bhoonidhi_downloader.core.auth.utils import (
     SESSION_FILE,
     clear_session_info,
     load_session_info,
     save_session_info,
 )
+from bhoonidhi_downloader.exceptions import (
+    BhoonidhiAuthError,
+    BhoonidhiValidationError,
+)
 from bhoonidhi_downloader.schemas import SessionSchema
 
 
-def run_login(
-    console: Console, username: str, password: str, save: bool = True
-) -> bool:
-    """Authenticate against Bhoonidhi and optionally save session.
+def run_login(username: str, password: str, save: bool = True) -> SessionSchema:
+    """Authenticate against Bhoonidhi and optionally save the session.
 
-    Returns True on success, False on failure.
+    Returns the validated session.
+
+    Raises:
+        BhoonidhiValidationError: if username or password is empty.
+        BhoonidhiAuthError: if the credentials are rejected or the new
+            session fails validation.
     """
     if not username or not password:
-        render_login_error(console, "Username and password cannot be empty.")
-        return False
+        raise BhoonidhiValidationError("Username and password cannot be empty.")
 
-    try:
-        with Status("[bold blue]Authenticating...", console=console):
-            am = AuthManager(cfg=SessionSchema(username=username, password=password))
-            session = am.login()
-            is_valid = am.validate_session(session.jwt) if session.jwt else False
+    am = AuthManager(cfg=SessionSchema(username=username, password=password))
+    session = am.login()
+    is_valid = am.validate_session(session.jwt) if session.jwt else False
+    if not is_valid:
+        raise BhoonidhiAuthError("Session validation failed.")
 
-        if not is_valid:
-            render_login_error(console, "Session validation failed.")
-            return False
+    if save:
+        am.save()
 
-        if save:
-            am.save()
-
-        render_login_success(console, session)
-        return True
-
-    except Exception as e:
-        render_login_error(console, str(e))
-        return False
+    return session
 
 
-def run_logout(console: Console) -> bool:
-    """Clear the session file.
+def run_logout() -> bool:
+    """Clear the session file. Returns True if a session was removed."""
+    return clear_session_info()
 
-    Returns True if session was cleared, False if no session existed.
+
+def run_status() -> tuple[SessionSchema, bool] | None:
+    """Return the stored session and whether its token still validates.
+
+    Returns None if there is no stored session (or it carries no token).
+    A network failure while probing the token is treated as invalid rather
+    than an error.
     """
-    if clear_session_info():
-        render_logout_success(console)
-        return True
-    else:
-        render_logout_no_session(console)
-        return False
-
-
-def run_status(console: Console) -> bool:
-    """Display current session status.
-
-    Returns True if valid session exists, False otherwise.
-    """
-    if not SESSION_FILE.exists():
-        render_status_no_session(console)
-        return False
-
-    session_dict = load_session_info()
-    session = SessionSchema(**session_dict)
-
-    if not session.jwt:
-        render_status_no_session(console)
-        return False
-
-    # Validate token
-    try:
-        am = AuthManager(cfg=SessionSchema(username=session.username))
-        is_valid = am.validate_session(session.jwt)
-    except Exception:
-        is_valid = False
-
-    render_status(console, session, is_valid)
-    return is_valid
-
-
-def run_whoami(console: Console) -> str | None:
-    """Return username if logged in, None otherwise."""
     if not SESSION_FILE.exists():
         return None
 
-    session_dict = load_session_info()
-    username = session_dict.get("username")
-
-    if username:
-        console.print(username)
-        return username
-    return None
-
-
-def run_refresh(console: Console) -> bool:
-    """Renew the current session's JWT without re-entering credentials.
-
-    Only works if the current token is still within Bhoonidhi's refresh
-    window (confirmed live: works right after login, fails once the
-    token's aged past some threshold — exact window unknown). If it
-    fails, 'auth logout' + 'auth login' is the only fallback. Returns
-    True on success, False if there's no session to refresh or the
-    refresh fails.
-    """
-    if not SESSION_FILE.exists():
-        render_status_no_session(console)
-        return False
-
-    session_dict = load_session_info()
-    session = SessionSchema(**session_dict)
-
+    session = SessionSchema(**load_session_info())
     if not session.jwt:
-        render_status_no_session(console)
-        return False
+        return None
 
     try:
-        with Status("[bold blue]Refreshing session...", console=console):
-            am = AuthManager(cfg=session)
-            new_jwt = am.refresh_session(session.jwt)
-    except Exception as e:
-        render_refresh_error(console, str(e))
-        return False
+        am = AuthManager(cfg=SessionSchema(username=session.username))
+        is_valid = am.validate_session(session.jwt)
+    except (BhoonidhiAuthError, requests.RequestException):
+        is_valid = False
 
-    session.jwt = new_jwt
+    return session, is_valid
+
+
+def run_whoami() -> str | None:
+    """Return the stored username, or None if not logged in."""
+    if not SESSION_FILE.exists():
+        return None
+    return load_session_info().get("username")
+
+
+def run_refresh() -> SessionSchema | None:
+    """Renew the current session's JWT without re-entering credentials.
+
+    Succeeds only while the token is still inside Bhoonidhi's refresh
+    window; once it ages out, a full 'auth logout' + 'auth login' is the
+    only way back.
+
+    Returns the session with its refreshed token, or None if there is no
+    session to refresh.
+
+    Raises:
+        BhoonidhiAuthError: if the refresh request is rejected.
+    """
+    if not SESSION_FILE.exists():
+        return None
+
+    session = SessionSchema(**load_session_info())
+    if not session.jwt:
+        return None
+
+    am = AuthManager(cfg=session)
+    session.jwt = am.refresh_session(session.jwt)
     save_session_info(dict(session))
-    render_refresh_success(console)
-    return True
+    return session
