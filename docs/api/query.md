@@ -1,33 +1,34 @@
 # Query
 
-Backs `bhd query` — saved, named searches: create, list, show, rename, fork, refresh, delete, and download.
+Reachable as `client.query`. Run searches and manage saved queries. `create`,
+`refresh`, and `download` reach the portal; the rest work on the local query
+store.
 
-## Command handlers
+```python
+from datetime import datetime
 
-::: bhoonidhi_downloader.core.query.command.run_query_create
+query = client.query.create(
+    91.77, 92.0, 25.496, 25.695,
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    satellite="Sentinel-2A", sensor="MSI",
+)
+client.query.download(query.slug, "./downloads")
+```
 
-::: bhoonidhi_downloader.core.query.command.run_query_list
+::: bhoonidhi_downloader.sdk.query.QueryNamespace
+    options:
+      members:
+        - create
+        - list
+        - show
+        - rename
+        - fork
+        - refresh
+        - rm
+        - download
 
-::: bhoonidhi_downloader.core.query.command.run_query_show
+## Download result
 
-::: bhoonidhi_downloader.core.query.command.run_query_rename
+`download` returns a list of `DownloadOutcome`, one per scene.
 
-::: bhoonidhi_downloader.core.query.command.run_query_fork
-
-::: bhoonidhi_downloader.core.query.command.run_query_rm
-
-::: bhoonidhi_downloader.core.query.command.run_query_refresh
-
-::: bhoonidhi_downloader.core.query.command.run_query_download
-
-## Storage
-
-::: bhoonidhi_downloader.core.query.client.generate_slug
-
-::: bhoonidhi_downloader.core.query.client.save_query
-
-::: bhoonidhi_downloader.core.query.client.load_query
-
-::: bhoonidhi_downloader.core.query.client.list_queries
-
-::: bhoonidhi_downloader.core.query.client.delete_query
+::: bhoonidhi_downloader.core.download.client.DownloadOutcome

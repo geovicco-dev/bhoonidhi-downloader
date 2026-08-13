@@ -1,6 +1,6 @@
 # Examples
 
-Two ways to use this tool: the CLI (`bhd`), or importing `bhoonidhi_downloader.core` directly in a script. Both call the same underlying functions — nothing is CLI-only.
+Two ways to use this tool: the CLI (`bhd`), or the [Python SDK](sdk.md). Both call the same underlying code — nothing is CLI-only.
 
 ## CLI walkthrough
 
@@ -85,65 +85,28 @@ $ bhd query show misty-falcon --filter ready       # only what's downloadable no
 $ bhd cart list --filter priced                    # only the priced cart
 ```
 
-## Calling it from a script
+## Calling it from Python
 
-Every CLI command is a thin wrapper around a plain Python function — nothing about the underlying logic depends on being invoked from a terminal. If you're scripting a bulk ingestion pipeline or wiring this into a notebook, call into `bhoonidhi_downloader.core` directly instead of shelling out:
+Every command shown above is also available from Python through the
+`BhoonidhiClient` — same behaviour, no subprocess. This is the way to script
+bulk ingestion or wire Bhoonidhi into a pipeline:
 
 ```python
 from datetime import datetime
 
-from bhoonidhi_downloader.core.archive import ArchiveManager
-from bhoonidhi_downloader.core.query.command import run_query_create, run_query_download
-from bhoonidhi_downloader.logger import get_console
+from bhoonidhi_downloader.sdk import BhoonidhiClient
 
-console = get_console()
+client = BhoonidhiClient()
+client.login("my-username", "my-password")
 
-# Browse the archive programmatically
-manifest = ArchiveManager().build_manifest()
-print(manifest["Sentinel-2A"].keys())  # -> dict_keys(['MSI'])
-
-# Search + save a query (same thing `bhd query create` does)
-query = run_query_create(
-    console,
-    minx=91.77,
-    maxx=92,
-    miny=25.496,
-    maxy=25.695,
-    start_date=datetime(2025, 12, 1),
-    end_date=datetime(2025, 12, 30),
-    satellite="Sentinel-2A",
-    sensor="MSI",
+query = client.query.create(
+    91.77, 92.0, 25.496, 25.695,
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    satellite="Sentinel-2A", sensor="MSI",
 )
 
-# Download everything it found
-run_query_download(console, slug=query.slug, out="./downloads")
+client.query.download(query.slug, "./downloads")
 ```
 
-Command handlers live under `core/<domain>/command.py` (`auth`, `archive`, `search`, `query`, `download`, `cart`) — each one takes a `rich.console.Console` (get one via `bhoonidhi_downloader.logger.get_console()`) and returns plain data (a `QuerySchema`, a list of scenes, a bool) rather than printing-and-exiting like a CLI would. The `render.py` modules alongside them turn that data into the tables you see on screen — skip them entirely and just work with the returned objects if you're scripting.
-
-See the [API Reference](api/index.md) for the full set of classes and functions this exposes.
-
-### Authenticating without the CLI
-
-```python
-from bhoonidhi_downloader.core.auth.client import AuthManager
-from bhoonidhi_downloader.schemas import SessionSchema
-
-auth = AuthManager(cfg=SessionSchema(username="myuser", password="mypassword"))
-session = auth.login()
-print(session.jwt)  # use this token for authenticated requests
-```
-
-### Exporting the archive to JSON
-
-```python
-from bhoonidhi_downloader.core.archive import ArchiveManager
-
-am = ArchiveManager()
-data = am.parse(satellite_filter="ResourceSat-2A")  # omit for the full archive
-
-import json
-from pathlib import Path
-
-Path("archive.json").write_text(json.dumps(data, indent=2))
-```
+See the [Python SDK guide](sdk.md) for the full walkthrough and the
+[API Reference](api/index.md) for every method and return type.
