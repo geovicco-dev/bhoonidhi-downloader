@@ -1,6 +1,7 @@
 """Auth CLI subcommands."""
 
 import typer
+from rich.status import Status
 
 from bhoonidhi_downloader.core.auth.command import (
     run_login,
@@ -9,6 +10,17 @@ from bhoonidhi_downloader.core.auth.command import (
     run_status,
     run_whoami,
 )
+from bhoonidhi_downloader.core.auth.render import (
+    render_login_error,
+    render_login_success,
+    render_logout_no_session,
+    render_logout_success,
+    render_refresh_error,
+    render_refresh_success,
+    render_status,
+    render_status_no_session,
+)
+from bhoonidhi_downloader.exceptions import BhoonidhiError
 from bhoonidhi_downloader.logger import get_console
 
 auth_app = typer.Typer(
@@ -30,35 +42,56 @@ def login(
     save: bool = typer.Option(True, "--save/--no-save", help="Persist session to disk"),
 ) -> None:
     """Authenticate and save session to ~/.bhoonidhi/session."""
-    success = run_login(console, username, password, save)
-    if not success:
-        raise typer.Exit(code=1)
+    try:
+        with Status("[bold blue]Authenticating...", console=console):
+            session = run_login(username, password, save)
+    except BhoonidhiError as e:
+        render_login_error(console, str(e))
+        raise typer.Exit(code=1) from e
+    render_login_success(console, session)
 
 
 @auth_app.command()
 def logout() -> None:
     """Clear the saved session."""
-    run_logout(console)
+    if run_logout():
+        render_logout_success(console)
+    else:
+        render_logout_no_session(console)
 
 
 @auth_app.command()
 def status() -> None:
     """Show current session status."""
-    success = run_status(console)
-    if not success:
+    result = run_status()
+    if result is None:
+        render_status_no_session(console)
+        raise typer.Exit(code=1)
+    session, is_valid = result
+    render_status(console, session, is_valid)
+    if not is_valid:
         raise typer.Exit(code=1)
 
 
 @auth_app.command()
 def whoami() -> None:
     """Print the current username."""
-    username = run_whoami(console)
+    username = run_whoami()
     if not username:
         raise typer.Exit(code=1)
+    console.print(username)
 
 
 @auth_app.command()
 def refresh() -> None:
     """Refresh the authentication token."""
-    if not run_refresh(console):
+    try:
+        with Status("[bold blue]Refreshing session...", console=console):
+            session = run_refresh()
+    except BhoonidhiError as e:
+        render_refresh_error(console, str(e))
+        raise typer.Exit(code=1) from e
+    if session is None:
+        render_status_no_session(console)
         raise typer.Exit(code=1)
+    render_refresh_success(console)
