@@ -3,8 +3,13 @@
 A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/). Every command is also callable from a Python script.
 
 [![PyPI version](https://img.shields.io/pypi/v/bhoonidhi-downloader.svg?logo=python&logoColor=white&label=PyPI&style=flat)](https://pypi.org/project/bhoonidhi-downloader/)
+[![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://youtu.be/Y3naYuyr3NA)
 [:octicons-mark-github-16: View on GitHub](https://github.com/geovicco-dev/bhoonidhi-downloader){ .md-button }
 [:material-language-python: PyPI](https://pypi.org/project/bhoonidhi-downloader/){ .md-button }
+
+## Demo
+
+<iframe width="100%" style="aspect-ratio: 16 / 9;" src="https://www.youtube.com/embed/Y3naYuyr3NA" title="Bhoonidhi Downloader demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ## What it does
 
