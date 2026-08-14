@@ -40,7 +40,12 @@ class SearchSchema(BaseModel):
 
     @model_validator(mode="after")
     def validate_aoi_bounds(self) -> "SearchSchema":
-        """Validate that AOI bounding box is well-formed and within EPSG:4326 limits."""
+        """Validate the AOI is well-formed for whichever mode it's in."""
+        if self.aoi.mode == "location":
+            return self._validate_location_aoi()
+        return self._validate_bbox_aoi()
+
+    def _validate_bbox_aoi(self) -> "SearchSchema":
         # ── Well-formedness ──────────────────────────────────────────
         if self.aoi.min_lon >= self.aoi.max_lon:
             raise ValueError(
@@ -71,6 +76,22 @@ class SearchSchema(BaseModel):
                 f"max_lat ({self.aoi.max_lat}) is outside valid EPSG:4326 range [-90, 90]."
             )
 
+        return self
+
+    def _validate_location_aoi(self) -> "SearchSchema":
+        if self.aoi.lat is None or self.aoi.lon is None:
+            raise ValueError("Location AOI requires both lat and lon.")
+        if not (-90 <= self.aoi.lat <= 90):
+            raise ValueError(
+                f"lat ({self.aoi.lat}) is outside valid EPSG:4326 range [-90, 90]."
+            )
+        if not (-180 <= self.aoi.lon <= 180):
+            raise ValueError(
+                f"lon ({self.aoi.lon}) is outside valid EPSG:4326 range [-180, 180]."
+            )
+        radius = self.aoi.radius_km if self.aoi.radius_km is not None else 10.0
+        if not (1 <= radius <= 100):
+            raise ValueError(f"radius_km ({radius}) must be between 1 and 100 km.")
         return self
 
     @model_validator(mode="after")

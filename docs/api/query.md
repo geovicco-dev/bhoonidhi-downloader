@@ -8,9 +8,9 @@ store.
 from datetime import datetime
 
 query = client.query.create(
-    91.77, 92.0, 25.496, 25.695,
     datetime(2025, 12, 1), datetime(2025, 12, 30),
     satellite="Sentinel-2A", sensor="MSI",
+    minx=91.77, maxx=92.0, miny=25.496, maxy=25.695,
 )
 client.query.download(query.slug, "./downloads")
 ```

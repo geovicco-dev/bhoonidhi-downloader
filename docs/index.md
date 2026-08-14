@@ -1,6 +1,6 @@
 # Bhoonidhi Downloader
 
-A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoonidhi Earth Observation Portal](https://bhoonidhi.nrsc.gov.in/). Every command is also callable from Python through the `bhoonidhi_downloader.sdk` package — a single `BhoonidhiClient` that mirrors the CLI one-to-one.
+CLI and SDK for [ISRO's EO Portal - Bhoonidhi Browse & Order](https://bhoonidhi.nrsc.gov.in/) — search by bounding box or a point plus radius, save results as named queries you can revisit and refresh, download open-access scenes with concurrency and SHA256 verification, and stage priced/on-order/archived scenes to the Bhoonidhi cart. Every command is also callable from Python through the `bhoonidhi_downloader.sdk` package — a single `BhoonidhiClient` that mirrors the CLI one-to-one.
 
 [![PyPI version](https://img.shields.io/pypi/v/bhoonidhi-downloader.svg?logo=python&logoColor=white&label=PyPI&style=flat)](https://pypi.org/project/bhoonidhi-downloader/)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://youtu.be/Y3naYuyr3NA)
@@ -13,7 +13,7 @@ A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoo
 
 ## What it does
 
-- **Search by bounding box** — filter by satellite, sensor, and date range.
+- **Search by bounding box or point + radius** — filter by satellite, sensor, and date range.
 - **Named, persistent queries** — every search is saved under a short slug (`misty-falcon`), so you can come back to it later, refresh it for new scenes, or download from it without re-querying the portal.
 - **Concurrent, verified downloads** — fetches multiple scenes in parallel, verifies each with a SHA256, and skips anything already downloaded.
 - **Cart staging** — stage scenes into the Bhoonidhi cart from a saved query — priced, on-order, open-but-archived, or direct-download — and finish the order in the Browse & Order portal.
@@ -38,13 +38,19 @@ Log in, run a search, and download what you find — three commands, start to fi
 bhd auth login
 
 # 2. Search a bounding box + date range, save the results as a named query
-bhd query create 91.77 92 25.496 25.695 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI
+bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
 
 # 3. Download everything the query found
 bhd query download misty-falcon --out ./downloads
 ```
 
 `query create` prints the scenes it found in a table and tells you what slug it saved them under (here, `misty-falcon` — yours will be different). You don't have to download right away: come back anytime with `bhd query show misty-falcon`, or `bhd query refresh misty-falcon` to check for newly published scenes in the same area.
+
+Prefer a point and radius over a bounding box? Swap `--minx`/`--maxx`/`--miny`/`--maxy` for `--lat`/`--lon`/`--radius` (radius defaults to 10km, 1-100km):
+
+```shell
+bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --lat 25.58 --lon 91.89 --radius 15
+```
 
 ## Quickstart from Python
 
@@ -59,9 +65,9 @@ client = BhoonidhiClient()
 client.login("my-username", "my-password")
 
 query = client.query.create(
-    91.77, 92.0, 25.496, 25.695,
     datetime(2025, 12, 1), datetime(2025, 12, 30),
     satellite="Sentinel-2A", sensor="MSI",
+    minx=91.77, maxx=92.0, miny=25.496, maxy=25.695,
 )
 
 client.query.download(query.slug, "./downloads")
@@ -104,7 +110,7 @@ A couple of Bhoonidhi-specific quirks worth knowing about going in:
 
 ## Limitations
 
-- Search is bounding-box only — no point-coordinate or shapefile-based search yet.
+- Search is bounding-box or point + radius (up to 100km) — no shapefile-based search yet.
 - `query download` fetches only `OpenData_DirectDownload` scenes; priced, on-order, and archived scenes aren't fetched directly. Every access type — including direct-download scenes — can also be staged with `bhd cart add`.
 - Cart support stages scenes only. Placing the order — and any payment for priced data — is finished in the Browse & Order portal; there's no order-placement step in the CLI.
 

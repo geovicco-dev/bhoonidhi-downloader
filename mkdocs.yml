@@ -1,5 +1,5 @@
 site_name: Bhoonidhi Downloader
-site_description: CLI for searching, saving, and downloading satellite imagery from ISRO's Bhoonidhi Earth Observation portal.
+site_description: CLI and SDK for ISRO's EO Portal - Bhoonidhi Browse & Order — search by bounding box or point+radius, save named queries, download open-access scenes, and stage priced/on-order scenes to the cart.
 site_url: https://geovicco-dev.github.io/bhoonidhi-downloader/
 repo_url: https://github.com/geovicco-dev/bhoonidhi-downloader
 repo_name: geovicco-dev/bhoonidhi-downloader
@@ -8,7 +8,13 @@ edit_uri: edit/main/docs/
 nav:
   - Home: index.md
   - Examples: examples.md
-  - Python SDK: sdk.md
+  - Python SDK:
+      - Overview: sdk.md
+      - Notebooks:
+          - Auth: api/notebooks/auth.ipynb
+          - Archive: api/notebooks/archive.ipynb
+          - Query: api/notebooks/query.ipynb
+          - Cart: api/notebooks/cart.ipynb
   - API Reference:
       - Overview: api/index.md
       - Client: api/client.md
@@ -17,11 +23,6 @@ nav:
       - Cart: api/cart.md
       - Errors: api/errors.md
       - Data models: api/schemas.md
-      - Notebook examples:
-          - Auth: api/notebooks/auth.ipynb
-          - Archive: api/notebooks/archive.ipynb
-          - Query: api/notebooks/query.ipynb
-          - Cart: api/notebooks/cart.ipynb
   - Changelog: CHANGELOG.md
 
 theme:

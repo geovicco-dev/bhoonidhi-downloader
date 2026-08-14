@@ -27,31 +27,40 @@ class QueryNamespace:
 
     def create(
         self,
-        minx: float,
-        maxx: float,
-        miny: float,
-        maxy: float,
         start_date: datetime,
         end_date: datetime,
         satellite: str,
+        minx: float | None = None,
+        maxx: float | None = None,
+        miny: float | None = None,
+        maxy: float | None = None,
         sensor: str | None = None,
+        lat: float | None = None,
+        lon: float | None = None,
+        radius_km: float | None = None,
         name: str | None = None,
         description: str | None = None,
     ) -> QuerySchema | None:
-        """Search a bounding box + date range, save the result as a named query.
+        """Search an AOI + date range, save the result as a named query.
+
+        The AOI is either a bounding box (minx/maxx/miny/maxy) or a point
+        plus radius (lat/lon/radius_km) — give exactly one of the two.
 
         Returns the saved query, or None if nothing matched. Mirrors
         ``bhd query create``.
         """
         return _query.run_query_create(
-            minx,
-            maxx,
-            miny,
-            maxy,
             start_date,
             end_date,
             satellite,
+            minx=minx,
+            maxx=maxx,
+            miny=miny,
+            maxy=maxy,
             sensor=sensor,
+            lat=lat,
+            lon=lon,
+            radius_km=radius_km,
             name=name,
             description=description,
         )

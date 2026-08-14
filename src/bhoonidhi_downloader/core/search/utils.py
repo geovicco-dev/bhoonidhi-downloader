@@ -45,6 +45,24 @@ def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
         sat_sen = "%2C".join(sat_sen)
     elif isinstance(sat_sen, list) and len(sat_sen) == 1:
         sat_sen = sat_sen[0]
+    aoi_fields: dict[str, Any]
+    if cfg.aoi.mode == "location":
+        aoi_fields = {
+            "queryType": "location",
+            "lat": cfg.aoi.lat,
+            "lon": cfg.aoi.lon,
+            "radius": cfg.aoi.radius_km if cfg.aoi.radius_km is not None else 10.0,
+            "loc": "Decimal",
+        }
+    else:
+        aoi_fields = {
+            "queryType": "polygon",
+            "tllat": cfg.aoi.max_lat,
+            "tllon": cfg.aoi.min_lon,
+            "brlat": cfg.aoi.min_lat,
+            "brlon": cfg.aoi.max_lon,
+        }
+
     return {
         "userId": "T",
         "prod": "Standard",
@@ -53,12 +71,8 @@ def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
         "sdate": sdate,
         "edate": edate,
         "query": "area",
-        "queryType": "polygon",
         "isMX": "No",
-        "tllat": cfg.aoi.max_lat,
-        "tllon": cfg.aoi.min_lon,
-        "brlat": cfg.aoi.min_lat,
-        "brlon": cfg.aoi.max_lon,
+        **aoi_fields,
         "filters": "%7B%7D",
     }
 

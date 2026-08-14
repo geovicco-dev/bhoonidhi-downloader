@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented here.
 
+## [0.4.0]
+
+### Added
+
+- **`bhd query create` accepts a location AOI as an alternative to a bounding box** — `--lat`/`--lon` (CLI) or `lat=`/`lon=` (SDK) search a point plus a surrounding radius instead of four corner coordinates. `--radius`/`radius_km` defaults to 10km and accepts 1-100km, matching the portal's own limit. Give exactly one AOI mode; mixing a bounding box with a location, or giving neither, fails with a clear error before any request is sent.
+
+### Changed
+
+- **`bhd query create`'s bounding box moved from positional arguments to `--minx`/`--maxx`/`--miny`/`--maxy` flags** — needed so the same command could accept either AOI mode without four required positionals blocking the location-only case. `client.query.create(...)` in the SDK follows the same shape: `start_date`, `end_date`, and `satellite` stay positional-friendly; the AOI args (both bbox and location) are keyword-only in practice. **Breaking for any script calling the SDK's `create()` with bbox values as positional arguments** — pass `minx=`/`maxx=`/`miny=`/`maxy=` by keyword instead. This is why the version bumps to 0.4.0 rather than a patch release.
+
+### Fixed
+
+- **Metadata links (`Metadata` column, both search and cart tables) were broken for most scenes.** `get_scene_meta_url()` used to hand out a `.meta`/`.met` URL for every scene unconditionally, but most scenes never have a metadata file at all — the portal only serves one when a scene is open data (`PRICED` starts with `OpenData_`) *and* `TABLETYPE` is `PMETA`; everything else now correctly shows a dash instead of a link that always 404s. Three satellite families that do qualify also serve a different file than a plain `.meta`: Sentinel-1 opens the `_VH`/`_VV` polarization sidecars, Sentinel-2 opens the tile-metadata/INSPIRE sidecars, and Novasar rewrites the directory and extension entirely — all three are now handled. A meaningful chunk of otherwise-qualifying scenes (JPSS1/Suomi-NPP VIIRS from roughly mid-2025 on, LandSat-8/9, MetOp-B/C, Sentinel-1 SAR(IW)_SLC, most Novasar-1 products since ~2023) still 404 because the file genuinely isn't hosted at the URL the portal's own logic would build — that's a portal-side gap, not something a client-side fix can repair.
+- **Quicklook thumbnail links (`Quick View` column) picked the wrong file extension for priced scenes.** `get_quicklook_url()` guessed `.jpg` vs `.jpeg` from `PRICED`, which has nothing to do with it — a priced PMETA scene got a broken `.jpeg` link when the real file was `.jpg`, and the reverse for open-data SMETA scenes. The extension is actually determined by `TABLETYPE` (`SMETA` → `.jpeg`, `PMETA` → `.jpg`, no exceptions across every satellite/sensor/product combination the portal supports), which the fix now reads instead.
+- **An invalid `--sat`/`--sen` value on `bhd query create` dumped a raw, unreadable pydantic traceback** instead of a clean error message — the CLI's error handler only caught `BhoonidhiError` subclasses, and pydantic's own `ValidationError` slipped past it. Now prints `Search failed: Invalid satellite '...'. Available: [...]` and exits cleanly, same as every other validation failure.
+
 ## [0.3.3]
 
 Every `bhd` command was already a thin wrapper over plain Python functions, but calling into them meant reaching past a `console`/`rich` rendering layer built for the terminal, not for a script. This release splits that apart: command logic that returns data lives in `core/`, terminal rendering moves entirely into `cli/`, and a new `sdk/` package sits on top of the same core the CLI calls — so the two entry points can't drift, and scripting no longer means fighting the CLI's own plumbing.

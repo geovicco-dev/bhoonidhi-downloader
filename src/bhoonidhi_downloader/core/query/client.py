@@ -136,11 +136,16 @@ def generate_description(
 ) -> str:
     """Auto-generate a description from query params + result count."""
     sensor_part = f"/{sensor}" if sensor else ""
-    bbox = (
-        f"[{aoi.min_lon:.2f}, {aoi.min_lat:.2f}, {aoi.max_lon:.2f}, {aoi.max_lat:.2f}]"
-    )
+    if aoi.mode == "location":
+        radius = aoi.radius_km if aoi.radius_km is not None else 10.0
+        area = f"{radius:.0f}km around ({aoi.lat:.4f}, {aoi.lon:.4f})"
+    else:
+        area = (
+            f"bbox [{aoi.min_lon:.2f}, {aoi.min_lat:.2f}, "
+            f"{aoi.max_lon:.2f}, {aoi.max_lat:.2f}]"
+        )
     return (
-        f"{satellite}{sensor_part} query over bbox {bbox}, "
+        f"{satellite}{sensor_part} query over {area}, "
         f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')} "
         f"\u2014 {scene_count} scene(s) found."
     )
