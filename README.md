@@ -14,8 +14,8 @@ A CLI for searching, saving, and downloading satellite imagery from [ISRO's Bhoo
 - **Concurrent, verified downloads** — fetches multiple scenes in parallel, verifies each with a SHA256, and skips anything already downloaded.
 - **Cart staging** — stage scenes into the Bhoonidhi cart from a saved query — priced, on-order, open-but-archived, or direct-download — and finish the order in the Browse & Order portal.
 - **Browse the archive** — list every satellite/sensor Bhoonidhi currently supports, live from the portal.
-- **Session management** — login once, refresh your token when it goes stale, no need to keep re-entering credentials.
-- **Scriptable** — every command has a matching method on `BhoonidhiClient`, so you can drive searches and downloads from a Python script or notebook instead of shelling out.
+- **Session management** — login once, refresh your token automatically while it's still within Bhoonidhi's refresh window; re-enter credentials only once that window has closed.
+- **Scriptable** — every command has a matching method on `BhoonidhiClient`, so you can drive searches and downloads from a Python script or notebook for programmatically accessing the entire archive.
 
 ## Installation
 
