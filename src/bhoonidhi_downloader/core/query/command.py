@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
+
 from bhoonidhi_downloader.core.archive import ArchiveManager
 from bhoonidhi_downloader.core.download import (
     DownloadManager,
@@ -18,7 +20,7 @@ from bhoonidhi_downloader.core.download import (
     is_downloadable,
 )
 from bhoonidhi_downloader.core.search.client import SearchManager
-from bhoonidhi_downloader.exceptions import BhoonidhiNotFoundError
+from bhoonidhi_downloader.exceptions import BhoonidhiNotFoundError, BhoonidhiValidationError
 from bhoonidhi_downloader.schemas import (
     AOISchema,
     QuerySchema,
@@ -41,6 +43,24 @@ REFRESH_LOOKBACK_DAYS = 3
 
 # scene_id, bytes_so_far, total_bytes (None if unknown)
 ProgressCallback = Callable[[str, int, "int | None"], None]
+
+
+def _build_search_schema(**kwargs: Any) -> SearchSchema:
+    """Construct a ``SearchSchema``, translating bad input into a clean error.
+
+    ``SearchSchema`` validates the satellite/sensor combination in a
+    pydantic model validator, which raises a plain ``ValueError``. Pydantic
+    wraps that in its own ``ValidationError`` — not a ``BhoonidhiError`` —
+    so it slips past the CLI's ``except BhoonidhiError`` handler and dumps a
+    raw pydantic traceback to the terminal (bug #26). Catch it here and
+    re-raise the underlying message as ``BhoonidhiValidationError`` so every
+    caller gets the same clean, typed error the rest of the codebase relies on.
+    """
+    try:
+        return SearchSchema(**kwargs)
+    except ValidationError as e:
+        messages = [err["msg"].removeprefix("Value error, ") for err in e.errors()]
+        raise BhoonidhiValidationError("; ".join(messages)) from e
 
 
 def run_query_create(
@@ -66,7 +86,7 @@ def run_query_create(
     """
     aoi = AOISchema(name="aoi", max_lat=maxy, min_lat=miny, max_lon=maxx, min_lon=minx)
 
-    config = SearchSchema(
+    config = _build_search_schema(
         aoi=aoi,
         satellite=satellite,
         sensor=sensor,
@@ -199,7 +219,7 @@ def run_query_refresh(slug: str) -> tuple[QuerySchema, int | None]:
     if refresh_start >= refresh_end:
         return query, None
 
-    config = SearchSchema(
+    config = _build_search_schema(
         aoi=query.aoi,
         satellite=query.satellite,
         sensor=query.sensor,
