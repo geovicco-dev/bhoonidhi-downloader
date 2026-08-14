@@ -18,7 +18,9 @@ def _cfg(satellite: str, sensor: str | None) -> SimpleNamespace:
         sensor=sensor,
         start_date=datetime(2026, 1, 1),
         end_date=datetime(2026, 1, 31),
-        aoi=SimpleNamespace(max_lat=25.7, min_lon=91.8, min_lat=25.5, max_lon=92.0),
+        aoi=SimpleNamespace(
+            mode="bbox", max_lat=25.7, min_lon=91.8, min_lat=25.5, max_lon=92.0
+        ),
     )
 
 

@@ -32,10 +32,16 @@ This hits the portal live (and caches the result), so it always reflects what's 
 ### 3. Search a bounding box and save it as a query
 
 ```console
-$ bhd query create 91.77 92 25.496 25.695 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI
+$ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
 ```
 
-Arguments are `minx maxx miny maxy start_date end_date` (dates as `YYYY-MM-DD`). The results print as a table, and the query is saved under an auto-generated slug like `misty-falcon` — that's what you'll use to refer to it going forward.
+Arguments are `start_date end_date` (dates as `YYYY-MM-DD`), with the area of interest given as a bounding box (`--minx --maxx --miny --maxy`) or a point plus radius (`--lat --lon --radius`, radius defaults to 10km and must be 1-100km) — give one or the other, not both:
+
+```console
+$ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --lat 25.58 --lon 91.89 --radius 15
+```
+
+The results print as a table, and the query is saved under an auto-generated slug like `misty-falcon` — that's what you'll use to refer to it going forward.
 
 ### 4. Come back to it later
 
@@ -100,12 +106,22 @@ client = BhoonidhiClient()
 client.login("my-username", "my-password")
 
 query = client.query.create(
-    91.77, 92.0, 25.496, 25.695,
     datetime(2025, 12, 1), datetime(2025, 12, 30),
     satellite="Sentinel-2A", sensor="MSI",
+    minx=91.77, maxx=92.0, miny=25.496, maxy=25.695,
 )
 
 client.query.download(query.slug, "./downloads")
+```
+
+Or search around a point instead of a bounding box:
+
+```python
+query = client.query.create(
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    satellite="Sentinel-2A", sensor="MSI",
+    lat=25.58, lon=91.89, radius_km=15,
+)
 ```
 
 See the [Python SDK guide](sdk.md) for the full walkthrough and the

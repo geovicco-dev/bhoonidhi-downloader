@@ -66,28 +66,77 @@ def _build_search_schema(**kwargs: Any) -> SearchSchema:
         raise BhoonidhiValidationError("; ".join(messages)) from e
 
 
+def _build_aoi(
+    minx: float | None,
+    maxx: float | None,
+    miny: float | None,
+    maxy: float | None,
+    lat: float | None,
+    lon: float | None,
+    radius_km: float | None,
+) -> AOISchema:
+    """Build the AOI from whichever mode's inputs were given.
+
+    Exactly one of the bounding box (minx/maxx/miny/maxy) or the point
+    (lat/lon) must be given — mixing both, or giving neither, is a user
+    error we want to catch before it reaches the search request.
+    """
+    has_bbox = None not in (minx, maxx, miny, maxy)
+    has_location = None not in (lat, lon)
+
+    if has_bbox and has_location:
+        raise BhoonidhiValidationError(
+            "Give either a bounding box (minx/maxx/miny/maxy) or a "
+            "location (lat/lon), not both."
+        )
+    if has_location:
+        return AOISchema(
+            name="aoi", mode="location", lat=lat, lon=lon, radius_km=radius_km
+        )
+    if has_bbox:
+        assert minx is not None and maxx is not None
+        assert miny is not None and maxy is not None
+        return AOISchema(
+            name="aoi",
+            mode="bbox",
+            max_lat=maxy,
+            min_lat=miny,
+            max_lon=maxx,
+            min_lon=minx,
+        )
+    raise BhoonidhiValidationError(
+        "Give either a bounding box (minx/maxx/miny/maxy) or a location (lat/lon)."
+    )
+
+
 def run_query_create(
-    minx: float,
-    maxx: float,
-    miny: float,
-    maxy: float,
     start_date: datetime,
     end_date: datetime,
     satellite: str,
+    minx: float | None = None,
+    maxx: float | None = None,
+    miny: float | None = None,
+    maxy: float | None = None,
     sensor: str | None = None,
+    lat: float | None = None,
+    lon: float | None = None,
+    radius_km: float | None = None,
     name: str | None = None,
     description: str | None = None,
 ) -> QuerySchema | None:
     """Run a search and save the result as a new named query.
+
+    The AOI is either a bounding box (minx/maxx/miny/maxy) or a point plus
+    radius (lat/lon/radius_km) — exactly one of the two must be given.
 
     Returns the saved query, or None if the search matched no scenes (in
     which case nothing is saved).
 
     Raises:
         BhoonidhiAPIError: if the search request fails.
-        BhoonidhiValidationError: if the satellite/sensor is invalid.
+        BhoonidhiValidationError: if the satellite/sensor/AOI is invalid.
     """
-    aoi = AOISchema(name="aoi", max_lat=maxy, min_lat=miny, max_lon=maxx, min_lon=minx)
+    aoi = _build_aoi(minx, maxx, miny, maxy, lat, lon, radius_km)
 
     config = _build_search_schema(
         aoi=aoi,

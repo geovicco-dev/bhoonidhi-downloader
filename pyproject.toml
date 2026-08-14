@@ -1,7 +1,7 @@
 [project]
 name = "bhoonidhi-downloader"
-version = "0.3.3"
-description = "CLI for searching, saving, and downloading satellite data from Bhoonidhi"
+version = "0.4.0"
+description = "CLI and SDK for ISRO's EO Portal - Bhoonidhi Browse & Order: search by bounding box or point+radius, save named queries, download open-access scenes, and stage priced/on-order scenes to the cart"
 license = "MIT"
 authors = [
     { name = "geovicco-dev", email = "geovicco.dev@gmail.com" }

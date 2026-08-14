@@ -65,19 +65,31 @@ client.archive.export("s2.json", sat="Sentinel-2A")   # one satellite
 ## Search and save a query
 
 A search is saved under a short slug (like `misty-falcon`) so you can return to
-it, refresh it, or download from it later.
+it, refresh it, or download from it later. Give the area of interest as a
+bounding box (`minx`/`maxx`/`miny`/`maxy`) or a point plus radius
+(`lat`/`lon`/`radius_km`, default 10km, 1-100km) — one or the other, not both.
 
 ```python
 from datetime import datetime
 
 query = client.query.create(
-    91.77, 92.0, 25.496, 25.695,          # minx, maxx, miny, maxy
     datetime(2025, 12, 1), datetime(2025, 12, 30),
     satellite="Sentinel-2A", sensor="MSI",
+    minx=91.77, maxx=92.0, miny=25.496, maxy=25.695,
 )
 
 print(query.slug)              # "misty-falcon"
 print(len(query.scenes))       # how many scenes matched
+```
+
+Or search around a point instead:
+
+```python
+query = client.query.create(
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    satellite="Sentinel-2A", sensor="MSI",
+    lat=25.58, lon=91.89, radius_km=15,
+)
 ```
 
 `create` returns `None` if nothing matched.

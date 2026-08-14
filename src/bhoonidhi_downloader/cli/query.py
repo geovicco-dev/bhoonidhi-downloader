@@ -59,10 +59,6 @@ console = get_console()
 
 @query_app.command("create")
 def create(
-    minx: float = typer.Argument(..., help="Minimum longitude"),
-    maxx: float = typer.Argument(..., help="Maximum longitude"),
-    miny: float = typer.Argument(..., help="Minimum latitude"),
-    maxy: float = typer.Argument(..., help="Maximum latitude"),
     start_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d"], help="Start date (YYYY-MM-DD)"
     ),
@@ -73,6 +69,15 @@ def create(
         None, "--sat", help="Satellite name (Ex: ResourceSat-2)"
     ),
     sensor: str = typer.Option(None, "--sen", help="Sensor name (Ex: LISS3)"),
+    minx: float = typer.Option(None, "--minx", help="Minimum longitude (bounding box)"),
+    maxx: float = typer.Option(None, "--maxx", help="Maximum longitude (bounding box)"),
+    miny: float = typer.Option(None, "--miny", help="Minimum latitude (bounding box)"),
+    maxy: float = typer.Option(None, "--maxy", help="Maximum latitude (bounding box)"),
+    lat: float = typer.Option(None, "--lat", help="Point latitude (location mode)"),
+    lon: float = typer.Option(None, "--lon", help="Point longitude (location mode)"),
+    radius_km: float = typer.Option(
+        10.0, "--radius", help="Search radius in km around --lat/--lon (1-100)"
+    ),
     name: str = typer.Option(None, "--name", help="Override the auto-generated name"),
     description: str = typer.Option(
         None, "--desc", help="Override the auto-generated description"
@@ -81,18 +86,26 @@ def create(
         False, "--plain", help="Print the whole table at once instead of scrolling"
     ),
 ) -> None:
-    """Search for scenes and save the results as a new named query."""
+    """Search for scenes and save the results as a new named query.
+
+    Give the area of interest as either a bounding box
+    (--minx/--maxx/--miny/--maxy) or a point plus radius
+    (--lat/--lon/--radius) — exactly one of the two.
+    """
     interactive = False if plain else None
     try:
         query = run_query_create(
+            start_date=start_date,
+            end_date=end_date,
+            satellite=satellite,
             minx=minx,
             maxx=maxx,
             miny=miny,
             maxy=maxy,
-            start_date=start_date,
-            end_date=end_date,
-            satellite=satellite,
             sensor=sensor,
+            lat=lat,
+            lon=lon,
+            radius_km=radius_km,
             name=name,
             description=description,
         )
