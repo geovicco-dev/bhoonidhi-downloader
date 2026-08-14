@@ -15,11 +15,11 @@ from rich.text import Text
 
 from bhoonidhi_downloader.core.search.availability import Availability
 from bhoonidhi_downloader.core.search.utils import (
-    create_clickable_link,
     full_satellite,
     full_sensor,
     get_quicklook_url,
     get_scene_meta_url,
+    link_or_dash,
 )
 from bhoonidhi_downloader.logger import CUSTOM_THEME
 from bhoonidhi_downloader.viewer import Column, show_table
@@ -191,14 +191,14 @@ def cart_columns(srt_to_slug: dict[str, str]) -> list[Column]:
         ),
         Column(
             "Metadata",
-            lambda r, _i: _link_or_dash(r, get_scene_meta_url, "Metadata"),
+            lambda r, _i: link_or_dash(r, get_scene_meta_url, "Metadata"),
             style="red",
             width=12,
             justify="center",
         ),
         Column(
             "Quick View",
-            lambda r, _i: _link_or_dash(r, get_quicklook_url, "Quick View"),
+            lambda r, _i: link_or_dash(r, get_quicklook_url, "Quick View"),
             style="blue",
             width=12,
             justify="center",
@@ -225,18 +225,6 @@ def _cart_status(item: dict) -> str:
     if kind is CartKind.PRICED:
         return "[magenta]Priced[/]"
     return "—"
-
-
-def _link_or_dash(item: dict, builder, text: str) -> str:
-    """Build a clickable link, or a dash if the item lacks the path fields.
-
-    Cart records occasionally come back without DIRPATH/FILENAME, and a
-    missing link is better than a traceback mid-table.
-    """
-    try:
-        return create_clickable_link(builder(item), text)
-    except (KeyError, TypeError):
-        return "[dim]—[/]"
 
 
 def render_add_summary(
@@ -331,13 +319,13 @@ def _add_summary_columns() -> list[Column]:
         Column("Detail", lambda r, _i: _detail(r), style="yellow", width=30),
         Column(
             "Metadata",
-            lambda r, _i: _link_or_dash(r["scene"], get_scene_meta_url, "Metadata"),
+            lambda r, _i: link_or_dash(r["scene"], get_scene_meta_url, "Metadata"),
             style="red",
             width=12,
         ),
         Column(
             "Quick View",
-            lambda r, _i: _link_or_dash(r["scene"], get_quicklook_url, "Quick View"),
+            lambda r, _i: link_or_dash(r["scene"], get_quicklook_url, "Quick View"),
             style="blue",
             width=12,
         ),

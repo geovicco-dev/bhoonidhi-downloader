@@ -226,22 +226,59 @@ def recursive_search(
     return all_results
 
 
-# TABLETYPE -> quicklook extension, taken straight from the portal's own
-# makeInterfaceObj() (odap.js): SMETA scenes are always served as .jpeg,
-# PMETA scenes as .jpg. Confirmed against a live scene from every
-# satellite/sensor/product-variant the portal supports (132 combinations,
-# zero exceptions) -- PRICED has nothing to do with it, despite the old
-# guess here basing the extension on it.
+# TABLETYPE decides the quicklook extension: SMETA scenes are always
+# served as .jpeg, PMETA scenes as .jpg. PRICED has nothing to do with
+# it, despite the old guess here basing the extension on it.
 _QUICKLOOK_EXT_BY_TABLETYPE = {"SMETA": ".jpeg", "PMETA": ".jpg"}
 
 
-def get_scene_meta_url(scene: dict) -> str:
+def get_scene_meta_url(scene: dict) -> str | None:
+    """Build the metadata download URL for a scene, or None if it has none.
+
+    The portal only ever shows a metadata download link when a scene is
+    open data (PRICED starts with "OpenData_") AND TABLETYPE is "PMETA" —
+    every priced scene, and every SMETA scene regardless of pricing, has
+    no separate metadata file at all (its fields are shown inline from the
+    search response instead). Returning a URL unconditionally, as this
+    function used to, handed out a broken link for the majority of scenes.
+
+    A handful of satellites also don't serve a plain .meta/.met file even
+    when the gate passes -- the portal opens different files for them
+    instead. Where the portal opens more than one file (Sentinel-1,
+    Sentinel-2), the first is returned as the primary link.
+    """
+    priced = str(scene.get("PRICED") or "")
+    tabletype = str(scene.get("TABLETYPE") or "")
+    if not (priced.startswith("OpenData_") and tabletype == "PMETA"):
+        return None
+
     dirpath = scene["DIRPATH"]
     filename = scene["FILENAME"]
-    scene_id = scene.get("ID")
-    if scene_id and "NISAR" in scene_id:
-        return f"https://bhoonidhi.nrsc.gov.in/{dirpath}/{filename}.met"
-    return f"https://bhoonidhi.nrsc.gov.in/{dirpath}/{filename}.meta"
+    scene_id = str(scene.get("ID") or "")
+    satellite = str(scene.get("SATELLITE") or "").strip()
+
+    if satellite == "NISAR" and not scene_id.startswith("NISAR_S4"):
+        base = f"https://bhoonidhi.nrsc.gov.in/{dirpath}/{filename}.met"
+    else:
+        base = f"https://bhoonidhi.nrsc.gov.in/{dirpath}/{filename}.meta"
+
+    id_prefix4 = scene_id[:4]
+    id_prefix2 = scene_id[:2]
+    if id_prefix4 == "SEN1":
+        # Sentinel-1: the portal opens the VH and VV polarization sidecars
+        # instead of a .meta file. VH is returned as the primary link; VV
+        # is the same base with the suffix swapped.
+        return base.replace(".meta", "_VH.xml")
+    if id_prefix4 == "SEN2":
+        # Sentinel-2: the portal opens the tile metadata + INSPIRE sidecars
+        # instead of a .meta file. MTD is returned as the primary link;
+        # INSPIRE is the same base with the suffix swapped.
+        return base.replace(".meta", "_MTD.xml")
+    if id_prefix2 == "NV":
+        # Novasar: the portal serves metadata from a differently-named
+        # directory (PRODUCTJPGS -> PRODUCTMETA) as .xml, not .meta.
+        return base.replace("JPGS", "META").replace(".meta", ".xml")
+    return base
 
 
 def get_quicklook_url(scene: dict) -> str:
@@ -256,6 +293,22 @@ def create_clickable_link(url: str, text: str) -> str:
     from rich.markup import escape
 
     return f"[link={url}]{escape(text)}[/link]"
+
+
+def link_or_dash(item: dict, builder, text: str) -> str:
+    """Build a clickable link from item via builder, or a dash if there's
+    nothing to link to.
+
+    Covers two cases: builder raises (e.g. a cart record missing
+    DIRPATH/FILENAME) and builder returns None (e.g. get_scene_meta_url()
+    for a scene the portal never gives a metadata file to). Either way,
+    a dash beats a broken link.
+    """
+    try:
+        url = builder(item)
+    except (KeyError, TypeError):
+        return "[dim]—[/]"
+    return create_clickable_link(url, text) if url else "[dim]—[/]"
 
 
 def full_satellite(scene: dict) -> str:
