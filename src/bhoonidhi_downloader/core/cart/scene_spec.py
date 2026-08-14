@@ -1,11 +1,12 @@
-"""Client-side scene enrichment, ported from the portal's ``makeInterfaceObj``.
+"""Client-side scene enrichment, mirroring what the portal computes before
+adding a scene to a cart.
 
 A ``ProductSearch`` result is *not* what the portal puts in a cart. Before
-calling any add-to-cart endpoint the portal runs the scene through
-``makeInterfaceObj()`` (odap.js:2205-2440), which derives a handful of
+calling any add-to-cart endpoint the portal derives a handful of
 identifier fields — ``SAT_SPEC``, ``SCENE_SPEC``, ``SUBSCENE_ID`` and their
-scheme strings — and sends *that* object as ``selProds``. The servlet stores
-whatever it is given, so those fields end up on the cart record.
+scheme strings — and sends *that* enriched object as ``selProds``. The
+servlet stores whatever it is given, so those fields end up on the cart
+record.
 
 They matter because the portal's own cart table and map labels read them
 back. Add a scene without them and the servlet still answers ``SUCCESS``,
@@ -15,8 +16,7 @@ row entirely, so the item is invisible in the web UI.
 
 The derivation is pure string manipulation over fields already present on
 the scene, so it is reproduced here rather than round-tripped through a
-browser. Structure and branch order follow the original closely to keep the
-two diffable.
+browser.
 """
 
 import logging
@@ -24,7 +24,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-#: Subscene codes the portal recognises (odap.js:57). Anything else means
+#: Subscene codes the portal recognises. Anything else means
 #: the ID's trailing character is not a subscene marker.
 SUBSCENE_CODES: frozenset[str] = frozenset(
     ["A", "B", "C", "D", "F"]
@@ -190,8 +190,8 @@ def _scene_spec(scene: dict, imaging_mode: str, subscene_id: str) -> tuple[str, 
     elif (satellite.startswith("SC1") and sensor.startswith("SCAT")) or (
         satellite.startswith("E06") and sensor.startswith("SCT")
     ):
-        # Two separate branches in odap.js with identical bodies; kept as
-        # one condition here, parenthesised so the grouping is explicit.
+        # Two conditions produce identical output; kept as one branch
+        # here, parenthesised so the grouping is explicit.
         spec, scheme = f"{orbit}_{row}", "GroundOrbit_Scene"
     elif satellite.startswith("E06") and _s(scene.get("BINPERIOD")):
         spec = f"{_s(scene.get('BINPERIOD'))}_{_s(scene.get('BINRESOLUTION'))}"

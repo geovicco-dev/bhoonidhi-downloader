@@ -1,8 +1,7 @@
 """Pure request-shaping rules for the portal's three carts.
 
-Everything here mirrors logic in the portal's own front-end (``odap.js``,
-``LoginVals.js``) and is side-effect free so it can be unit tested without
-touching the network.
+Everything here mirrors logic in the portal's own front-end and is
+side-effect free so it can be unit tested without touching the network.
 """
 
 import json
@@ -141,11 +140,11 @@ def cart_kinds_for_states(states: set[Availability] | None) -> list[CartKind]:
 
 
 def encode_article(article: dict) -> dict[str, str]:
-    """URL-encode every value, the way the portal's ``encodeObject()`` does.
+    """URL-encode every value in a cart article.
 
-    The portal encodes *all* values, not just the JSON-valued ones
-    (LoginVals.js:101). Encoding only ``selProds`` leaves ``/`` and ``{}``
-    in sibling fields to be misparsed server-side.
+    Every value is encoded, not just the JSON-valued ones — leaving any
+    field un-encoded risks ``/`` or ``{}`` characters being misparsed
+    server-side.
     """
     return {k: urllib.parse.quote(str(v), safe="") for k, v in article.items()}
 
@@ -164,7 +163,7 @@ def cart_date_long(when: datetime) -> str:
     return f"{when.day:02d} {when.strftime('%B')} {when.year}"
 
 
-#: Uppercase 3-letter months, matching the portal's getMonth() in odap.js.
+#: Uppercase 3-letter months, matching the portal's own date formatting.
 _MONTHS = (
     "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
     "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
@@ -174,9 +173,9 @@ _MONTHS = (
 def cart_date_short(when: datetime) -> str:
     """Cart date as GETSRT_IDS wants it, e.g. ``10-AUG-2026``.
 
-    The day is *not* zero-padded, matching the portal's own
-    ``getDate() + "-" + getMonth(...)`` in odap.js. This is the form the
-    priced/on-order search-id enumeration expects for its date window.
+    The day is *not* zero-padded, matching the portal's own date
+    formatting. This is the form the priced/on-order search-id
+    enumeration expects for its date window.
     """
     return f"{when.day}-{_MONTHS[when.month - 1]}-{when.year}"
 

@@ -83,7 +83,9 @@ def test_priced_pmeta_scene_has_no_metadata_url():
 
 
 def test_opendata_pmeta_scene_has_a_metadata_url():
-    url = get_scene_meta_url(_scene(TABLETYPE="PMETA", PRICED="OpenData_DirectDownload"))
+    url = get_scene_meta_url(
+        _scene(TABLETYPE="PMETA", PRICED="OpenData_DirectDownload")
+    )
     assert url is not None
 
 

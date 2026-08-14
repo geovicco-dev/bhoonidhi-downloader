@@ -20,7 +20,10 @@ from bhoonidhi_downloader.core.download import (
     is_downloadable,
 )
 from bhoonidhi_downloader.core.search.client import SearchManager
-from bhoonidhi_downloader.exceptions import BhoonidhiNotFoundError, BhoonidhiValidationError
+from bhoonidhi_downloader.exceptions import (
+    BhoonidhiNotFoundError,
+    BhoonidhiValidationError,
+)
 from bhoonidhi_downloader.schemas import (
     AOISchema,
     QuerySchema,
