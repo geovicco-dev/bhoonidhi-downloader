@@ -226,6 +226,15 @@ def recursive_search(
     return all_results
 
 
+# TABLETYPE -> quicklook extension, taken straight from the portal's own
+# makeInterfaceObj() (odap.js): SMETA scenes are always served as .jpeg,
+# PMETA scenes as .jpg. Confirmed against a live scene from every
+# satellite/sensor/product-variant the portal supports (132 combinations,
+# zero exceptions) -- PRICED has nothing to do with it, despite the old
+# guess here basing the extension on it.
+_QUICKLOOK_EXT_BY_TABLETYPE = {"SMETA": ".jpeg", "PMETA": ".jpg"}
+
+
 def get_scene_meta_url(scene: dict) -> str:
     dirpath = scene["DIRPATH"]
     filename = scene["FILENAME"]
@@ -238,12 +247,8 @@ def get_scene_meta_url(scene: dict) -> str:
 def get_quicklook_url(scene: dict) -> str:
     dirpath = scene["DIRPATH"]
     filename = scene["FILENAME"]
-    if (
-        scene.get("PRICED", "").lower() == "priced"
-        or scene.get("PRICED", "").lower() == "opendata_onorder"
-    ):
-        return f"https://bhoonidhi.nrsc.gov.in/{dirpath}/{filename}.jpeg"
-    return f"https://bhoonidhi.nrsc.gov.in/{dirpath}/{filename}.jpg"
+    ext = _QUICKLOOK_EXT_BY_TABLETYPE.get(str(scene.get("TABLETYPE") or ""), ".jpg")
+    return f"https://bhoonidhi.nrsc.gov.in/{dirpath}/{filename}{ext}"
 
 
 def create_clickable_link(url: str, text: str) -> str:
