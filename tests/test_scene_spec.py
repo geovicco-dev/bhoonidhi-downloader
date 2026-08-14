@@ -1,4 +1,4 @@
-"""Tests for the port of the portal's makeInterfaceObj().
+"""Tests for the client-side port of the portal's scene enrichment.
 
 The R2A/AWiFS expectations are ground truth: they are the SAT_SPEC and
 SCENE_SPEC values the portal itself wrote onto a cart record when the same

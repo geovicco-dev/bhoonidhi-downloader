@@ -27,6 +27,7 @@ from .utils import (
     full_sensor,
     get_quicklook_url,
     get_scene_meta_url,
+    link_or_dash,
 )
 
 
@@ -54,7 +55,7 @@ def search_columns() -> list[Column]:
         ),
         Column(
             "Metadata",
-            lambda s, _i: create_clickable_link(get_scene_meta_url(s), "Metadata"),
+            lambda s, _i: link_or_dash(s, get_scene_meta_url, "Metadata"),
             style="blue",
             width=12,
         ),
