@@ -7,6 +7,7 @@ from typing import Any
 import requests
 
 from bhoonidhi_downloader.exceptions import BhoonidhiAPIError
+from bhoonidhi_downloader.schemas.selection import product_token, sat_value
 
 CACHE_DIR = Path(os.path.join(os.path.expanduser("~"), ".bhoonidhi"))
 ARCHIVE_PATH = CACHE_DIR / "archive.json"
@@ -112,19 +113,28 @@ class ArchiveManager:
             )
             availability = f"{start} - {end}"
 
-            collections: list[dict[str, dict[str, Any]]] = [
-                {
-                    str(r.get("dispName", "")): {
-                        "sensor": r.get("senName"),
-                        "resolution": r.get("res"),
-                        "start_date": r.get("stDate"),
-                        "end_date": r.get("endDate"),
-                        "product": _normalize_products(r.get("products")),
+            collections: list[dict[str, dict[str, Any]]] = []
+            for r in record.get("sensors", []):
+                disp = str(r.get("dispName") or "")
+                if not disp:
+                    continue
+                sen_name = str(r.get("senName") or "")
+                token = product_token(disp, str(record.get("satName") or ""), sen_name)
+                collections.append(
+                    {
+                        disp: {
+                            "sensor": r.get("senName"),
+                            "resolution": r.get("res"),
+                            "start_date": r.get("stDate"),
+                            "end_date": r.get("endDate"),
+                            "product": _normalize_products(r.get("products")),
+                            "product_token": token,
+                            "sat_value": sat_value(
+                                str(record.get("satName") or ""), sen_name, token
+                            ),
+                        }
                     }
-                }
-                for r in record.get("sensors", [])
-                if r.get("dispName")
-            ]
+                )
 
             access_level = record.get("priced", "N/A").split("_")[-1]
 

@@ -10,21 +10,7 @@ from rich.spinner import Spinner
 
 from bhoonidhi_downloader.exceptions import BhoonidhiValidationError
 from bhoonidhi_downloader.logger import get_console
-
-
-def _product_token(disp_name: str, satellite: str, sensor: str) -> str:
-    """The product part of a dispName: whatever follows ``sat_sensor_``.
-
-    ``EOS-06_OCM(GAC)_L2C-Chlorophyll`` under sensor ``OCM(GAC)`` gives
-    ``L2C-Chlorophyll``; a bare ``ResourceSat-2A_AWIFS`` (no suffix) gives
-    ``""``. Product tokens can themselves contain underscores
-    (``JPSS1_VIIRS_Imagery_L1`` → ``Imagery_L1``), so this strips the known
-    prefix rather than splitting on ``_``.
-    """
-    prefix = f"{satellite}_{sensor}_"
-    if disp_name.startswith(prefix):
-        return disp_name[len(prefix) :]
-    return ""
+from bhoonidhi_downloader.schemas.selection import product_token as _product_token
 
 
 def _parse_manifest_date(s: str | None) -> datetime | None:

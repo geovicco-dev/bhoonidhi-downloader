@@ -48,8 +48,9 @@ def list_archive(
     """List every satellite and sensor the portal currently supports.
 
     Cached locally after the first call; use --refresh to re-fetch.
-    Narrow to one satellite with --sat to see its sensors and products
-    in detail.
+    Narrow to one satellite with --sat to see every product under each
+    sensor plus the exact --sat value that selects it — copy that value
+    straight into 'bhd query create --sat ...'.
 
     Examples:
       bhd archive list                          # every satellite

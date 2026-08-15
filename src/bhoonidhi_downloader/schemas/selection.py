@@ -103,3 +103,39 @@ def parse_sat_tokens(
         sole.sensor = legacy_sensor
 
     return selections
+
+
+def product_token(disp_name: str, satellite: str, sensor: str) -> str:
+    """The product part of a ``dispName``: whatever follows ``sat_sensor_``.
+
+    ``EOS-06_OCM(GAC)_L2C-Chlorophyll`` under sensor ``OCM(GAC)`` gives
+    ``L2C-Chlorophyll``; a bare ``ResourceSat-2A_AWIFS`` (no suffix) gives
+    ``""`` — that dispName IS the sensor's default product, with nothing
+    to put after a third colon. Product tokens can themselves contain
+    underscores (``JPSS1_VIIRS_Imagery_L1`` -> ``Imagery_L1``), so this
+    strips the known ``satellite_sensor_`` prefix rather than splitting
+    on ``_``.
+
+    This is the exact split ``core.search.utils.resolve_selections`` uses
+    to match a ``--sat SAT:SEN:PROD`` token back to a dispName — anywhere
+    a product token is shown to a user (archive browsing, search results)
+    should go through this function so the two can never drift apart.
+    """
+    prefix = f"{satellite}_{sensor}_"
+    if disp_name.startswith(prefix):
+        return disp_name[len(prefix) :]
+    return ""
+
+
+def sat_value(satellite: str, sensor: str, product: str) -> str:
+    """Build the ``--sat`` string that selects exactly this product.
+
+    ``product`` is the token from :func:`product_token`; an empty string
+    means the sensor's default (no distinct product suffix), so the
+    value stops at ``SAT:SEN``. Callers embedding this in a shell example
+    still need to quote it themselves when the sensor or product
+    contains parentheses, e.g. ``"EOS-06:OCM(GAC):L2C-Chlorophyll"``.
+    """
+    if product:
+        return f"{satellite}:{sensor}:{product}"
+    return f"{satellite}:{sensor}"
