@@ -12,6 +12,10 @@ All notable changes to this project are documented here.
 
 - **`SearchSchema` and `QuerySchema` hold a `selections` list instead of scalar `satellite`/`sensor` fields.** Saved queries written before this release are migrated automatically on read — no manual step, no version-gated loader — but **`query.satellite`/`query.sensor` no longer exist as attributes on the returned object**; anything reading those directly (not just constructing with the legacy keywords, which still works) needs `query.selections` instead. `generate_name`/`generate_description` and the `query list` table now show the full mission mix rather than one satellite.
 
+### Fixed
+
+- **`Selection` wasn't exported from `bhoonidhi_downloader.sdk`**, even though every other SDK-facing type (`BhoonidhiClient`, the `BhoonidhiError` family) is — a script had to know to reach into `bhoonidhi_downloader.schemas` instead. `from bhoonidhi_downloader.sdk import Selection` now works alongside the rest.
+
 ## [0.4.0]
 
 ### Added

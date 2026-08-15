@@ -2,7 +2,7 @@
 
 Everything a script needs comes from this one namespace:
 
-    from bhoonidhi_downloader.sdk import BhoonidhiClient, BhoonidhiError
+    from bhoonidhi_downloader.sdk import BhoonidhiClient, BhoonidhiError, Selection
 """
 
 from bhoonidhi_downloader.exceptions import (
@@ -12,6 +12,7 @@ from bhoonidhi_downloader.exceptions import (
     BhoonidhiNotFoundError,
     BhoonidhiValidationError,
 )
+from bhoonidhi_downloader.schemas import Selection
 from bhoonidhi_downloader.sdk.client import BhoonidhiClient
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "BhoonidhiAPIError",
     "BhoonidhiValidationError",
     "BhoonidhiNotFoundError",
+    "Selection",
 ]

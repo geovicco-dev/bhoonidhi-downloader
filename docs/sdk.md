@@ -102,7 +102,7 @@ in one call, or narrow to one product within a sensor. Each entry is a
 both.
 
 ```python
-from bhoonidhi_downloader.schemas import Selection
+from bhoonidhi_downloader.sdk import Selection
 
 query = client.query.create(
     datetime(2025, 12, 1), datetime(2025, 12, 30),

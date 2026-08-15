@@ -137,7 +137,7 @@ client.query.download(query.slug, "./downloads")
 Search several missions or narrow to one product with `selections` instead of `satellite`/`sensor`:
 
 ```python
-from bhoonidhi_downloader.schemas import Selection
+from bhoonidhi_downloader.sdk import Selection
 
 query = client.query.create(
     datetime(2025, 12, 1), datetime(2025, 12, 30),
