@@ -15,7 +15,12 @@ from bhoonidhi_downloader.logger import get_console
 
 archive_app = typer.Typer(
     name="archive",
-    help="Browse available satellites and sensors.",
+    help=(
+        "Browse the satellites and sensors Bhoonidhi currently supports.\n\n"
+        "The list is fetched live from the portal and cached locally, "
+        "so it's always current — nothing here is hardcoded. No login "
+        "required."
+    ),
     no_args_is_help=True,
     add_completion=False,
 )
@@ -40,7 +45,17 @@ def list_archive(
         False, "--plain", help="Print the whole table at once instead of scrolling"
     ),
 ) -> None:
-    """List satellites and sensors from the archive."""
+    """List every satellite and sensor the portal currently supports.
+
+    Cached locally after the first call; use --refresh to re-fetch.
+    Narrow to one satellite with --sat to see its sensors and products
+    in detail.
+
+    Examples:
+      bhd archive list                          # every satellite
+      bhd archive list --sat ResourceSat-2A     # one satellite's sensors/products
+      bhd archive list --refresh                # force a re-fetch from the portal
+    """
     interactive = False if plain else None
     try:
         data = run_archive_list(refresh=refresh)
@@ -64,7 +79,17 @@ def export_archive(
         help="Re-fetch archive data from the portal.",
     ),
 ) -> None:
-    """Export archive data to a JSON file."""
+    """Write the archive catalogue to a JSON file.
+
+    Useful for scripting against the full satellite/sensor/product
+    list without going through the SDK, or for diffing what's changed
+    between two points in time.
+
+    Examples:
+      bhd archive export --out archive.json                     # everything
+      bhd archive export --out resourcesat.json --sat ResourceSat-2A
+      bhd archive export --out fresh.json --refresh              # re-fetch first
+    """
     try:
         data = run_archive_list(refresh=refresh)
         write_archive_export(data, out, sat)
