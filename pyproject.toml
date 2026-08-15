@@ -1,6 +1,6 @@
 [project]
 name = "bhoonidhi-downloader"
-version = "0.4.0"
+version = "0.5.0rc1"
 description = "CLI and SDK for ISRO's EO Portal - Bhoonidhi Browse & Order"
 license = "MIT"
 authors = [
