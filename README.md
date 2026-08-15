@@ -9,7 +9,7 @@ CLI and SDK for [ISRO's EO Portal - Bhoonidhi Browse & Order](https://bhoonidhi.
 
 ## Features
 
-- **Search by bounding box or point + radius** — filter by satellite, sensor, and date range.
+- **Search by bounding box or point + radius** — filter by satellite, sensor, and date range. `--sat` is repeatable and accepts `SAT[:SEN[:PROD]]`, so one search can span several missions or narrow to a single product within a sensor.
 - **Named, persistent queries** — every search is saved under a short slug (`misty-falcon`), so you can come back to it later, refresh it for new scenes, or download from it without re-querying the portal.
 - **Concurrent, verified downloads** — fetches multiple scenes in parallel, verifies each with a SHA256, and skips anything already downloaded.
 - **Cart staging** — stage scenes into the Bhoonidhi cart from a saved query — priced, on-order, open-but-archived, or direct-download — and finish the order in the Browse & Order portal.
@@ -34,7 +34,7 @@ Log in, run a search, and download what you find — three commands, start to fi
 bhd auth login
 
 # 2. Search a bounding box + date range, save the results as a named query
-bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
+bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
 
 # 3. Download everything the query found
 bhd query download misty-falcon --out ./downloads
@@ -45,8 +45,20 @@ bhd query download misty-falcon --out ./downloads
 Prefer a point and radius over a bounding box? Swap `--minx`/`--maxx`/`--miny`/`--maxy` for `--lat`/`--lon`/`--radius` (radius defaults to 10km, 1-100km):
 
 ```shell
-bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --lat 25.58 --lon 91.89 --radius 15
+bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --lat 25.58 --lon 91.89 --radius 15
 ```
+
+`--sat` is repeatable and accepts `SAT[:SEN[:PROD]]` — combine several missions in one search, or narrow to a single product within a sensor:
+
+```shell
+# Two missions in one search
+bhd query create 2025-12-01 2025-12-30 --sat ResourceSat-2A:LISS3 --sat CartoSat-3 --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
+
+# One product within a sensor (quote it — the parentheses matter to the shell)
+bhd query create 2025-12-01 2025-12-30 --sat "EOS-06:OCM(GAC):L2C-Chlorophyll" --minx 74 --maxx 80 --miny 12 --maxy 18
+```
+
+An unknown satellite, sensor, or product is skipped with a warning instead of failing the whole search; run `bhd archive list --sat X` first to see what's valid.
 
 ## Command reference
 
@@ -79,7 +91,7 @@ Every command supports `--help` for its full option list. This is the short vers
 
 | Command                                               | What it does                                                                                                                                                                                       |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bhd query create <dates> --sat ... --sen ...` with `--minx --maxx --miny --maxy` or `--lat --lon [--radius]` | Search and save the results as a new named query. Give the area as a bounding box or a point + radius, not both. |
+| `bhd query create <dates> --sat SAT[:SEN[:PROD]] [--sat ...]` with `--minx --maxx --miny --maxy` or `--lat --lon [--radius]` | Search and save the results as a new named query. Repeat `--sat` to combine missions; give the area as a bounding box or a point + radius, not both. |
 | `bhd query list`                                      | List all your saved queries.                                                                                                                                                                       |
 | `bhd query show <slug>`                               | Redisplay a saved query's scenes. `--filter ready\|archived\|onorder\|priced` narrows the table to one or more states.                                                                              |
 | `bhd query refresh <slug>`                            | Check for new scenes matching an existing query.                                                                                                                                                   |
@@ -120,6 +132,21 @@ query = client.query.create(
 )
 
 client.query.download(query.slug, "./downloads")
+```
+
+Search several missions or narrow to one product with `selections` instead of `satellite`/`sensor`:
+
+```python
+from bhoonidhi_downloader.schemas import Selection
+
+query = client.query.create(
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    selections=[
+        Selection(satellite="ResourceSat-2A", sensor="LISS3"),
+        Selection(satellite="CartoSat-3"),
+    ],
+    minx=91.77, maxx=92.0, miny=25.496, maxy=25.695,
+)
 ```
 
 See the [Python SDK guide](https://geovicco-dev.github.io/bhoonidhi-downloader/sdk/)

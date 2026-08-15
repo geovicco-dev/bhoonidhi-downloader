@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## [0.5.0]
+
+### Added
+
+- **`bhd query create --sat` is now repeatable and accepts `SAT[:SEN[:PROD]]`, so one search can span several missions or narrow to a single product within a sensor** — `--sat ResourceSat-2A:LISS3 --sat CartoSat-3` searches both in one request, and `--sat "EOS-06:OCM(GAC):L2C-Chlorophyll"` narrows to that one product instead of every product a sensor bundles (EOS-06's OCM(GAC) alone has eight). The portal already searches on a flat list of dispName tokens, so this stays one HTTP request regardless of how many selections are combined — the server fans them out, not the client. An unknown satellite, sensor, or product is skipped with a warning and the search continues with whatever's left; only an all-invalid selection list fails outright. `--sen` still works as shorthand for a single plain `--sat`. The SDK's `client.query.create(...)` gains a `selections=[Selection(...), ...]` parameter alongside the existing `satellite=`/`sensor=` pair — give one or the other, not both.
+
+### Changed
+
+- **`SearchSchema` and `QuerySchema` hold a `selections` list instead of scalar `satellite`/`sensor` fields.** Saved queries written before this release are migrated automatically on read — no manual step, no version-gated loader — but **`query.satellite`/`query.sensor` no longer exist as attributes on the returned object**; anything reading those directly (not just constructing with the legacy keywords, which still works) needs `query.selections` instead. `generate_name`/`generate_description` and the `query list` table now show the full mission mix rather than one satellite.
+
 ## [0.4.0]
 
 ### Added

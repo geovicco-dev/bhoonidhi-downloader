@@ -38,7 +38,7 @@ Log in, run a search, and download what you find — three commands, start to fi
 bhd auth login
 
 # 2. Search a bounding box + date range, save the results as a named query
-bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
+bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
 
 # 3. Download everything the query found
 bhd query download misty-falcon --out ./downloads
@@ -49,8 +49,10 @@ bhd query download misty-falcon --out ./downloads
 Prefer a point and radius over a bounding box? Swap `--minx`/`--maxx`/`--miny`/`--maxy` for `--lat`/`--lon`/`--radius` (radius defaults to 10km, 1-100km):
 
 ```shell
-bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --lat 25.58 --lon 91.89 --radius 15
+bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --lat 25.58 --lon 91.89 --radius 15
 ```
+
+`--sat` is repeatable and accepts `SAT[:SEN[:PROD]]` — combine several missions in one search, or narrow to a single product within a sensor. See the [Examples](examples.md) page for both.
 
 ## Quickstart from Python
 

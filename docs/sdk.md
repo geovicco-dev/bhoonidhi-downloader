@@ -94,6 +94,40 @@ query = client.query.create(
 
 `create` returns `None` if nothing matched.
 
+### Multiple missions or a single product
+
+Pass `selections` instead of `satellite`/`sensor` to search several missions
+in one call, or narrow to one product within a sensor. Each entry is a
+`Selection(satellite, sensor=None, product=None)`; give one or the other, not
+both.
+
+```python
+from bhoonidhi_downloader.schemas import Selection
+
+query = client.query.create(
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    selections=[
+        Selection(satellite="ResourceSat-2A", sensor="LISS3"),
+        Selection(satellite="CartoSat-3"),
+    ],
+    minx=91.77, maxx=92.0, miny=25.496, maxy=25.695,
+)
+```
+
+Narrow further to a single product within a sensor:
+
+```python
+query = client.query.create(
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    selections=[Selection(satellite="EOS-06", sensor="OCM(GAC)", product="L2C-Chlorophyll")],
+    minx=74, maxx=80, miny=12, maxy=18,
+)
+```
+
+An unknown satellite, sensor, or product is skipped with a warning instead of
+failing the whole search; `client.archive.list()` (or `bhd archive list --sat
+X`) shows valid names.
+
 Work with saved queries:
 
 ```python

@@ -32,16 +32,30 @@ This hits the portal live (and caches the result), so it always reflects what's 
 ### 3. Search a bounding box and save it as a query
 
 ```console
-$ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
+$ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
 ```
 
 Arguments are `start_date end_date` (dates as `YYYY-MM-DD`), with the area of interest given as a bounding box (`--minx --maxx --miny --maxy`) or a point plus radius (`--lat --lon --radius`, radius defaults to 10km and must be 1-100km) — give one or the other, not both:
 
 ```console
-$ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A --sen MSI --lat 25.58 --lon 91.89 --radius 15
+$ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --lat 25.58 --lon 91.89 --radius 15
 ```
 
 The results print as a table, and the query is saved under an auto-generated slug like `misty-falcon` — that's what you'll use to refer to it going forward.
+
+### 3b. Multiple missions or a single product
+
+`--sat` is repeatable and accepts `SAT[:SEN[:PROD]]` — combine several missions in one search, or narrow to one product within a sensor:
+
+```console
+$ bhd query create 2025-12-01 2025-12-30 --sat ResourceSat-2A:LISS3 --sat CartoSat-3 --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
+```
+
+```console
+$ bhd query create 2025-12-01 2025-12-30 --sat "EOS-06:OCM(GAC):L2C-Chlorophyll" --minx 74 --maxx 80 --miny 12 --maxy 18
+```
+
+Quote a `--sat` value containing parentheses, like `OCM(GAC)` above, so the shell passes it through intact. An unknown satellite, sensor, or product is skipped with a warning rather than failing the whole search — run `bhd archive list --sat X` first to see what's valid under a satellite.
 
 ### 4. Come back to it later
 
@@ -121,6 +135,21 @@ query = client.query.create(
     datetime(2025, 12, 1), datetime(2025, 12, 30),
     satellite="Sentinel-2A", sensor="MSI",
     lat=25.58, lon=91.89, radius_km=15,
+)
+```
+
+Combine several missions or narrow to a single product with `selections`:
+
+```python
+from bhoonidhi_downloader.schemas import Selection
+
+query = client.query.create(
+    datetime(2025, 12, 1), datetime(2025, 12, 30),
+    selections=[
+        Selection(satellite="ResourceSat-2A", sensor="LISS3"),
+        Selection(satellite="CartoSat-3"),
+    ],
+    minx=91.77, maxx=92.0, miny=25.496, maxy=25.695,
 )
 ```
 
