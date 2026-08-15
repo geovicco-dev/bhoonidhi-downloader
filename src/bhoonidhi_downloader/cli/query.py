@@ -46,6 +46,7 @@ from bhoonidhi_downloader.core.search.availability import (
 from bhoonidhi_downloader.core.search.render import render_search_results
 from bhoonidhi_downloader.exceptions import BhoonidhiError, BhoonidhiNotFoundError
 from bhoonidhi_downloader.logger import get_console
+from bhoonidhi_downloader.schemas.selection import parse_sat_tokens
 
 query_app = typer.Typer(
     name="query",
@@ -65,10 +66,19 @@ def create(
     end_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d"], help="End date (YYYY-MM-DD)"
     ),
-    satellite: str = typer.Option(
-        None, "--sat", help="Satellite name (Ex: ResourceSat-2)"
+    satellite: list[str] = typer.Option(
+        None,
+        "--sat",
+        help="Satellite target as SAT[:SEN[:PROD]]. Repeat for several "
+        "missions, e.g. --sat ResourceSat-2A:LISS3 --sat CartoSat-3. "
+        "Omit the sensor/product to search everything under it.",
     ),
-    sensor: str = typer.Option(None, "--sen", help="Sensor name (Ex: LISS3)"),
+    sensor: str = typer.Option(
+        None,
+        "--sen",
+        help="Sensor name (legacy; only with a single plain --sat). "
+        "Prefer --sat SAT:SENSOR.",
+    ),
     minx: float = typer.Option(None, "--minx", help="Minimum longitude (bounding box)"),
     maxx: float = typer.Option(None, "--maxx", help="Maximum longitude (bounding box)"),
     miny: float = typer.Option(None, "--miny", help="Minimum latitude (bounding box)"),
@@ -94,15 +104,15 @@ def create(
     """
     interactive = False if plain else None
     try:
+        selections = parse_sat_tokens(satellite, legacy_sensor=sensor)
         query = run_query_create(
             start_date=start_date,
             end_date=end_date,
-            satellite=satellite,
+            selections=selections,
             minx=minx,
             maxx=maxx,
             miny=miny,
             maxy=maxy,
-            sensor=sensor,
             lat=lat,
             lon=lon,
             radius_km=radius_km,
