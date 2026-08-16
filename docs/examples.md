@@ -57,6 +57,16 @@ $ bhd query create 2025-12-01 2025-12-30 --sat "EOS-06:OCM(GAC):L2C-Chlorophyll"
 
 Quote a `--sat` value containing parentheses, like `OCM(GAC)` above, so the shell passes it through intact. An unknown satellite, sensor, or product is skipped with a warning rather than failing the whole search — run `bhd archive list --sat X` first to see what's valid under a satellite.
 
+### 3c. Search without saving
+
+Every search is saved by default under a slug. When you just want the scene list — a one-off check, or a scripted/multi-worker run where saved query files would pile up on disk and diverge per worker — add `--no-save`:
+
+```console
+$ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695 --no-save
+```
+
+The scenes print exactly as usual, but nothing is written under `~/.bhoonidhi/queries/` and no slug is generated — so there's no `query show`/`refresh` to come back to. The SDK equivalent is `client.query.create(..., save=False)`, which still returns the `QuerySchema` with its scenes populated.
+
 ### 4. Come back to it later
 
 ```console

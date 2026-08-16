@@ -123,14 +123,20 @@ def run_query_create(
     radius_km: float | None = None,
     name: str | None = None,
     description: str | None = None,
+    save: bool = True,
 ) -> QuerySchema | None:
-    """Run a search and save the result as a new named query.
+    """Run a search and return the result as a query.
 
     The AOI is either a bounding box (minx/maxx/miny/maxy) or a point plus
     radius (lat/lon/radius_km) — exactly one of the two must be given.
 
-    Returns the saved query, or None if the search matched no scenes (in
-    which case nothing is saved).
+    Returns the query, or None if the search matched no scenes.
+
+    When ``save`` is True (the default) the query is persisted under a
+    generated slug in ``~/.bhoonidhi/queries/``. When ``save`` is False the
+    search runs identically but nothing is written to disk and no slug is
+    generated — the returned query is ephemeral, carrying an empty slug,
+    for programmatic callers that only want the scene list.
 
     Raises:
         BhoonidhiAPIError: if the search request fails.
@@ -155,7 +161,7 @@ def run_query_create(
         key=lambda x: datetime.strptime(x.get("DOP", "01-Jan-1900"), "%d-%b-%Y")
     )
 
-    slug = generate_slug()
+    slug = generate_slug() if save else ""
     query = QuerySchema(
         slug=slug,
         name=name or generate_name(selections, start_date, end_date),
@@ -168,7 +174,8 @@ def run_query_create(
         end_date=end_date,
         scenes=scenes,
     )
-    save_query(query)
+    if save:
+        save_query(query)
     return query
 
 

@@ -101,6 +101,13 @@ def create(
     plain: bool = typer.Option(
         False, "--plain", help="Print the whole table at once instead of scrolling"
     ),
+    no_save: bool = typer.Option(
+        False,
+        "--no-save",
+        help="Run the search but don't persist it: no query file is written "
+        "under ~/.bhoonidhi/queries/ and no slug is generated. For "
+        "programmatic/stateless use where you only want the scene list.",
+    ),
 ) -> None:
     """Search for scenes and save the results as a new named query.
 
@@ -160,6 +167,7 @@ def create(
             radius_km=radius_km,
             name=name,
             description=description,
+            save=not no_save,
         )
     except BhoonidhiError as e:
         console.print(f"[bold red]Search failed:[/] {e}")
@@ -172,11 +180,17 @@ def create(
     render_search_results(
         console,
         query.scenes,
-        slug=query.slug,
+        slug=query.slug or None,
         interactive=interactive,
         header_srt=True,
     )
-    render_query_saved(console, query)
+    if no_save:
+        console.print(
+            f"\n[dim]Not saved (--no-save) \u2014 "
+            f"{len(query.scenes)} scene(s), nothing written to disk.[/]"
+        )
+    else:
+        render_query_saved(console, query)
 
 
 @query_app.command("list")
