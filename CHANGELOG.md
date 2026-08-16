@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [0.5.1]
+
+### Added
+
+- **`bhd query create --no-save` (CLI) / `client.query.create(save=False)` (SDK) runs the search without persisting a query file** — the portal call, pagination, and dedup are identical to a normal create, but nothing is written to `~/.bhoonidhi/queries/` and no slug is generated. The returned `QuerySchema` still carries `.scenes` so the caller gets the full scene list exactly as before — the only difference is that the result is ephemeral. This is the stateless path programmatic consumers (bhoonidhi-explorer ingest DAGs) need so they don't accumulate hidden per-worker query files that grow unbounded and break in multi-worker orchestrators.
+
 ## [0.5.0]
 
 ### Added
