@@ -52,7 +52,7 @@ Prefer a point and radius over a bounding box? Swap `--minx`/`--maxx`/`--miny`/`
 bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --lat 25.58 --lon 91.89 --radius 15
 ```
 
-`--sat` is repeatable and accepts `SAT[:SEN[:PROD]]` — combine several missions in one search, or narrow to a single product within a sensor. See the [Examples](examples.md) page for both.
+`--sat` is repeatable and accepts `SAT[:SEN[:PROD]]` — combine several missions in one search, or narrow to a single product within a sensor. See the [Examples](examples.md) page for both. Add `--no-save` to run a search without writing a query file or generating a slug — handy for one-off or scripted use.
 
 ## Quickstart from Python
 

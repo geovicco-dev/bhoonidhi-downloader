@@ -42,8 +42,9 @@ class QueryNamespace:
         name: str | None = None,
         description: str | None = None,
         selections: list[Selection] | None = None,
+        save: bool = True,
     ) -> QuerySchema | None:
-        """Search an AOI + date range, save the result as a named query.
+        """Search an AOI + date range, returning the matching scenes.
 
         The AOI is either a bounding box (minx/maxx/miny/maxy) or a point
         plus radius (lat/lon/radius_km) — give exactly one of the two.
@@ -55,7 +56,14 @@ class QueryNamespace:
         single-mission search and is folded into a one-element
         ``selections`` list; giving both is an error.
 
-        Returns the saved query, or None if nothing matched. Mirrors
+        By default (``save=True``) the result is persisted as a named query
+        under ``~/.bhoonidhi/queries/`` and the returned query carries its
+        slug. Pass ``save=False`` for a stateless search: the search runs
+        identically but nothing is written to disk and no slug is generated
+        — the returned query is ephemeral, with ``.scenes`` populated, for
+        callers that only want the scene list.
+
+        Returns the query, or None if nothing matched. Mirrors
         ``bhd query create``.
         """
         resolved = self._resolve_selections(satellite, sensor, selections)
@@ -72,6 +80,7 @@ class QueryNamespace:
             radius_km=radius_km,
             name=name,
             description=description,
+            save=save,
         )
 
     @staticmethod

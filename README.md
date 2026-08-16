@@ -60,6 +60,12 @@ bhd query create 2025-12-01 2025-12-30 --sat "EOS-06:OCM(GAC):L2C-Chlorophyll" -
 
 An unknown satellite, sensor, or product is skipped with a warning instead of failing the whole search; run `bhd archive list --sat X` first to see what's valid.
 
+Every search is saved by default. For a one-off search — or a scripted/multi-worker run where you don't want query files piling up on disk — add `--no-save`: the scenes still print (and the SDK still returns them), but nothing is written under `~/.bhoonidhi/queries/` and no slug is generated:
+
+```shell
+bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695 --no-save
+```
+
 ## Command reference
 
 Every command supports `--help` for its full option list. This is the short version; see the [API Reference](https://geovicco-dev.github.io/bhoonidhi-downloader/api/) for the underlying functions this calls into.
@@ -91,7 +97,7 @@ Every command supports `--help` for its full option list. This is the short vers
 
 | Command                                                                                                                      | What it does                                                                                                                                                                                                                                |
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bhd query create <dates> --sat SAT[:SEN[:PROD]] [--sat ...]` with `--minx --maxx --miny --maxy` or `--lat --lon [--radius]` | Search and save the results as a new named query. Repeat `--sat` to combine missions; give the area as a bounding box or a point + radius, not both.                                                                                        |
+| `bhd query create <dates> --sat SAT[:SEN[:PROD]] [--sat ...]` with `--minx --maxx --miny --maxy` or `--lat --lon [--radius]` | Search and save the results as a new named query. Repeat `--sat` to combine missions; give the area as a bounding box or a point + radius, not both. Add `--no-save` to run the search without writing a query file or generating a slug.                                                                                        |
 | `bhd query list`                                                                                                             | List all your saved queries.                                                                                                                                                                                                                |
 | `bhd query show <slug>`                                                                                                      | Redisplay a saved query's scenes. `--filter ready|archived|onorder|priced` narrows the table to one or more states.                                                                                                                         |
 | `bhd query refresh <slug>`                                                                                                   | Check for new scenes matching an existing query.                                                                                                                                                                                            |
