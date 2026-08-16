@@ -91,14 +91,19 @@ def render_refresh_success(console: Console) -> None:
 
 
 def render_refresh_error(console: Console, error: str) -> None:
-    """Display session refresh error panel."""
+    """Display session refresh failure as a warning with a clear next step.
+
+    A failed refresh is a normal end-of-window event, not a bug — the
+    portal's refresh window has passed and a full login is needed to
+    keep going. ``bhd auth login`` overwrites the saved session on its
+    own, so there's nothing to log out from first.
+    """
     panel = Panel(
-        f"[red]{error}[/]\n\n"
-        "[dim]This usually means the token's past Bhoonidhi's refresh "
-        "window. Run [bold]auth logout[/bold] then [bold]auth login[/bold] "
-        "to get a fresh session.[/]",
-        title="[bold red]✗ Refresh Failed[/]",
-        border_style="red",
+        f"[yellow]{error}[/]\n\n"
+        "[dim]Your session's refresh window has closed. "
+        "Run [bold]bhd auth login[/bold] to sign in again.[/]",
+        title="[bold yellow]⚠ Session expired[/]",
+        border_style="yellow",
         padding=(1, 2),
     )
     console.print(panel)

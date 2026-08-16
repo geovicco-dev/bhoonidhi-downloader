@@ -127,7 +127,8 @@ def refresh() -> None:
 
     Only works while the current token is still within the portal's
     refresh window. Once that window has closed, this fails and you
-    need 'bhd auth login' again with your credentials.
+    need 'bhd auth login' again — login overwrites the saved session
+    on its own, no separate logout step first.
 
     Example:
       bhd auth refresh
