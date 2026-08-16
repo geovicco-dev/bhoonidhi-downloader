@@ -81,7 +81,10 @@ def _satellite_columns() -> list[Column]:
         token = product_token(
             str(r.get("dispName", "")), r.get("satName", ""), r.get("senName", "")
         )
-        return token if token else "(default)"
+        # A dispName with no distinct suffix (bare "sat_sensor") IS the
+        # sensor's default product; there's nothing to print, so match
+        # the rest of the table's placeholder style with a dash.
+        return token if token else "-"
 
     def _sat_flag(r: dict, _i: int) -> str:
         """The --sat value that selects exactly this row.
