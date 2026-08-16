@@ -6,7 +6,7 @@ import random
 from datetime import datetime
 from pathlib import Path
 
-from bhoonidhi_downloader.schemas import AOISchema, QuerySchema
+from bhoonidhi_downloader.schemas import AOISchema, QuerySchema, Selection
 
 QUERIES_DIR = Path.home() / ".bhoonidhi" / "queries"
 
@@ -115,27 +115,26 @@ def generate_slug() -> str:
 
 
 def generate_name(
-    satellite: str, sensor: str | None, start_date: datetime, end_date: datetime
+    selections: list[Selection], start_date: datetime, end_date: datetime
 ) -> str:
     """Auto-generate a human-readable name from query params."""
-    sensor_part = f" {sensor}" if sensor else ""
+    missions = " + ".join(s.label() for s in selections)
     if start_date.strftime("%b %Y") == end_date.strftime("%b %Y"):
         window = start_date.strftime("%b %Y")
     else:
         window = f"{start_date.strftime('%b %Y')}\u2013{end_date.strftime('%b %Y')}"
-    return f"{satellite}{sensor_part} scenes, {window}"
+    return f"{missions} scenes, {window}"
 
 
 def generate_description(
-    satellite: str,
-    sensor: str | None,
+    selections: list[Selection],
     aoi: AOISchema,
     start_date: datetime,
     end_date: datetime,
     scene_count: int,
 ) -> str:
     """Auto-generate a description from query params + result count."""
-    sensor_part = f"/{sensor}" if sensor else ""
+    missions = " + ".join(s.label() for s in selections)
     if aoi.mode == "location":
         radius = aoi.radius_km if aoi.radius_km is not None else 10.0
         area = f"{radius:.0f}km around ({aoi.lat:.4f}, {aoi.lon:.4f})"
@@ -145,7 +144,7 @@ def generate_description(
             f"{aoi.max_lon:.2f}, {aoi.max_lat:.2f}]"
         )
     return (
-        f"{satellite}{sensor_part} query over {area}, "
+        f"{missions} query over {area}, "
         f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')} "
         f"\u2014 {scene_count} scene(s) found."
     )

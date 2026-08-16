@@ -28,6 +28,7 @@ from bhoonidhi_downloader.schemas import (
     AOISchema,
     QuerySchema,
     SearchSchema,
+    Selection,
 )
 
 from .client import (
@@ -112,12 +113,11 @@ def _build_aoi(
 def run_query_create(
     start_date: datetime,
     end_date: datetime,
-    satellite: str,
+    selections: list[Selection],
     minx: float | None = None,
     maxx: float | None = None,
     miny: float | None = None,
     maxy: float | None = None,
-    sensor: str | None = None,
     lat: float | None = None,
     lon: float | None = None,
     radius_km: float | None = None,
@@ -134,14 +134,14 @@ def run_query_create(
 
     Raises:
         BhoonidhiAPIError: if the search request fails.
-        BhoonidhiValidationError: if the satellite/sensor/AOI is invalid.
+        BhoonidhiValidationError: if the AOI is invalid or every selection
+            is invalid.
     """
     aoi = _build_aoi(minx, maxx, miny, maxy, lat, lon, radius_km)
 
     config = _build_search_schema(
         aoi=aoi,
-        satellite=satellite,
-        sensor=sensor,
+        selections=selections,
         start_date=start_date,
         end_date=end_date,
     )
@@ -158,14 +158,11 @@ def run_query_create(
     slug = generate_slug()
     query = QuerySchema(
         slug=slug,
-        name=name or generate_name(satellite, sensor, start_date, end_date),
+        name=name or generate_name(selections, start_date, end_date),
         description=description
-        or generate_description(
-            satellite, sensor, aoi, start_date, end_date, len(scenes)
-        ),
+        or generate_description(selections, aoi, start_date, end_date, len(scenes)),
         created_at=datetime.now(),
-        satellite=satellite,
-        sensor=sensor,
+        selections=selections,
         aoi=aoi,
         start_date=start_date,
         end_date=end_date,
@@ -273,8 +270,7 @@ def run_query_refresh(slug: str) -> tuple[QuerySchema, int | None]:
 
     config = _build_search_schema(
         aoi=query.aoi,
-        satellite=query.satellite,
-        sensor=query.sensor,
+        selections=query.selections,
         start_date=refresh_start,
         end_date=refresh_end,
     )

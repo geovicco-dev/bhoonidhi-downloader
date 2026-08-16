@@ -25,7 +25,17 @@ def _main_callback(ctx: typer.Context) -> None:
 
 app = typer.Typer(
     name="bhoonidhi-downloader",
-    help="Search, save, and download satellite imagery from the Bhoonidhi Earth Observation portal.",
+    help=(
+        "Search, save, and download satellite imagery from ISRO's "
+        "Bhoonidhi Earth Observation portal.\n\n"
+        "A typical session: authenticate once, search an area and date "
+        "range, then download or stage what you find.\n\n"
+        "  bhd auth login\n"
+        "  bhd query create 2026-01-01 2026-01-31 --sat ResourceSat-2A:LISS3 "
+        "--minx 91.7 --maxx 92.0 --miny 25.5 --maxy 25.7\n"
+        "  bhd query download <slug> --out ./scenes\n\n"
+        "Run 'bhd COMMAND --help' for a command's full options and examples."
+    ),
     callback=_main_callback,
     invoke_without_command=True,
     pretty_exceptions_enable=False,

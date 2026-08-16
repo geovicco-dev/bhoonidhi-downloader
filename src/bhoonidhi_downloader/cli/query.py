@@ -46,10 +46,17 @@ from bhoonidhi_downloader.core.search.availability import (
 from bhoonidhi_downloader.core.search.render import render_search_results
 from bhoonidhi_downloader.exceptions import BhoonidhiError, BhoonidhiNotFoundError
 from bhoonidhi_downloader.logger import get_console
+from bhoonidhi_downloader.schemas.selection import parse_sat_tokens
 
 query_app = typer.Typer(
     name="query",
-    help="Search and manage saved queries.",
+    help=(
+        "Search for scenes and manage the results as saved, named "
+        "queries.\n\n"
+        "A search is never lost: every 'query create' is saved under a "
+        "short slug (like 'velvet-wren') you can revisit, refresh for "
+        "new scenes, or download from without re-querying the portal."
+    ),
     no_args_is_help=True,
     add_completion=False,
 )
@@ -65,10 +72,19 @@ def create(
     end_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d"], help="End date (YYYY-MM-DD)"
     ),
-    satellite: str = typer.Option(
-        None, "--sat", help="Satellite name (Ex: ResourceSat-2)"
+    satellite: list[str] = typer.Option(
+        None,
+        "--sat",
+        help="Satellite target as SAT[:SEN[:PROD]]. Repeat for several "
+        "missions, e.g. --sat ResourceSat-2A:LISS3 --sat CartoSat-3. "
+        "Omit the sensor/product to search everything under it.",
     ),
-    sensor: str = typer.Option(None, "--sen", help="Sensor name (Ex: LISS3)"),
+    sensor: str = typer.Option(
+        None,
+        "--sen",
+        help="Sensor name (legacy; only with a single plain --sat). "
+        "Prefer --sat SAT:SENSOR.",
+    ),
     minx: float = typer.Option(None, "--minx", help="Minimum longitude (bounding box)"),
     maxx: float = typer.Option(None, "--maxx", help="Maximum longitude (bounding box)"),
     miny: float = typer.Option(None, "--miny", help="Minimum latitude (bounding box)"),
@@ -88,21 +104,57 @@ def create(
 ) -> None:
     """Search for scenes and save the results as a new named query.
 
+    Targets are given with --sat, which is repeatable and accepts
+    SAT[:SEN[:PROD]]:
+
+      --sat JPSS1                    every sensor, every product
+      --sat JPSS1:VIIRS              every product under that sensor
+      --sat JPSS1:VIIRS:Imagery_L1   exactly that one product
+      --sat A --sat B                combine several missions in one search
+
+    Quote values containing parentheses so the shell doesn't eat them,
+    e.g. --sat "EOS-06:OCM(GAC):L2C-Chlorophyll". An invalid satellite,
+    sensor, or product is skipped with a warning rather than failing
+    the whole search — see 'bhd archive list --sat X' for valid names
+    first.
+
     Give the area of interest as either a bounding box
     (--minx/--maxx/--miny/--maxy) or a point plus radius
     (--lat/--lon/--radius) — exactly one of the two.
+
+    Examples:
+      # Single mission, bounding box
+      bhd query create 2026-01-01 2026-01-31 --sat ResourceSat-2A:LISS3 \\
+          --minx 91.7 --maxx 92.0 --miny 25.5 --maxy 25.7
+
+      # Multiple missions in one search
+      bhd query create 2026-01-01 2026-01-31 \\
+          --sat ResourceSat-2A:LISS3 --sat CartoSat-3 \\
+          --minx 91.7 --maxx 92.0 --miny 25.5 --maxy 25.7
+
+      # One product within a sensor
+      bhd query create 2026-01-01 2026-01-31 \\
+          --sat "EOS-06:OCM(GAC):L2C-Chlorophyll" \\
+          --minx 74 --maxx 80 --miny 12 --maxy 18
+
+      # Point plus radius instead of a bounding box
+      bhd query create 2026-01-01 2026-01-31 --sat Sentinel-2A:MSI \\
+          --lat 25.58 --lon 91.89 --radius 15
+
+    The results print as a table and are saved under an auto-generated
+    slug — come back to them with 'bhd query show <slug>'.
     """
     interactive = False if plain else None
     try:
+        selections = parse_sat_tokens(satellite, legacy_sensor=sensor)
         query = run_query_create(
             start_date=start_date,
             end_date=end_date,
-            satellite=satellite,
+            selections=selections,
             minx=minx,
             maxx=maxx,
             miny=miny,
             maxy=maxy,
-            sensor=sensor,
             lat=lat,
             lon=lon,
             radius_km=radius_km,
@@ -133,7 +185,12 @@ def list_cmd(
         False, "--plain", help="Print the whole table at once instead of scrolling"
     ),
 ) -> None:
-    """List all saved queries."""
+    """List every saved query: slug, name, missions searched, scene
+    count, and window.
+
+    Example:
+      bhd query list
+    """
     queries = run_query_list()
     render_query_list(console, queries, interactive=False if plain else None)
 
@@ -187,7 +244,15 @@ def rename(
     name: str = typer.Option(None, "--name", help="New name"),
     description: str = typer.Option(None, "--desc", help="New description"),
 ) -> None:
-    """Update a saved query's name/description."""
+    """Update a saved query's name and/or description in place.
+
+    Overrides the auto-generated text; the search itself and its
+    scenes are unaffected.
+
+    Example:
+      bhd query rename velvet-wren --name "Shillong winter" \\
+          --desc "For the January flood assessment"
+    """
     try:
         run_query_rename(slug, name, description)
     except BhoonidhiNotFoundError as e:
@@ -201,7 +266,17 @@ def fork(
     slug: str = typer.Argument(..., help="Query slug to fork"),
     name: str = typer.Option(None, "--name", help="Name for the forked query"),
 ) -> None:
-    """Clone a saved query under a new name."""
+    """Clone a saved query's parameters and scenes under a new slug,
+    without re-querying the portal.
+
+    Useful for branching off before an experimental change — rename,
+    re-filter, or download differently from the copy while the
+    original stays untouched.
+
+    Examples:
+      bhd query fork velvet-wren                          # auto-named copy
+      bhd query fork velvet-wren --name "Winter subset"    # explicit name
+    """
     try:
         forked = run_query_fork(slug, name)
     except BhoonidhiNotFoundError as e:
@@ -212,7 +287,14 @@ def fork(
 
 @query_app.command("rm")
 def rm(slug: str = typer.Argument(..., help="Query slug")) -> None:
-    """Delete a saved query."""
+    """Delete a saved query and its cached scenes.
+
+    This does not affect anything already staged in the Bhoonidhi cart
+    or already downloaded to disk — only the local query record.
+
+    Example:
+      bhd query rm velvet-wren
+    """
     try:
         run_query_rm(slug)
     except BhoonidhiNotFoundError as e:
@@ -223,7 +305,17 @@ def rm(slug: str = typer.Argument(..., help="Query slug")) -> None:
 
 @query_app.command("refresh")
 def refresh(slug: str = typer.Argument(..., help="Query slug")) -> None:
-    """Check for new scenes matching this query."""
+    """Check for scenes newer than what's already saved, without
+    re-running the whole search.
+
+    Looks from just before the query's last known end date through
+    now, so late-arriving archive backfill isn't missed. New scenes
+    are appended to the existing ones; nothing is re-downloaded or
+    removed.
+
+    Example:
+      bhd query refresh velvet-wren
+    """
     try:
         query, added = run_query_refresh(slug)
     except BhoonidhiNotFoundError as e:

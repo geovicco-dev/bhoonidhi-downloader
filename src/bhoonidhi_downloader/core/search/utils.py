@@ -1,5 +1,6 @@
 import random
 import time
+from datetime import datetime
 from typing import Any
 from urllib.parse import quote
 
@@ -7,24 +8,140 @@ import requests
 from rich.live import Live
 from rich.spinner import Spinner
 
+from bhoonidhi_downloader.exceptions import BhoonidhiValidationError
 from bhoonidhi_downloader.logger import get_console
+from bhoonidhi_downloader.schemas.selection import product_token as _product_token
+
+
+def _parse_manifest_date(s: str | None) -> datetime | None:
+    """Parse a manifest 'MM/DD/YYYY' date, or None."""
+    if not s:
+        return None
+    try:
+        return datetime.strptime(s, "%m/%d/%Y")
+    except ValueError:
+        return None
+
+
+def _within_window(
+    cols: list[dict[str, Any]], start_date: datetime, end_date: datetime
+) -> str | None:
+    """Check a search window against the data window of the given products.
+
+    Returns None if the window is valid, else a short reason string. The
+    valid window spans the earliest product start to the latest product end
+    (an ongoing product has no end and imposes no upper bound).
+    """
+    starts = [d for d in (_parse_manifest_date(c.get("startDate")) for c in cols) if d]
+    ends = [d for d in (_parse_manifest_date(c.get("endDate")) for c in cols) if d]
+    earliest = min(starts) if starts else None
+    latest = max(ends) if ends else None  # None = ongoing
+
+    if earliest and start_date < earliest:
+        return f"data starts {earliest:%Y-%m-%d}, after search start"
+    if latest and end_date > latest:
+        return f"data ends {latest:%Y-%m-%d}, before search end"
+    return None
+
+
+def resolve_selections(
+    selections: list[Any],
+    manifest: dict[str, Any],
+    start_date: datetime,
+    end_date: datetime,
+) -> list[str]:
+    """Resolve selections to the raw dispNames the portal searches on.
+
+    Each selection narrows the satellite → sensor → product hierarchy to a
+    set of products. Selections are validated against the archive manifest
+    and the search date window; an invalid one (unknown satellite/sensor,
+    no matching product, or out of the data window) is warned about and
+    skipped rather than failing the whole search. Returned dispNames are
+    deduplicated with first-seen order preserved.
+
+    Raises:
+        BhoonidhiValidationError: if every selection is skipped, so there
+            is nothing to search.
+    """
+    console = get_console()
+    disp_names: list[str] = []
+    seen: set[str] = set()
+    skipped: list[str] = []
+
+    def skip(label: str, reason: str) -> None:
+        skipped.append(f"{label} ({reason})")
+        console.print(f"[yellow]![/] skipped [bold]{label}[/] — {reason}")
+
+    for sel in selections:
+        label = sel.label()
+
+        if sel.satellite not in manifest:
+            skip(label, f"unknown satellite; available: {sorted(manifest)}")
+            continue
+
+        # Which sensors this selection covers.
+        if sel.sensor is not None:
+            if sel.sensor not in manifest[sel.satellite]:
+                available = sorted(manifest[sel.satellite])
+                skip(label, f"unknown sensor; available: {available}")
+                continue
+            sensors = [sel.sensor]
+        else:
+            sensors = list(manifest[sel.satellite])
+
+        # Gather candidate product columns across the covered sensors,
+        # narrowing to a single product token when one was given.
+        cols: list[dict[str, Any]] = []
+        for sensor in sensors:
+            for col in manifest[sel.satellite][sensor]:
+                disp = col.get("dispName")
+                if not disp:
+                    continue
+                if sel.product is not None:
+                    token = _product_token(str(disp), sel.satellite, sensor)
+                    if token.lower() != sel.product.lower():
+                        continue
+                cols.append(col)
+
+        if not cols:
+            valid = sorted(
+                {
+                    _product_token(str(c["dispName"]), sel.satellite, sensor)
+                    for sensor in sensors
+                    for c in manifest[sel.satellite][sensor]
+                    if c.get("dispName")
+                }
+                - {""}
+            )
+            skip(label, f"no such product; valid: {valid}")
+            continue
+
+        reason = _within_window(cols, start_date, end_date)
+        if reason:
+            skip(label, reason)
+            continue
+
+        for col in cols:
+            disp = str(col["dispName"])
+            if disp not in seen:
+                seen.add(disp)
+                disp_names.append(disp)
+
+    if not disp_names:
+        raise BhoonidhiValidationError(
+            "No valid selections to search. " + "; ".join(skipped)
+        )
+
+    return disp_names
 
 
 def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
     sdate: str = cfg.start_date.strftime("%b%%2F%d%%2F%Y").upper()
     edate: str = cfg.end_date.strftime("%b%%2F%d%%2F%Y").upper()
-    assert cfg.satellite is not None
 
-    # No sensor given: search every sensor under this satellite instead of
-    # failing. The portal itself treats a satellite-only search as "all
-    # sensors" — this just matches that instead of erroring with a bare
-    # AssertionError (which surfaced to users as an opaque "Search failed").
-    if cfg.sensor:
-        col_meta = manifest[cfg.satellite][cfg.sensor]
-    else:
-        col_meta = [
-            col for cols in manifest[cfg.satellite].values() for col in cols
-        ]
+    disp_names = resolve_selections(
+        cfg.selections, manifest, cfg.start_date, cfg.end_date
+    )
 
     # The portal URL-decodes selSats server-side (that's why the comma
     # separator has to be sent as %2C rather than a literal ","). Any
@@ -35,15 +152,11 @@ def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
     #   "LandSat-8_OLI+TIRS_L1"  ->  "+" decodes to a space  ->  0 results
     #   "LandSat-8_OLI%2BTIRS_L1"                            ->  500 results
 
-    sat_sen = [
-        quote("".join(str(col["dispName"]).split()), safe="")
-        for col in col_meta
-        if col.get("dispName")
-    ]
+    sat_sen: Any = [quote("".join(disp.split()), safe="") for disp in disp_names]
 
-    if isinstance(sat_sen, list) and len(sat_sen) > 1:
+    if len(sat_sen) > 1:
         sat_sen = "%2C".join(sat_sen)
-    elif isinstance(sat_sen, list) and len(sat_sen) == 1:
+    elif len(sat_sen) == 1:
         sat_sen = sat_sen[0]
     aoi_fields: dict[str, Any]
     if cfg.aoi.mode == "location":
