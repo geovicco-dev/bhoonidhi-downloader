@@ -12,7 +12,8 @@ from typing import TYPE_CHECKING
 
 from bhoonidhi_downloader.core.download import DownloadOutcome
 from bhoonidhi_downloader.core.query import command as _query
-from bhoonidhi_downloader.schemas import QuerySchema
+from bhoonidhi_downloader.exceptions import BhoonidhiValidationError
+from bhoonidhi_downloader.schemas import QuerySchema, Selection
 from bhoonidhi_downloader.sdk._select import normalize_select
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ class QueryNamespace:
         self,
         start_date: datetime,
         end_date: datetime,
-        satellite: str,
+        satellite: str | None = None,
         minx: float | None = None,
         maxx: float | None = None,
         miny: float | None = None,
@@ -40,30 +41,63 @@ class QueryNamespace:
         radius_km: float | None = None,
         name: str | None = None,
         description: str | None = None,
+        selections: list[Selection] | None = None,
     ) -> QuerySchema | None:
         """Search an AOI + date range, save the result as a named query.
 
         The AOI is either a bounding box (minx/maxx/miny/maxy) or a point
         plus radius (lat/lon/radius_km) — give exactly one of the two.
 
+        Targets are given as ``selections`` — a list of
+        :class:`~bhoonidhi_downloader.schemas.Selection`, each naming a
+        satellite and optionally a sensor and product. The legacy
+        ``satellite`` + ``sensor`` scalar pair is still accepted for a
+        single-mission search and is folded into a one-element
+        ``selections`` list; giving both is an error.
+
         Returns the saved query, or None if nothing matched. Mirrors
         ``bhd query create``.
         """
+        resolved = self._resolve_selections(satellite, sensor, selections)
         return _query.run_query_create(
             start_date,
             end_date,
-            satellite,
+            resolved,
             minx=minx,
             maxx=maxx,
             miny=miny,
             maxy=maxy,
-            sensor=sensor,
             lat=lat,
             lon=lon,
             radius_km=radius_km,
             name=name,
             description=description,
         )
+
+    @staticmethod
+    def _resolve_selections(
+        satellite: str | None,
+        sensor: str | None,
+        selections: list[Selection] | None,
+    ) -> list[Selection]:
+        """Reconcile the modern ``selections`` list with the legacy scalar pair.
+
+        Exactly one form must be given. The legacy ``satellite`` (+ optional
+        ``sensor``) becomes a single-element list; ``selections`` is used
+        as-is. Supplying both, or neither, is a usage error.
+        """
+        if selections is not None:
+            if satellite is not None or sensor is not None:
+                raise BhoonidhiValidationError(
+                    "Give either selections or satellite/sensor, not both."
+                )
+            return selections
+        if satellite is None:
+            raise BhoonidhiValidationError(
+                "A satellite selection is required (pass selections=... "
+                "or satellite=...)."
+            )
+        return [Selection(satellite=satellite, sensor=sensor)]
 
     def list(self) -> list[QuerySchema]:
         """Return every saved query. Mirrors ``bhd query list``."""

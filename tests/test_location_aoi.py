@@ -96,9 +96,10 @@ MANIFEST = {"ResourceSat-2A": {"LISS3": [{"dispName": "ResourceSat-2A LISS3"}]}}
 def _cfg(aoi: AOISchema):
     from types import SimpleNamespace
 
+    from bhoonidhi_downloader.schemas.selection import Selection
+
     return SimpleNamespace(
-        satellite="ResourceSat-2A",
-        sensor="LISS3",
+        selections=[Selection(satellite="ResourceSat-2A", sensor="LISS3")],
         start_date=datetime(2026, 1, 1),
         end_date=datetime(2026, 1, 31),
         aoi=aoi,

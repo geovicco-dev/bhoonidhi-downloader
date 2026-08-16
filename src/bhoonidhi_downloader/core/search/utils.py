@@ -1,5 +1,8 @@
+import json
 import random
 import time
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
@@ -7,24 +10,141 @@ import requests
 from rich.live import Live
 from rich.spinner import Spinner
 
+from bhoonidhi_downloader.exceptions import BhoonidhiValidationError
 from bhoonidhi_downloader.logger import get_console
+from bhoonidhi_downloader.schemas.selection import product_token as _product_token
+
+
+def _parse_manifest_date(s: str | None) -> datetime | None:
+    """Parse a manifest 'MM/DD/YYYY' date, or None."""
+    if not s:
+        return None
+    try:
+        return datetime.strptime(s, "%m/%d/%Y")
+    except ValueError:
+        return None
+
+
+def _within_window(
+    cols: list[dict[str, Any]], start_date: datetime, end_date: datetime
+) -> str | None:
+    """Check a search window against the data window of the given products.
+
+    Returns None if the window is valid, else a short reason string. The
+    valid window spans the earliest product start to the latest product end
+    (an ongoing product has no end and imposes no upper bound).
+    """
+    starts = [d for d in (_parse_manifest_date(c.get("startDate")) for c in cols) if d]
+    ends = [d for d in (_parse_manifest_date(c.get("endDate")) for c in cols) if d]
+    earliest = min(starts) if starts else None
+    latest = max(ends) if ends else None  # None = ongoing
+
+    if earliest and start_date < earliest:
+        return f"data starts {earliest:%Y-%m-%d}, after search start"
+    if latest and end_date > latest:
+        return f"data ends {latest:%Y-%m-%d}, before search end"
+    return None
+
+
+def resolve_selections(
+    selections: list[Any],
+    manifest: dict[str, Any],
+    start_date: datetime,
+    end_date: datetime,
+) -> list[str]:
+    """Resolve selections to the raw dispNames the portal searches on.
+
+    Each selection narrows the satellite → sensor → product hierarchy to a
+    set of products. Selections are validated against the archive manifest
+    and the search date window; an invalid one (unknown satellite/sensor,
+    no matching product, or out of the data window) is warned about and
+    skipped rather than failing the whole search. Returned dispNames are
+    deduplicated with first-seen order preserved.
+
+    Raises:
+        BhoonidhiValidationError: if every selection is skipped, so there
+            is nothing to search.
+    """
+    console = get_console()
+    disp_names: list[str] = []
+    seen: set[str] = set()
+
+    def skip(label: str, reason: str) -> None:
+        console.print(f"[yellow]![/] skipped [bold]{label}[/] — {reason}")
+
+    for sel in selections:
+        label = sel.label()
+
+        if sel.satellite not in manifest:
+            skip(label, f"unknown satellite; available: {sorted(manifest)}")
+            continue
+
+        # Which sensors this selection covers.
+        if sel.sensor is not None:
+            if sel.sensor not in manifest[sel.satellite]:
+                available = sorted(manifest[sel.satellite])
+                skip(label, f"unknown sensor; available: {available}")
+                continue
+            sensors = [sel.sensor]
+        else:
+            sensors = list(manifest[sel.satellite])
+
+        # Gather candidate product columns across the covered sensors,
+        # narrowing to a single product token when one was given.
+        cols: list[dict[str, Any]] = []
+        for sensor in sensors:
+            for col in manifest[sel.satellite][sensor]:
+                disp = col.get("dispName")
+                if not disp:
+                    continue
+                if sel.product is not None:
+                    token = _product_token(str(disp), sel.satellite, sensor)
+                    if token.lower() != sel.product.lower():
+                        continue
+                cols.append(col)
+
+        if not cols:
+            valid = sorted(
+                {
+                    _product_token(str(c["dispName"]), sel.satellite, sensor)
+                    for sensor in sensors
+                    for c in manifest[sel.satellite][sensor]
+                    if c.get("dispName")
+                }
+                - {""}
+            )
+            skip(label, f"no such product; valid: {valid}")
+            continue
+
+        reason = _within_window(cols, start_date, end_date)
+        if reason:
+            skip(label, reason)
+            continue
+
+        for col in cols:
+            disp = str(col["dispName"])
+            if disp not in seen:
+                seen.add(disp)
+                disp_names.append(disp)
+
+    if not disp_names:
+        # The skip() calls above already printed each reason in yellow;
+        # repeating the joined list of them in the exception would show
+        # the user (and their scrollback) the same error text twice.
+        raise BhoonidhiValidationError(
+            "No valid selections to search — see the warnings above for why."
+        )
+
+    return disp_names
 
 
 def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
     sdate: str = cfg.start_date.strftime("%b%%2F%d%%2F%Y").upper()
     edate: str = cfg.end_date.strftime("%b%%2F%d%%2F%Y").upper()
-    assert cfg.satellite is not None
 
-    # No sensor given: search every sensor under this satellite instead of
-    # failing. The portal itself treats a satellite-only search as "all
-    # sensors" — this just matches that instead of erroring with a bare
-    # AssertionError (which surfaced to users as an opaque "Search failed").
-    if cfg.sensor:
-        col_meta = manifest[cfg.satellite][cfg.sensor]
-    else:
-        col_meta = [
-            col for cols in manifest[cfg.satellite].values() for col in cols
-        ]
+    disp_names = resolve_selections(
+        cfg.selections, manifest, cfg.start_date, cfg.end_date
+    )
 
     # The portal URL-decodes selSats server-side (that's why the comma
     # separator has to be sent as %2C rather than a literal ","). Any
@@ -35,15 +155,11 @@ def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
     #   "LandSat-8_OLI+TIRS_L1"  ->  "+" decodes to a space  ->  0 results
     #   "LandSat-8_OLI%2BTIRS_L1"                            ->  500 results
 
-    sat_sen = [
-        quote("".join(str(col["dispName"]).split()), safe="")
-        for col in col_meta
-        if col.get("dispName")
-    ]
+    sat_sen: Any = [quote("".join(disp.split()), safe="") for disp in disp_names]
 
-    if isinstance(sat_sen, list) and len(sat_sen) > 1:
+    if len(sat_sen) > 1:
         sat_sen = "%2C".join(sat_sen)
-    elif isinstance(sat_sen, list) and len(sat_sen) == 1:
+    elif len(sat_sen) == 1:
         sat_sen = sat_sen[0]
     aoi_fields: dict[str, Any]
     if cfg.aoi.mode == "location":
@@ -350,3 +466,50 @@ def full_sensor(scene: dict) -> str:
     if len(parts) >= 2 and parts[1]:
         return parts[1]
     return scene.get("SENSOR", "N/A")
+
+
+def scene_resolution(scene: dict, manifest: dict[str, Any] | None = None) -> str:
+    """Look up a scene's spatial resolution from the archive manifest.
+
+    A scene carries ``SELECTION`` (its full dispName) but no resolution
+    field of its own — the portal only publishes resolution in the
+    ``SatSenServlet`` archive catalogue, not on individual search results.
+    Matches the scene's dispName back to the manifest entry it came from
+    and returns that entry's ``resolution`` (a numeric string, e.g. "23.5"
+    or "360"). Returns ``"-"`` when nothing matches: no SELECTION on the
+    scene, no cached manifest available, or the dispName isn't in it.
+
+    ``manifest`` is the dict from ``ArchiveManager.build_manifest`` (or
+    what's cached at ``~/.bhoonidhi/manifest.json``). Loads it lazily
+    from disk when not supplied, so this stays a pure helper safe for
+    tight table-render loops.
+    """
+    selection = scene.get("SELECTION")
+    if not selection:
+        return "-"
+
+    satellite = full_satellite(scene)
+    sensor = full_sensor(scene)
+    if not satellite or not sensor:
+        return "-"
+
+    if manifest is None:
+        manifest = _load_cached_manifest()
+    if not manifest:
+        return "-"
+
+    for col in manifest.get(satellite, {}).get(sensor, []):
+        if col.get("dispName") == selection:
+            return str(col.get("resolution") or "-")
+    return "-"
+
+
+def _load_cached_manifest() -> dict[str, Any]:
+    """Read the on-disk manifest, or an empty dict if it isn't cached yet."""
+    path = Path.home() / ".bhoonidhi" / "manifest.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}

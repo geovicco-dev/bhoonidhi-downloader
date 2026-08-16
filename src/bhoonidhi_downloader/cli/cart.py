@@ -31,7 +31,18 @@ from bhoonidhi_downloader.logger import get_console
 
 cart_app = typer.Typer(
     name="cart",
-    help="Stage scenes in the Bhoonidhi cart: add, list, and remove.",
+    help=(
+        "Stage scenes in the Bhoonidhi cart before placing an order.\n\n"
+        "Every scene the portal returns falls into one of four availability "
+        "states — direct download, on-order, priced, or archived — and each "
+        "goes to a different cart. 'cart add' routes automatically based on "
+        "each scene's state, so a mixed query just works. 'cart list' shows "
+        "all three carts in one table, numbered for use with 'cart rm'.\n\n"
+        "This CLI only stages; placing the order (and any payment for priced "
+        "data) still happens in the Browse & Order web portal — there is no "
+        "ordering step here. Login is required for every cart command; an "
+        "expired session re-authenticates on its own when run interactively."
+    ),
     no_args_is_help=True,
     add_completion=False,
 )

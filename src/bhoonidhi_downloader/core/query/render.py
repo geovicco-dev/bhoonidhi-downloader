@@ -17,7 +17,7 @@ def render_query_saved(console: Console, query: QuerySchema) -> None:
 
 def _query_list_columns() -> list[Column]:
     def _sat_sen(q: QuerySchema, _i: int) -> str:
-        return f"{q.satellite}/{q.sensor}" if q.sensor else q.satellite
+        return " + ".join(s.label() for s in q.selections)
 
     def _window(q: QuerySchema, _i: int) -> str:
         return (

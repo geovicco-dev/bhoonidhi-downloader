@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented here.
 
+## [0.5.0]
+
+### Added
+
+- **`bhd query create --sat` is now repeatable and accepts `SAT[:SEN[:PROD]]`, so one search can span several missions or narrow to a single product within a sensor** — `--sat ResourceSat-2A:LISS3 --sat CartoSat-3` searches both in one request, and `--sat "EOS-06:OCM(GAC):L2C-Chlorophyll"` narrows to that one product instead of every product a sensor bundles (EOS-06's OCM(GAC) alone has eight). The portal already searches on a flat list of dispName tokens, so this stays one HTTP request regardless of how many selections are combined — the server fans them out, not the client. An unknown satellite, sensor, or product is skipped with a warning and the search continues with whatever's left; only an all-invalid selection list fails outright. `--sen` still works as shorthand for a single plain `--sat`. The SDK's `client.query.create(...)` gains a `selections=[Selection(...), ...]` parameter alongside the existing `satellite=`/`sensor=` pair — give one or the other, not both.
+- **`bhd archive list --sat X` now shows every product as its own row with the exact `--sat` value that selects it, instead of a `dispName`/`Products` pair you had to decode by hand.** The old table wrapped every long-suffixed satellite (EOS-06's 15 products, previously spread across two hard-to-read columns) across 2-4 lines per row; the new `Product` column is the short token itself and `--sat value` is copy-pasteable straight into `query create`. The unfiltered `bhd archive list` now shows a per-sensor product count (`OCM(GAC) (8 products)`) instead of a bare sensor-name list, so the extra depth is visible before drilling in. A handful of sensors mix a bare, no-suffix product with other, distinctly-suffixed ones (some ResourceSat-1/2/2A AWIFS and LISS3 variants) — for those, `SAT:SEN` alone selects every product under the sensor rather than just the bare one, and the table says so instead of showing a value that wouldn't do what it implies. `archive export`'s JSON gains matching `product_token`/`sat_value` fields on every collection entry. Verified against a live fetch of the full 41-satellite/132-product catalogue: every product token round-trips through `query create --sat` back to exactly the dispName it came from.
+- **Search results include a Resolution (m) column** — scenes only carry `SELECTION` (the full dispName), not a resolution field, so the value is looked up against the cached archive manifest per row. Closes a gap where the search table showed everything about a scene except how coarse it was.
+- **`bhd cart --help` explains what the cart commands actually do** — the four-way availability routing `cart add` performs, that ordering (and payment for priced data) still finishes in the web portal not the CLI, and that login is required with automatic refresh. Previously it was one sentence with no mention of any of that.
+
+### Changed
+
+- **`SearchSchema` and `QuerySchema` hold a `selections` list instead of scalar `satellite`/`sensor` fields.** Saved queries written before this release are migrated automatically on read — no manual step, no version-gated loader — but **`query.satellite`/`query.sensor` no longer exist as attributes on the returned object**; anything reading those directly (not just constructing with the legacy keywords, which still works) needs `query.selections` instead. `generate_name`/`generate_description` and the `query list` table now show the full mission mix rather than one satellite.
+- **`bhd auth refresh` failure is framed as a warning, not a red error**, and no longer tells you to run `auth logout` first — `auth login` overwrites the saved session on its own. The old copy sent people through a needless extra step for a normal end-of-refresh-window event.
+- **Satellite, Sensor, Metadata, and Quick View columns are centered** in the search results table so both real values and the `-` placeholder line up under their (already centered) headers.
+
+### Fixed
+
+- **`Selection` wasn't exported from `bhoonidhi_downloader.sdk`**, even though every other SDK-facing type (`BhoonidhiClient`, the `BhoonidhiError` family) is — a script had to know to reach into `bhoonidhi_downloader.schemas` instead. `from bhoonidhi_downloader.sdk import Selection` now works alongside the rest.
+- **`bhd query create` no longer prints the same "available satellites" list twice** when every selection is invalid — the yellow skip warnings above the raised error were already showing it once. Exception message now points to those warnings instead of concatenating them.
+- **`bhd archive list --sat X` shows `-` in the Product column for a bare-suffix product**, not `(default)` — matches the placeholder style already used elsewhere in the table.
+
 ## [0.4.0]
 
 ### Added
