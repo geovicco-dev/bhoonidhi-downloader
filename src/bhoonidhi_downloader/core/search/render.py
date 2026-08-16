@@ -22,17 +22,27 @@ from .availability import (
     availability_of,
 )
 from .utils import (
+    _load_cached_manifest,
     create_clickable_link,
     full_satellite,
     full_sensor,
     get_quicklook_url,
     get_scene_meta_url,
     link_or_dash,
+    scene_resolution,
 )
 
 
-def search_columns() -> list[Column]:
-    """Every search-result column, in scroll order."""
+def search_columns(manifest: dict | None = None) -> list[Column]:
+    """Every search-result column, in scroll order.
+
+    ``manifest`` is loaded once from the on-disk cache and closed over,
+    so the Resolution lookup is a cheap dict hit per row instead of
+    re-reading the JSON file for every scene.
+    """
+    if manifest is None:
+        manifest = _load_cached_manifest()
+
     return [
         Column("#", lambda _s, i: str(i + 1), style="dim", width=5, justify="center"),
         Column("Scene ID", lambda s, _i: s.get("ID", "N/A"), style="cyan", width=46),
@@ -44,9 +54,19 @@ def search_columns() -> list[Column]:
             justify="center",
         ),
         Column(
-            "Satellite", lambda s, _i: full_satellite(s), style="red", width=16
+            "Satellite",
+            lambda s, _i: full_satellite(s),
+            style="red",
+            width=16,
+            justify="center",
         ),
-        Column("Sensor", lambda s, _i: full_sensor(s), style="blue", width=12),
+        Column(
+            "Sensor",
+            lambda s, _i: full_sensor(s),
+            style="blue",
+            width=12,
+            justify="center",
+        ),
         Column(
             "Product",
             lambda s, _i: f"{s.get('SELECTION', 'N/A')} ({s.get('PRODTYPE', 'N/A')})",
@@ -54,16 +74,25 @@ def search_columns() -> list[Column]:
             width=34,
         ),
         Column(
+            "Resolution (m)",
+            lambda s, _i: scene_resolution(s, manifest),
+            style="cyan",
+            width=14,
+            justify="center",
+        ),
+        Column(
             "Metadata",
             lambda s, _i: link_or_dash(s, get_scene_meta_url, "Metadata"),
             style="blue",
             width=12,
+            justify="center",
         ),
         Column(
             "Quick View",
             lambda s, _i: create_clickable_link(get_quicklook_url(s), "Quick View"),
             style="blue",
             width=12,
+            justify="center",
         ),
     ]
 

@@ -1,6 +1,8 @@
+import json
 import random
 import time
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
@@ -66,10 +68,8 @@ def resolve_selections(
     console = get_console()
     disp_names: list[str] = []
     seen: set[str] = set()
-    skipped: list[str] = []
 
     def skip(label: str, reason: str) -> None:
-        skipped.append(f"{label} ({reason})")
         console.print(f"[yellow]![/] skipped [bold]{label}[/] — {reason}")
 
     for sel in selections:
@@ -128,8 +128,11 @@ def resolve_selections(
                 disp_names.append(disp)
 
     if not disp_names:
+        # The skip() calls above already printed each reason in yellow;
+        # repeating the joined list of them in the exception would show
+        # the user (and their scrollback) the same error text twice.
         raise BhoonidhiValidationError(
-            "No valid selections to search. " + "; ".join(skipped)
+            "No valid selections to search — see the warnings above for why."
         )
 
     return disp_names
@@ -463,3 +466,50 @@ def full_sensor(scene: dict) -> str:
     if len(parts) >= 2 and parts[1]:
         return parts[1]
     return scene.get("SENSOR", "N/A")
+
+
+def scene_resolution(scene: dict, manifest: dict[str, Any] | None = None) -> str:
+    """Look up a scene's spatial resolution from the archive manifest.
+
+    A scene carries ``SELECTION`` (its full dispName) but no resolution
+    field of its own — the portal only publishes resolution in the
+    ``SatSenServlet`` archive catalogue, not on individual search results.
+    Matches the scene's dispName back to the manifest entry it came from
+    and returns that entry's ``resolution`` (a numeric string, e.g. "23.5"
+    or "360"). Returns ``"-"`` when nothing matches: no SELECTION on the
+    scene, no cached manifest available, or the dispName isn't in it.
+
+    ``manifest`` is the dict from ``ArchiveManager.build_manifest`` (or
+    what's cached at ``~/.bhoonidhi/manifest.json``). Loads it lazily
+    from disk when not supplied, so this stays a pure helper safe for
+    tight table-render loops.
+    """
+    selection = scene.get("SELECTION")
+    if not selection:
+        return "-"
+
+    satellite = full_satellite(scene)
+    sensor = full_sensor(scene)
+    if not satellite or not sensor:
+        return "-"
+
+    if manifest is None:
+        manifest = _load_cached_manifest()
+    if not manifest:
+        return "-"
+
+    for col in manifest.get(satellite, {}).get(sensor, []):
+        if col.get("dispName") == selection:
+            return str(col.get("resolution") or "-")
+    return "-"
+
+
+def _load_cached_manifest() -> dict[str, Any]:
+    """Read the on-disk manifest, or an empty dict if it isn't cached yet."""
+    path = Path.home() / ".bhoonidhi" / "manifest.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}
