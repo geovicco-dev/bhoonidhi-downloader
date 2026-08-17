@@ -5,7 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://youtu.be/Y3naYuyr3NA)
 
-CLI and SDK for [ISRO's EO Portal - Bhoonidhi Browse &amp; Order](https://bhoonidhi.nrsc.gov.in/) — search by bounding box or a point plus radius, save results as named queries you can revisit and refresh, download open-access scenes with concurrency and SHA256 verification, and stage priced/on-order/archived scenes to the Bhoonidhi cart. Every command is also callable from Python through the `bhoonidhi_downloader.sdk` package.
+CLI and Python SDK for [ISRO's Bhoonidhi Browse &amp; Order portal](https://bhoonidhi.nrsc.gov.in/) (NRSC) — programmatic **search and download of satellite imagery from Indian satellite missions** (ResourceSat, NISAR, CartoSat, EOS, and more) alongside international **Earth-observation / remote-sensing** data (Sentinel, Landsat). It reaches the portal's full archive of **41 satellite missions and 79 sensors** — see the [supported missions](docs/supported-missions.md).
+
+Find scenes over an area and date range, keep your searches to come back to them later and refresh them to fetch new scenes for the time diff only. Scenes that need ordering or payment are staged to the Bhoonidhi cart to finish on the portal. Everything the `bhd` command does is also a method on the Python SDK, for scripting and pipelines.
 
 ## Features
 
@@ -72,7 +74,6 @@ Every command supports `--help` for its full option list. This is the short vers
 
 ### `auth` — session management
 
-
 | Command            | What it does                                                                                                                                         |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bhd auth login`   | Authenticate and save your session to `~/.bhoonidhi/session`.                                                                                        |
@@ -81,9 +82,7 @@ Every command supports `--help` for its full option list. This is the short vers
 | `bhd auth refresh` | Get a fresh token without logging out and back in — only works if your session's still recent; once it's properly stale you'll need to log in again. |
 | `bhd auth logout`  | Clear the saved session.                                                                                                                             |
 
-
 ### `archive` — browse what's available
-
 
 | Command                                 | What it does                                                  |
 | --------------------------------------- | ------------------------------------------------------------- |
@@ -91,33 +90,28 @@ Every command supports `--help` for its full option list. This is the short vers
 | `bhd archive list --sat ResourceSat-2A` | Filter the list to one satellite — every sensor and product, plus the exact `--sat` value that selects each one, ready to paste into `query create`. |
 | `bhd archive export --out archive.json` | Export the archive data to a file.                            |
 
-
 ### `query` — search, save, and download
-
 
 | Command                                                                                                                      | What it does                                                                                                                                                                                                                                |
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bhd query create <dates> --sat SAT[:SEN[:PROD]] [--sat ...]` with `--minx --maxx --miny --maxy` or `--lat --lon [--radius]` | Search and save the results as a new named query. Repeat `--sat` to combine missions; give the area as a bounding box or a point + radius, not both. Add `--no-save` to run the search without writing a query file or generating a slug.                                                                                        |
 | `bhd query list`                                                                                                             | List all your saved queries.                                                                                                                                                                                                                |
-| `bhd query show <slug>`                                                                                                      | Redisplay a saved query's scenes. `--filter ready|archived|onorder|priced` narrows the table to one or more states.                                                                                                                         |
+| `bhd query show <slug>`                                                                                                      | Redisplay a saved query's scenes. `--filter ready\|archived\|onorder\|priced` narrows the table to one or more states.                                                                                                                         |
 | `bhd query refresh <slug>`                                                                                                   | Check for new scenes matching an existing query.                                                                                                                                                                                            |
 | `bhd query fork <slug>`                                                                                                      | Clone a query under a new name, without re-searching.                                                                                                                                                                                       |
 | `bhd query download <slug> --out <dir>`                                                                                      | Download scenes from a saved query. Add `--select` to pick specific scenes, `--parallel` to control concurrency, `--force` to re-download, `--dry-run` to preview without fetching. Re-logs you in automatically if your session's expired. |
 | `bhd query rename <slug>`                                                                                                    | Update a saved query's name/description.                                                                                                                                                                                                    |
 | `bhd query rm <slug>`                                                                                                        | Delete a saved query.                                                                                                                                                                                                                       |
 
-
 ### `cart` — stage scenes to the Bhoonidhi cart
 
 For scenes that `query download` can't fetch directly — priced, on-order, or open-but-archived — add them to the Bhoonidhi cart from a saved query, then finish the order in the Browse &amp; Order portal. Direct-download scenes can be downloaded with `query download` *or* staged to the cart; every access type routes automatically to the portal's direct-download, on-order, or priced cart based on its access type.
 
-
 | Command               | What it does                                                                                                                                                                                                                   |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `bhd cart add <slug>` | Stage a saved query's scenes into the cart. Add `--select` to pick specific scenes; omit it to add the whole query.                                                                                                            |
-| `bhd cart list`       | Show everything staged — all three carts in one table. `--last`/`--since`/`--until` widen the date window; `--filter ready|archived|onorder|priced` narrows to one or more states (and only reads the carts that could match). |
+| `bhd cart list`       | Show everything staged — all three carts in one table. `--last`/`--since`/`--until` widen the date window; `--filter ready\|archived\|onorder\|priced` narrows to one or more states (and only reads the carts that could match). |
 | `bhd cart rm`         | Remove scenes — by cart row number (`--select 1,2`) or by a saved query's scenes (`<slug> --select 1`). Takes the same `--filter` as `cart list` to narrow which rows a number refers to.                                      |
-
 
 ## Calling it from Python
 
