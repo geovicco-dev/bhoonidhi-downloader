@@ -1,0 +1,26 @@
+{
+  // markdownlint config — https://github.com/DavidAnson/markdownlint
+  // Tuned to this project's real conventions rather than the strict defaults.
+  "default": true,
+
+  // Prose is intentionally not hard-wrapped; long flowing paragraphs read
+  // better in a README and on the docs site.
+  "MD013": false,
+
+  // Shell examples use a `$ ` prompt prefix on purpose.
+  "MD014": false,
+
+  // The changelog follows Keep a Changelog, which repeats the
+  // Added / Changed / Fixed headings under every version. Allow duplicate
+  // headings as long as they aren't direct siblings.
+  "MD024": { "siblings_only": true },
+
+  // The docs embed a YouTube iframe and use small HTML blocks for layout.
+  "MD033": false,
+
+  // PR / issue templates open with an HTML comment, not a heading.
+  "MD041": false,
+
+  // Table pipe alignment is cosmetic and not maintained by hand.
+  "MD060": false
+}

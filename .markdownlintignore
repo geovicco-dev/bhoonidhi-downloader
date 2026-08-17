@@ -1,0 +1,9 @@
+# markdownlint ignore patterns
+node_modules/
+site/
+.venv/
+internal/
+# GitHub issue-template YAML is not Markdown — don't lint it as such
+.github/ISSUE_TEMPLATE/*.yml
+# Jupyter notebooks rendered by mkdocs-jupyter
+docs/api/notebooks/

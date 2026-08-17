@@ -16,7 +16,7 @@ The **Access** column shows how a mission's data is obtained: *DirectDownload*
 available but requested through the portal first), or *Priced* (paid data).
 
 | # | Satellite | Sensors | Res (m) | Availability | Access |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | 1 | Aqua | MODIS | 500 | 31 December 2003 - 31 December 2019 | OnOrder |
 | 2 | CartoSat-2 | PAN(SPOT) | 0.8 | 14 April 2007 - 23 May 2019 | Priced |
 | 3 | CartoSat-2S | MX(SPOT), PAN(SPOT) | 0.65 - 1.6 | 25 June 2017 - till date | Priced |

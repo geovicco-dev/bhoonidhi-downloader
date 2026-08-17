@@ -59,7 +59,7 @@ fixing a bug, a test that fails before your fix and passes after is the ideal.
 ## Reporting a security issue
 
 Please don't open a public issue for security problems. Instead, email the
-maintainer at geovicco.dev@gmail.com so it can be addressed before disclosure.
+maintainer at <geovicco.dev@gmail.com> so it can be addressed before disclosure.
 
 ## Code of conduct
 
