@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or usage help
+    url: https://github.com/geovicco-dev/bhoonidhi-downloader/discussions
+    about: For questions about using the tool, please start a discussion.

@@ -5,7 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Demo-red)](https://youtu.be/Y3naYuyr3NA)
 
-CLI and SDK for [ISRO's EO Portal - Bhoonidhi Browse &amp; Order](https://bhoonidhi.nrsc.gov.in/) — search by bounding box or a point plus radius, save results as named queries you can revisit and refresh, download open-access scenes with concurrency and SHA256 verification, and stage priced/on-order/archived scenes to the Bhoonidhi cart. Every command is also callable from Python through the `bhoonidhi_downloader.sdk` package.
+CLI and Python SDK for [ISRO's Bhoonidhi Browse &amp; Order portal](https://bhoonidhi.nrsc.gov.in/) (NRSC) — programmatic **search and download of satellite imagery from Indian satellite missions** (ResourceSat, NISAR, CartoSat, EOS, and more) alongside international **Earth-observation / remote-sensing** data (Sentinel, Landsat). It reaches the portal's full archive of **41 satellite missions and 79 sensors** — see the [supported missions](docs/supported-missions.md).
+
+Find scenes over an area and date range, keep your searches to come back to them later and refresh them to fetch new scenes for the time diff only. Scenes that need ordering or payment are staged to the Bhoonidhi cart to finish on the portal. Everything the `bhd` command does is also a method on the Python SDK, for scripting and pipelines.
 
 ## Features
 

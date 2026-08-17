@@ -1,0 +1,46 @@
+# Citation File Format — https://citation-file-format.github.io/
+# When present at the repo root, GitHub shows a "Cite this repository" button
+# that generates APA and BibTeX from this file.
+#
+# BEFORE MOVING TO REPO ROOT, fill in the two placeholders below:
+#   1. orcid  — create one free at https://orcid.org (remove the line if none)
+#   2. confirm the author name form (given-names / family-names) is how you
+#      want to be credited in citations.
+# AFTER you mint a Zenodo DOI, uncomment the `identifiers:` block and paste it.
+
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "bhoonidhi-downloader: A CLI and Python SDK for ISRO's Bhoonidhi EO portal"
+abstract: >-
+  bhoonidhi-downloader is a command-line tool and Python SDK for searching and
+  downloading Earth-observation satellite imagery from ISRO's EO Portal - Bhoonidhi. 
+  It provides programmatic authentication, catalogue search by bounding box or point-and-radius, 
+  persistent named queries, concurrent verified downloads of open-access scenes, and
+  cart staging for priced, on-order, and archived products — an otherwise manual, web-UI-only workflow.
+type: software
+authors:
+  - given-names: Aditya
+    family-names: Sharma
+    alias: geovicco-dev
+    orcid: "https://orcid.org/0009-0007-6154-086X"
+repository-code: "https://github.com/geovicco-dev/bhoonidhi-downloader"
+url: "https://geovicco-dev.github.io/bhoonidhi-downloader/"
+license: MIT
+keywords:
+  - remote sensing
+  - earth observation
+  - satellite imagery
+  - ISRO
+  - Bhoonidhi
+  - NRSC
+  - GIS
+  - python
+version: 0.5.1
+date-released: "2026-08-17"
+
+# After the Zenodo DOI is minted, uncomment and fill in (use the CONCEPT DOI —
+# the one that always points to the latest version):
+# identifiers:
+#   - type: doi
+#     value: 10.5281/zenodo.XXXXXXX
+#     description: The concept DOI for all versions.
