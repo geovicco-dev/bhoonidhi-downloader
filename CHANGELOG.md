@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [0.5.2]
+
+### Added
+
+- **`from bhoonidhi_downloader.sdk import scene_availability` classifies a search-result scene the same way the CLI's Availability column does** — it reconciles the scene's `PRICED` and `CURR_SCENE_NO` fields into a single `Availability` state (`Ready`/`Archived`/`OnOrder`/`Priced`), which now carries `.label` and `.is_downloadable`, so a script or agent can tell a staged open-data scene from an archived one that may 404 without reaching into `core`. Previously only `PRICED` was visible to SDK consumers, which conflated "downloadable now" with "archived", making an honest "how many can I actually download?" impossible outside the CLI.
+
 ## [0.5.1]
 
 ### Added
