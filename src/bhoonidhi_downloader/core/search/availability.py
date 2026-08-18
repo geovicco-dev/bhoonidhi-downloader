@@ -34,6 +34,18 @@ class Availability(str, Enum):
     #: Requires payment; ordered through the portal's PI workflow.
     PRICED = "priced"
 
+    @property
+    def label(self) -> str:
+        """The word shown for this state, e.g. ``Ready`` — the same word the
+        CLI's Availability column uses, so consumers render it identically."""
+        return AVAILABILITY_LABEL[self]
+
+    @property
+    def is_downloadable(self) -> bool:
+        """True if ``query download`` would attempt this scene (either open-data
+        state), False for on-order and priced scenes that need the portal."""
+        return self in (Availability.DIRECT_AVAILABLE, Availability.DIRECT_UNAVAILABLE)
+
 
 class Access(str, Enum):
     """What kind of access a scene needs, independent of staging."""

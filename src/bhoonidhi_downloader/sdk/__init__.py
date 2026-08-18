@@ -13,6 +13,7 @@ from bhoonidhi_downloader.exceptions import (
     BhoonidhiValidationError,
 )
 from bhoonidhi_downloader.schemas import Selection
+from bhoonidhi_downloader.sdk.availability import Availability, scene_availability
 from bhoonidhi_downloader.sdk.client import BhoonidhiClient
 
 __all__ = [
@@ -23,4 +24,6 @@ __all__ = [
     "BhoonidhiValidationError",
     "BhoonidhiNotFoundError",
     "Selection",
+    "Availability",
+    "scene_availability",
 ]
