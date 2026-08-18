@@ -1,13 +1,3 @@
-# Citation File Format — https://citation-file-format.github.io/
-# When present at the repo root, GitHub shows a "Cite this repository" button
-# that generates APA and BibTeX from this file.
-#
-# BEFORE MOVING TO REPO ROOT, fill in the two placeholders below:
-#   1. orcid  — create one free at https://orcid.org (remove the line if none)
-#   2. confirm the author name form (given-names / family-names) is how you
-#      want to be credited in citations.
-# AFTER you mint a Zenodo DOI, uncomment the `identifiers:` block and paste it.
-
 cff-version: 1.2.0
 message: "If you use this software, please cite it using these metadata."
 title: "bhoonidhi-downloader: A CLI and Python SDK for ISRO's Bhoonidhi EO portal"
@@ -37,10 +27,3 @@ keywords:
   - python
 version: 0.5.1
 date-released: "2026-08-17"
-
-# After the Zenodo DOI is minted, uncomment and fill in (use the CONCEPT DOI —
-# the one that always points to the latest version):
-# identifiers:
-#   - type: doi
-#     value: 10.5281/zenodo.XXXXXXX
-#     description: The concept DOI for all versions.
