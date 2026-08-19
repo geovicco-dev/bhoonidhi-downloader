@@ -1,0 +1,2001 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="CLI and SDK for ISRO's EO Portal - Bhoonidhi Browse & Order — search by bounding box or point+radius, save named queries, download open-access scenes, and stage priced/on-order scenes to the cart.">
+      
+      
+      
+        <link rel="canonical" href="https://geovicco-dev.github.io/bhoonidhi-downloader/CHANGELOG/">
+      
+      
+        <link rel="prev" href="../api/schemas/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Changelog - Bhoonidhi Downloader</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Bhoonidhi Downloader" class="md-header__button md-logo" aria-label="Bhoonidhi Downloader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Bhoonidhi Downloader
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/geovicco-dev/bhoonidhi-downloader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    geovicco-dev/bhoonidhi-downloader
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../supported-missions/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Supported missions
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../examples/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Examples
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Python SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Bhoonidhi Downloader" class="md-nav__button md-logo" aria-label="Bhoonidhi Downloader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Bhoonidhi Downloader
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/geovicco-dev/bhoonidhi-downloader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    geovicco-dev/bhoonidhi-downloader
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../supported-missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supported missions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Python SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Notebooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/notebooks/auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bhoonidhi SDK — auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/notebooks/archive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bhoonidhi SDK — archive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/notebooks/query/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bhoonidhi SDK — query
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/notebooks/cart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bhoonidhi SDK — cart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/archive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/query/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/cart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#053" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.3]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.3]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#052" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.2]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.2]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#051" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.1]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.1]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.0]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#033" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.3]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.3]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.1]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.0]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#023" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.3]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.3]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#022" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.2]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.2]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.1]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.1]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-the-rewrite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the rewrite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-command-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking: command surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Also
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.21]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#012" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.2]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.1]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1]
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<p>All notable changes to this project are documented here.</p>
+<h2 id="053">[0.5.3]</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li><strong><code>from bhoonidhi_downloader.sdk import preview_download</code> classifies what a download would do without fetching anything or logging in</strong> — it returns a <code>DownloadPreview</code> per scene (<code>would_download</code>, <code>may_404</code>, <code>already_here</code>, <code>already_elsewhere</code>, <code>skipped_on_order</code>, <code>skipped_priced</code>) with the predicted filename and destination, mirroring the real <code>query download</code> rules so a dry run can't drift from the command it previews. Only <code>build_preview</code> in <code>core</code> computed this before, leaving SDK and agent consumers unable to preview a download honestly without reaching past the public interface; no file size is reported because the portal exposes it only in the download response headers.</li>
+</ul>
+<h2 id="052">[0.5.2]</h2>
+<h3 id="added_1">Added</h3>
+<ul>
+<li><strong><code>from bhoonidhi_downloader.sdk import scene_availability</code> classifies a search-result scene the same way the CLI's Availability column does</strong> — it reconciles the scene's <code>PRICED</code> and <code>CURR_SCENE_NO</code> fields into a single <code>Availability</code> state (<code>Ready</code>/<code>Archived</code>/<code>OnOrder</code>/<code>Priced</code>), which now carries <code>.label</code> and <code>.is_downloadable</code>, so a script or agent can tell a staged open-data scene from an archived one that may 404 without reaching into <code>core</code>. Previously only <code>PRICED</code> was visible to SDK consumers, which conflated "downloadable now" with "archived", making an honest "how many can I actually download?" impossible outside the CLI.</li>
+</ul>
+<h2 id="051">[0.5.1]</h2>
+<h3 id="added_2">Added</h3>
+<ul>
+<li><strong><code>bhd query create --no-save</code> (CLI) / <code>client.query.create(save=False)</code> (SDK) runs the search without persisting a query file</strong> — the portal call, pagination, and dedup are identical to a normal create, but nothing is written to <code>~/.bhoonidhi/queries/</code> and no slug is generated. The returned <code>QuerySchema</code> still carries <code>.scenes</code> so the caller gets the full scene list exactly as before — the only difference is that the result is ephemeral. This is the stateless path programmatic consumers need so they don't accumulate hidden per-worker query files that grow unbounded and break in multi-worker orchestrators.</li>
+</ul>
+<h2 id="050">[0.5.0]</h2>
+<h3 id="added_3">Added</h3>
+<ul>
+<li><strong><code>bhd query create --sat</code> is now repeatable and accepts <code>SAT[:SEN[:PROD]]</code>, so one search can span several missions or narrow to a single product within a sensor</strong> — <code>--sat ResourceSat-2A:LISS3 --sat CartoSat-3</code> searches both in one request, and <code>--sat "EOS-06:OCM(GAC):L2C-Chlorophyll"</code> narrows to that one product instead of every product a sensor bundles (EOS-06's OCM(GAC) alone has eight). The portal already searches on a flat list of dispName tokens, so this stays one HTTP request regardless of how many selections are combined — the server fans them out, not the client. An unknown satellite, sensor, or product is skipped with a warning and the search continues with whatever's left; only an all-invalid selection list fails outright. <code>--sen</code> still works as shorthand for a single plain <code>--sat</code>. The SDK's <code>client.query.create(...)</code> gains a <code>selections=[Selection(...), ...]</code> parameter alongside the existing <code>satellite=</code>/<code>sensor=</code> pair — give one or the other, not both.</li>
+<li><strong><code>bhd archive list --sat X</code> now shows every product as its own row with the exact <code>--sat</code> value that selects it, instead of a <code>dispName</code>/<code>Products</code> pair you had to decode by hand.</strong> The old table wrapped every long-suffixed satellite (EOS-06's 15 products, previously spread across two hard-to-read columns) across 2-4 lines per row; the new <code>Product</code> column is the short token itself and <code>--sat value</code> is copy-pasteable straight into <code>query create</code>. The unfiltered <code>bhd archive list</code> now shows a per-sensor product count (<code>OCM(GAC) (8 products)</code>) instead of a bare sensor-name list, so the extra depth is visible before drilling in. A handful of sensors mix a bare, no-suffix product with other, distinctly-suffixed ones (some ResourceSat-1/2/2A AWIFS and LISS3 variants) — for those, <code>SAT:SEN</code> alone selects every product under the sensor rather than just the bare one, and the table says so instead of showing a value that wouldn't do what it implies. <code>archive export</code>'s JSON gains matching <code>product_token</code>/<code>sat_value</code> fields on every collection entry. Verified against a live fetch of the full 41-satellite/132-product catalogue: every product token round-trips through <code>query create --sat</code> back to exactly the dispName it came from.</li>
+<li><strong>Search results include a Resolution (m) column</strong> — scenes only carry <code>SELECTION</code> (the full dispName), not a resolution field, so the value is looked up against the cached archive manifest per row. Closes a gap where the search table showed everything about a scene except how coarse it was.</li>
+<li><strong><code>bhd cart --help</code> explains what the cart commands actually do</strong> — the four-way availability routing <code>cart add</code> performs, that ordering (and payment for priced data) still finishes in the web portal not the CLI, and that login is required with automatic refresh. Previously it was one sentence with no mention of any of that.</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li><strong><code>SearchSchema</code> and <code>QuerySchema</code> hold a <code>selections</code> list instead of scalar <code>satellite</code>/<code>sensor</code> fields.</strong> Saved queries written before this release are migrated automatically on read — no manual step, no version-gated loader — but <strong><code>query.satellite</code>/<code>query.sensor</code> no longer exist as attributes on the returned object</strong>; anything reading those directly (not just constructing with the legacy keywords, which still works) needs <code>query.selections</code> instead. <code>generate_name</code>/<code>generate_description</code> and the <code>query list</code> table now show the full mission mix rather than one satellite.</li>
+<li><strong><code>bhd auth refresh</code> failure is framed as a warning, not a red error</strong>, and no longer tells you to run <code>auth logout</code> first — <code>auth login</code> overwrites the saved session on its own. The old copy sent people through a needless extra step for a normal end-of-refresh-window event.</li>
+<li><strong>Satellite, Sensor, Metadata, and Quick View columns are centered</strong> in the search results table so both real values and the <code>-</code> placeholder line up under their (already centered) headers.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li><strong><code>Selection</code> wasn't exported from <code>bhoonidhi_downloader.sdk</code></strong>, even though every other SDK-facing type (<code>BhoonidhiClient</code>, the <code>BhoonidhiError</code> family) is — a script had to know to reach into <code>bhoonidhi_downloader.schemas</code> instead. <code>from bhoonidhi_downloader.sdk import Selection</code> now works alongside the rest.</li>
+<li><strong><code>bhd query create</code> no longer prints the same "available satellites" list twice</strong> when every selection is invalid — the yellow skip warnings above the raised error were already showing it once. Exception message now points to those warnings instead of concatenating them.</li>
+<li><strong><code>bhd archive list --sat X</code> shows <code>-</code> in the Product column for a bare-suffix product</strong>, not <code>(default)</code> — matches the placeholder style already used elsewhere in the table.</li>
+</ul>
+<h2 id="040">[0.4.0]</h2>
+<h3 id="added_4">Added</h3>
+<ul>
+<li><strong><code>bhd query create</code> accepts a location AOI as an alternative to a bounding box</strong> — <code>--lat</code>/<code>--lon</code> (CLI) or <code>lat=</code>/<code>lon=</code> (SDK) search a point plus a surrounding radius instead of four corner coordinates. <code>--radius</code>/<code>radius_km</code> defaults to 10km and accepts 1-100km, matching the portal's own limit. Give exactly one AOI mode; mixing a bounding box with a location, or giving neither, fails with a clear error before any request is sent.</li>
+</ul>
+<h3 id="changed_1">Changed</h3>
+<ul>
+<li><strong><code>bhd query create</code>'s bounding box moved from positional arguments to <code>--minx</code>/<code>--maxx</code>/<code>--miny</code>/<code>--maxy</code> flags</strong> — needed so the same command could accept either AOI mode without four required positionals blocking the location-only case. <code>client.query.create(...)</code> in the SDK follows the same shape: <code>start_date</code>, <code>end_date</code>, and <code>satellite</code> stay positional-friendly; the AOI args (both bbox and location) are keyword-only in practice. <strong>Breaking for any script calling the SDK's <code>create()</code> with bbox values as positional arguments</strong> — pass <code>minx=</code>/<code>maxx=</code>/<code>miny=</code>/<code>maxy=</code> by keyword instead. This is why the version bumps to 0.4.0 rather than a patch release.</li>
+</ul>
+<h3 id="fixed_1">Fixed</h3>
+<ul>
+<li><strong>Metadata links (<code>Metadata</code> column, both search and cart tables) were broken for most scenes.</strong> <code>get_scene_meta_url()</code> used to hand out a <code>.meta</code>/<code>.met</code> URL for every scene unconditionally, but most scenes never have a metadata file at all — the portal only serves one when a scene is open data (<code>PRICED</code> starts with <code>OpenData_</code>) <em>and</em> <code>TABLETYPE</code> is <code>PMETA</code>; everything else now correctly shows a dash instead of a link that always 404s. Three satellite families that do qualify also serve a different file than a plain <code>.meta</code>: Sentinel-1 opens the <code>_VH</code>/<code>_VV</code> polarization sidecars, Sentinel-2 opens the tile-metadata/INSPIRE sidecars, and Novasar rewrites the directory and extension entirely — all three are now handled. A meaningful chunk of otherwise-qualifying scenes (JPSS1/Suomi-NPP VIIRS from roughly mid-2025 on, LandSat-8/9, MetOp-B/C, Sentinel-1 SAR(IW)_SLC, most Novasar-1 products since ~2023) still 404 because the file genuinely isn't hosted at the URL the portal's own logic would build — that's a portal-side gap, not something a client-side fix can repair.</li>
+<li><strong>Quicklook thumbnail links (<code>Quick View</code> column) picked the wrong file extension for priced scenes.</strong> <code>get_quicklook_url()</code> guessed <code>.jpg</code> vs <code>.jpeg</code> from <code>PRICED</code>, which has nothing to do with it — a priced PMETA scene got a broken <code>.jpeg</code> link when the real file was <code>.jpg</code>, and the reverse for open-data SMETA scenes. The extension is actually determined by <code>TABLETYPE</code> (<code>SMETA</code> → <code>.jpeg</code>, <code>PMETA</code> → <code>.jpg</code>, no exceptions across every satellite/sensor/product combination the portal supports), which the fix now reads instead.</li>
+<li><strong>An invalid <code>--sat</code>/<code>--sen</code> value on <code>bhd query create</code> dumped a raw, unreadable pydantic traceback</strong> instead of a clean error message — the CLI's error handler only caught <code>BhoonidhiError</code> subclasses, and pydantic's own <code>ValidationError</code> slipped past it. Now prints <code>Search failed: Invalid satellite '...'. Available: [...]</code> and exits cleanly, same as every other validation failure.</li>
+</ul>
+<h2 id="033">[0.3.3]</h2>
+<p>Every <code>bhd</code> command was already a thin wrapper over plain Python functions, but calling into them meant reaching past a <code>console</code>/<code>rich</code> rendering layer built for the terminal, not for a script. This release splits that apart: command logic that returns data lives in <code>core/</code>, terminal rendering moves entirely into <code>cli/</code>, and a new <code>sdk/</code> package sits on top of the same core the CLI calls — so the two entry points can't drift, and scripting no longer means fighting the CLI's own plumbing.</p>
+<h3 id="added_5">Added</h3>
+<ul>
+<li><strong><code>bhoonidhi_downloader.sdk.BhoonidhiClient</code></strong> gives one object whose namespaces mirror the CLI one-to-one — <code>client.archive</code>, <code>client.query</code>, <code>client.cart</code>, plus the auth methods (<code>login</code>, <code>logout</code>, <code>whoami</code>, <code>status</code>, <code>refresh</code>). Methods return plain data or raise a typed error instead of rendering to the terminal, and the client holds the session in memory and reuses the one saved at <code>~/.bhoonidhi/session</code>, so a script logs in once. SDK inputs are typed to their own shape rather than the CLI's wire format — <code>select</code> takes <code>[1, 2, 3]</code> (indices or scene IDs), <code>filter_by</code> takes a bare string or a list — so a caller never has to know the CLI accepts <code>--select 1,2,3</code> as one comma-joined string.</li>
+<li><strong><code>BhoonidhiError</code> base exception</strong>, so a single <code>except BhoonidhiError</code> catches any portal failure. Its subclasses (<code>BhoonidhiAuthError</code>, <code>BhoonidhiValidationError</code>, <code>BhoonidhiNotFoundError</code>, <code>BhoonidhiAPIError</code>) keep their matching built-in bases, so existing <code>except ValueError</code>/<code>except LookupError</code> handlers still work.</li>
+<li><strong>A <code>py.typed</code> marker</strong>, so a consumer's type checker reads the package's type hints instead of treating it as untyped — confirmed by building the wheel and checking a fresh import with pyright, which previously showed every SDK method as <code>Unknown</code>.</li>
+<li><strong>Runnable example notebooks</strong> — one per namespace (<code>auth</code>, <code>archive</code>, <code>query</code>, <code>cart</code>) — built into the documentation site as pages under API Reference → Notebook examples via <code>mkdocs-jupyter</code>, instead of living as side files in the repo that the docs only linked to.</li>
+</ul>
+<h3 id="fixed_2">Fixed</h3>
+<ul>
+<li><strong><code>bhd archive export</code> failed after writing the file.</strong> The command reformats the archive's raw field names before writing the export, then re-ran the summary render against that already-reformatted data — which crashed on a full export and printed an empty table for a single-satellite export. The file itself was always written correctly; the summary now renders from the original data before it's reshaped.</li>
+<li><strong><code>bhd archive</code> calls had no request timeout.</strong> Every other portal call in the codebase set one; this one didn't, so a hung connection to the archive endpoint could block indefinitely instead of failing.</li>
+</ul>
+<h2 id="031">[0.3.1]</h2>
+<p>Three fixes surfaced while using the cart and download commands day to day.</p>
+<h3 id="added_6">Added</h3>
+<ul>
+<li><strong><code>bhd query download --dry-run</code></strong> shows what a download would do — which scenes would be attempted, which would be skipped and why, which are already downloaded — without fetching anything or requiring a session. Uses the exact same classification rules as a real download, so a dry run never disagrees with what actually happens.</li>
+<li><strong><code>-f</code>/<code>--filter</code></strong> on <code>bhd query show</code>, <code>bhd cart list</code>, and <code>bhd cart rm</code> narrows the table to one or more availability states — <code>ready</code>, <code>archived</code>, <code>onorder</code>, <code>priced</code> (comma-separated or repeatable). On the cart commands it also limits which of the portal's three carts get fetched, so <code>--filter priced</code> only ever reads the priced cart.</li>
+</ul>
+<h3 id="changed_2">Changed</h3>
+<ul>
+<li><strong><code>bhd cart list</code>/<code>bhd cart rm</code> no longer take <code>--kind</code>.</strong> It did the same thing <code>--filter</code> now does — <code>--kind priced</code> and <code>--filter priced</code> selected identical rows — so <code>--filter</code> replaces it: <code>--filter ready,archived</code> in place of <code>--kind direct</code>, <code>--filter onorder</code> in place of <code>--kind order</code>, <code>--filter priced</code> unchanged.</li>
+</ul>
+<h3 id="fixed_3">Fixed</h3>
+<ul>
+<li><strong>Cart actions used the caller's local time instead of IST.</strong> The portal files every cart record under IST — its own server date — but <code>cart list</code>/<code>cart rm</code>'s date window and the cart's add/remove calls defaulted to local <code>datetime.now()</code>. Outside IST, an add could succeed server-side while <code>cart list</code> queried the wrong date and showed nothing.</li>
+<li><strong>Searching a satellite with no sensor failed with an opaque "Search failed".</strong> It now searches every sensor under that satellite instead, matching how the portal's own UI treats a satellite-only search.</li>
+</ul>
+<h2 id="030">[0.3.0]</h2>
+<p>Scenes that <code>bhd query download</code> can't fetch — open-but-archived, on-order, and priced — can now be staged from the terminal. Add them to the Bhoonidhi cart straight from a saved query and finish the order in the Browse &amp; Order portal, so you skip re-searching for the same scenes by hand.</p>
+<h3 id="added_7">Added</h3>
+<ul>
+<li><strong><code>bhd cart add &lt;slug&gt;</code></strong> stages scenes from a saved query into the portal's cart. Use <code>--select</code> with the 1-based numbers or scene IDs from <code>query show</code> to pick specific scenes (<code>--select 1,3,7</code>), or omit it to add the whole query. The portal keeps three separate carts — direct download, on-order, and priced — and each scene is routed to the right one automatically based on its access type, so a query mixing all three just works in one command. A progress bar tracks the run and a results table lists what was added, what each scene's cart is, and the reason for anything that didn't add.</li>
+<li><strong><code>bhd cart list</code></strong> shows everything staged — the portal's three carts (direct download, on-order, and priced) merged into one table. Each row shows which cart it's in and, for direct-download scenes, whether they're ready or still archived; the satellite and sensor names; the date it was added; and whether the order has been placed (from the item's <code>STATUS</code>), alongside Metadata and Quick View links. Because items are filed by the date they were added, <code>--since</code>/<code>--until</code> (YYYY-MM-DD) take an explicit span and <code>--last</code> takes a preset like <code>10 days</code>, <code>2 weeks</code>, or <code>1 month</code>; with nothing set it shows today, so scenes staged earlier need a wider window. <code>--kind direct|order|priced</code> limits the view to one cart. Rows are numbered for <code>cart rm</code> and open in the same scrollable viewer as search results (<code>--plain</code> to dump everything at once).</li>
+<li><strong><code>bhd cart rm</code></strong> removes scenes — by cart row number (<code>cart rm --select 1,2</code>) or by a saved query's scenes (<code>cart rm &lt;slug&gt; --select 1</code>).</li>
+</ul>
+<h3 id="changed_3">Changed</h3>
+<ul>
+<li>Search-result tables (<code>query create</code>, <code>query show</code>) and the cart table now show full satellite and sensor names — <code>ResourceSat-2A</code> / <code>AWIFS</code> instead of the short <code>R2A</code> / <code>AWIF</code> codes.</li>
+<li><code>bhd query list</code> now has a Search IDs column listing every search a saved query holds — a query refreshed one or more times gathers scenes from several searches, and each search's ID is shown. <code>bhd query create</code> shows the single search's ID in its results-table header.</li>
+<li>The project now has a test suite (pytest), covering the cart's scene-identifier derivation and request-routing rules — the parts that fail silently against the live portal if they drift.</li>
+</ul>
+<h2 id="023">[0.2.3]</h2>
+<p>Every table you'd previously have to scroll past all at once — search
+results, saved queries, the archive, download reports — is now a
+scrollable viewer you move around with vim-style keys.</p>
+<h3 id="added_8">Added</h3>
+<ul>
+<li><strong>Scrollable table viewer with vim-style navigation.</strong> <code>query create</code>,
+  <code>query list</code>, <code>query show</code>, <code>query download</code>, and <code>archive list</code> now
+  open results in a table you scroll with <code>j</code>/<code>k</code> (rows), <code>h</code>/<code>l</code>
+  (columns), <code>f</code>/<code>b</code> (page), <code>g</code>/<code>G</code> (top/end), <code>0</code>/<code>$</code> (first/last
+  column), and <code>q</code> to quit. A controls table and status line are always
+  visible so you don't lose track of where you are.</li>
+<li><strong><code>--plain</code> flag.</strong> Every command above accepts <code>--plain</code> to print the
+  full table at once instead of opening the scrollable view — useful for
+  piping into <code>grep</code> or a file. Output automatically falls back to this
+  when it isn't going to a real terminal anyway.</li>
+<li>Search results now show a centered Availability Legend table (what
+  each state means and what to do about it) and a one-line tip on how to
+  open the Metadata/Quick View links — both stay visible while scrolling
+  instead of disappearing off screen or only showing up after you quit.</li>
+</ul>
+<h2 id="022">[0.2.2]</h2>
+<p>Two bug fixes surfaced while verifying scene availability against the live portal.</p>
+<h3 id="fixed_4">Fixed</h3>
+<ul>
+<li><strong>Landsat-9 and JPSS1 downloads returned 404 even when marked available.</strong> The sensor short-code lookup was keyed on the wrong value — Landsat scenes report <code>SENSOR="OLI"</code>, not <code>"O"</code>, and JPSS1 (<code>SENSOR="VIR"</code>) had no entry at all — so requests fell through to a data path that doesn't exist. Verified live: both missions now resolve to <code>/data/L9/O/...</code> and <code>/data/JP1/V/...</code> and return 200.</li>
+<li><strong>The availability legend showed a literal <code>&lt;slug&gt;</code> placeholder</strong> instead of the query's actual slug in the <code>bhd query download &lt;slug&gt;</code> hint printed by <code>query create</code> and <code>query show</code>.</li>
+</ul>
+<h2 id="021">[0.2.1]</h2>
+<p>Replaces the generic age-based scene availability guess from 0.2.0 with a real availability indicator. Search (bhd query create) and downloads (bhd query download) are aware of which Open scenes are available for direct download and which ones are in archive.</p>
+<h3 id="added_9">Added</h3>
+<ul>
+<li><strong>Scene availability classification.</strong> Search results now read <code>CURR_SCENE_NO</code> from the portal response and classify each scene as <code>Ready</code>, <code>Archived</code>, <code>OnOrder</code>, or <code>Priced</code>, shown as an Availability column with a legend explaining what each state means and what to do about it. This replaces the old 365-day heuristic, which was wrong in both directions — some year-old scenes are staged and ready, some recent ones aren't.</li>
+<li><strong>Pre-flight download summary.</strong> Before <code>query download</code> starts fetching, it now breaks the selection down by state (<code>Downloading 12 Ready, 5 Archived (may 404)</code> / <code>Skipping 3 OnOrder, 1 Priced</code>), so what's about to happen is stated up front.</li>
+</ul>
+<h3 id="changed_4">Changed</h3>
+<ul>
+<li>Download statuses and messaging now match the availability classification instead of guessing by age. <code>cold_storage</code> is renamed to <code>archived</code>, and the old catch-all <code>skipped_priced</code> status is split into <code>skipped_on_order</code> and <code>skipped_priced</code>, so the download report says which action each scene actually needs — order it, or pay for it.</li>
+<li><code>is_downloadable()</code> is now a single function (<code>core/search/availability.py</code>), reused by both search and download instead of being implemented twice. The two could previously drift out of sync with each other.</li>
+</ul>
+<h2 id="020">[0.2.0]</h2>
+<p>This version represents a significant departure from the current version (v0.1.21). This release is my attempt to modernise the project — a rewrite of the entire codebase. If you've been using <code>bhoonidhi-downloader</code> 0.1.x, <strong>your commands will need to change</strong> — see the migration notes below. Nothing about <em>what</em> this tool does has changed; how you talk to it has.</p>
+<h3 id="why-the-rewrite">Why the rewrite</h3>
+<p>The original work (0.1x) grew out of a semi-reverse-engineered approach where the goal was to just get things up and working — every  feature was thought out according to my use case at the time which was to bulk ingest scenes from ResourceSat-2. While the core logic around authentication and search capabilities still hold in this newer version, the interface and commands have been re-worked, both in how the information is organised on the screen,  how codebase is structred for better readability and debugging, and the ease of calling API directly into scripts/notebooks . Previous work had  HTTP calls, business logic, and terminal output all lived in the same functions. That worked fine for a while, but it made two things hard: testing anything without hitting the live Bhoonidhi portal, and adding features without touching five unrelated things at once.</p>
+<p>This version splits the tool into three components per feature  (auth, archive, search, query, download):</p>
+<ul>
+<li><code>client.py</code> — talks to the Bhoonidhi portal, nothing else</li>
+<li><code>command.py</code> — orchestrates the client + does the actual work, returns plain data</li>
+<li><code>render.py</code> — turns that data into the Rich tables/panels you see on screen</li>
+</ul>
+<p>The CLI layer (<code>cli/*.py</code>) is now <em>just</em> argument parsing — it calls into <code>command.py</code> and gets back a result or a <code>None</code>/<code>False</code> to know whether to exit non-zero. None of it talks to the network directly anymore.</p>
+<h3 id="breaking-command-surface">Breaking: command surface</h3>
+<p>Every top-level command from 0.1.x is now a subcommand group:</p>
+<table>
+<thead>
+<tr>
+<th>0.1.x</th>
+<th>0.2.x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bhoonidhi-downloader authenticate --username ... --password ...</code></td>
+<td><code>bhd auth login</code></td>
+</tr>
+<tr>
+<td><code>bhoonidhi-downloader archive --sat ResourceSat-2</code></td>
+<td><code>bhd archive list --sat ResourceSat-2</code></td>
+</tr>
+<tr>
+<td><code>bhoonidhi-downloader search &lt;bbox&gt; &lt;dates&gt; --sat ... --sen ...</code></td>
+<td><code>bhd query create &lt;bbox&gt; &lt;dates&gt; --sat ... --sen ...</code></td>
+</tr>
+</tbody>
+</table>
+<p>The old <code>search</code> command ran once and forgot everything the moment your terminal closed. <code>query create</code> does the same search, but <em>saves</em> the result under a short slug (like <code>misty-falcon</code>) so you can come back to it later with <code>query show misty-falcon</code>, re-check for new scenes with <code>query refresh</code>, or download from it whenever you're ready — no need to re-run the search.</p>
+<h3 id="added_10">Added</h3>
+<ul>
+<li><strong>Named, persistent queries.</strong> Every search is now saved to <code>~/.bhoonidhi/queries/&lt;slug&gt;.json</code>. <code>query list</code> shows everything you've saved; <code>query fork</code> clones one under a new name without re-querying the portal.</li>
+<li><strong>Real download engine.</strong> <code>query download</code> fetches scenes concurrently (<code>--parallel</code>, default 4), verifies each one with a SHA256 written back onto the saved query, and skips anything already downloaded unless you pass <code>--force</code>. Bhoonidhi's servers don't support HTTP Range requests, so an interrupted download can't resume — it restarts from byte 0, and the download report tells you when that happened.</li>
+<li><strong><code>auth refresh</code>.</strong> Gets you a fresh token without logging out and back in — but only works while your session is still recent. Once it's properly stale, refresh can't save it and you'll need to log in again.</li>
+<li><strong>Archived-scene detection.</strong> Scenes marked <code>Archived</code> in search results aren't currently staged for direct download and may 404 if fetched — the download report flags these instead of calling it a generic failure. Classification reads <code>CURR_SCENE_NO</code> from the portal response, replacing the former age-based heuristic.</li>
+<li><strong>Auto re-login on <code>query download</code>.</strong> If your session's expired, it'll just ask for your password right there and log you back in instead of making you run <code>auth login</code> separately. Password never touches disk. Scripted use doesn't get prompted — pass <code>password=</code> if you want the same behavior, otherwise it fails with a clear message instead of hanging.</li>
+<li><strong>Warns before re-downloading scenes you already have somewhere else.</strong> If a scene's already downloaded and SHA-verified in a different folder, pointing <code>--out</code> at a new location now tells you and asks before wasting bandwidth re-fetching it. <code>--force</code> skips the check.</li>
+</ul>
+<h3 id="removed">Removed</h3>
+<ul>
+<li><code>geopandas</code>, <code>shapely</code> — were only used by an <code>AOISchema.to_gdf()</code> method nothing called.</li>
+<li><code>wget</code> — downloads now stream through <code>requests</code> directly.</li>
+<li><code>tqdm</code> — replaced by <code>rich.progress</code>, which is already a dependency.</li>
+<li>Cart/order support (<code>cart_actions.py</code>) — existed in 0.1.x but was already half-commented-out and never wired into a working command. It's gone for now; may come back once there's a real <code>cart</code> subcommand to attach it to.</li>
+</ul>
+<h3 id="fixed_5">Fixed</h3>
+<ul>
+<li><strong>Sensor names are now URL-encoded in the search payload.</strong> Sensors with names that contain characters needing URL encoding (spaces, <code>/</code>, etc.) previously produced a malformed request and could come back empty; <code>query create</code> now encodes them correctly before hitting the portal.</li>
+<li><strong>Hardened session storage, error logging, and download filename generation.</strong> Session files are written/read more consistently across auth, portal HTTP errors now produce clearer log messages instead of hiding the underlying cause, and scene filenames on download are built more robustly (no more collisions or mangled names for scenes with special characters).</li>
+</ul>
+<h3 id="also">Also</h3>
+<ul>
+<li>Added <code>bhd</code> as a shorter alias for <code>bhoonidhi-downloader</code> — same tool, less typing.</li>
+<li>Requires Python 3.10+ (was 3.8+) — the rewrite uses <code>X | None</code> union syntax throughout.</li>
+<li>No test suite yet — this release was verified by hand against the live portal (login, search, download, re-auth, duplicate detection), not an automated CI run.</li>
+</ul>
+<h2 id="0121">[0.1.21]</h2>
+<ul>
+<li>Added MkDocs + GitHub Pages workflow — first version of this tool with hosted documentation.</li>
+<li>Added PyPI and docs badges to the README.</li>
+</ul>
+<h2 id="012">[0.1.2]</h2>
+<ul>
+<li><strong><code>archive</code> command.</strong> New command to list every satellite/sensor Bhoonidhi supports, with results cached locally instead of re-fetched on every run.</li>
+<li><strong>Sentinel-1 and Landsat 8/9 support</strong> in the search command, alongside the satellites already supported.</li>
+<li><code>search</code> no longer requires <code>--sat</code>/<code>--sen</code> — both became optional, searching across everything if omitted.</li>
+<li>Search results can be exported to a file; the export path's parent directory is created automatically if missing, instead of failing.</li>
+<li>Fixed a <code>while True</code> loop bug from 0.1.1's multi-select prompt that could hang on bad input.</li>
+<li>Refactored <code>search()</code> and the archive command to cut down on inline <code>typer.echo()</code> clutter.</li>
+</ul>
+<h2 id="011">[0.1.1]</h2>
+<ul>
+<li><strong>Multi-scene selection.</strong> <code>search</code> could previously only download one scene per run; you can now select several with a comma-separated list (<code>1,2,3</code>) instead of downloading them one search at a time.</li>
+<li>Replaced manual download plumbing with <code>wget</code> as a dependency.</li>
+<li>Added debug logging for the expired-session scenario during download.</li>
+<li>Set up GitHub Actions workflows for publishing to PyPI (via TestPyPI first).</li>
+</ul>
+<h2 id="01">[0.1]</h2>
+<p>First public release. Search Bhoonidhi's archive by bounding box and date range, authenticate, and download a single scene at a time. Started as a <code>rye</code>-managed project; the cart/order-viewing command (<code>show-cart</code>) that existed during early development was removed before this release since it was never fully wired up.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../api/schemas/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Data models">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Data models
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; 2024 <a href="https://github.com/geovicco-dev"  target="_blank" rel="noopener">Aditya Sharma</a>
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/geovicco-dev" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://medium.com/@geovicco" target="_blank" rel="noopener" title="medium.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M369.4 32c43.4 0 78.6 35.2 78.6 78.6v83.8c-1.9-.1-3.8-.2-5.7-.2h-.4c-10 0-22.3 2.4-31.1 6.8-10 4.6-18.7 11.5-26 20.6-11.8 14.6-18.9 34.3-20.6 56.4-.1.7-.1 1.3-.2 2s-.1 1.2-.1 1.9c-.1 1.2-.1 2.4-.1 3.6 0 1.9-.1 3.8 0 5.8 1.2 50.1 28.2 90.2 76.3 90.2 2.7 0 5.3-.1 7.9-.4v20.4c0 43.4-35.2 78.6-78.6 78.6L78.6 480C35.2 480 0 444.8 0 401.4V110.6C0 67.2 35.2 32 78.6 32zM82.3 138.9l.3.1c13.2 3 19.8 7.4 19.8 23.4v187.2c0 16-6.7 20.4-19.9 23.4l-.3.1v2.8H135v-2.8l-.3-.1c-13.2-3-19.9-7.4-19.9-23.4V173.3l86.1 202.5h4.9l88.6-208.2v186.6c-1.1 12.6-7.8 16.5-19.7 19.2l-.3.1v2.7h91.9v-2.7l-.3-.1c-11.9-2.7-18.7-6.6-19.9-19.2l-.1-191.8h.1c0-16 6.7-20.4 19.9-23.4l.3-.1v-2.7h-72.2l-67 157.4-67-157.4H82.3zM448 340.3c-25.1-7.4-43-35.1-41.2-67.8h41.1v67.8zm-6.4-135.6c2.3 0 4.4.3 6.4.9V263h-40.2c1.5-33.6 13.6-57.9 33.8-58.3"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/in/adityasharma29520/" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zM102.2 96a38.5 38.5 0 1 1 0 77 38.5 38.5 0 1 1 0-77m282.1 320h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/bhoonidhi-downloader/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "navigation.path", "toc.integrate", "search.suggest", "search.highlight", "content.tabs.link", "content.tooltips", "content.code.annotation", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
