@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [0.5.3]
+
+### Added
+
+- **`from bhoonidhi_downloader.sdk import preview_download` classifies what a download would do without fetching anything or logging in** — it returns a `DownloadPreview` per scene (`would_download`, `may_404`, `already_here`, `already_elsewhere`, `skipped_on_order`, `skipped_priced`) with the predicted filename and destination, mirroring the real `query download` rules so a dry run can't drift from the command it previews. Only `build_preview` in `core` computed this before, leaving SDK and agent consumers unable to preview a download honestly without reaching past the public interface; no file size is reported because the portal exposes it only in the download response headers.
+
 ## [0.5.2]
 
 ### Added

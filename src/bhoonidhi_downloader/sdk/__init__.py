@@ -15,6 +15,7 @@ from bhoonidhi_downloader.exceptions import (
 from bhoonidhi_downloader.schemas import Selection
 from bhoonidhi_downloader.sdk.availability import Availability, scene_availability
 from bhoonidhi_downloader.sdk.client import BhoonidhiClient
+from bhoonidhi_downloader.sdk.preview import DownloadPreview, preview_download
 
 __all__ = [
     "BhoonidhiClient",
@@ -26,4 +27,6 @@ __all__ = [
     "Selection",
     "Availability",
     "scene_availability",
+    "DownloadPreview",
+    "preview_download",
 ]
