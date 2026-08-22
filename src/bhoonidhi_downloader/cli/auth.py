@@ -1,5 +1,7 @@
 """Auth CLI subcommands."""
 
+import sys
+
 import typer
 from rich.status import Status
 
@@ -45,24 +47,45 @@ def login(
     password: str = typer.Option(
         None, prompt=True, hide_input=True, help="Bhoonidhi password"
     ),
+    otp: str | None = typer.Option(
+        None,
+        "--otp",
+        help="6-digit email OTP (for non-interactive login after the portal mails a code)",
+    ),
     save: bool = typer.Option(True, "--save/--no-save", help="Persist session to disk"),
 ) -> None:
     """Log in to Bhoonidhi and save the session to ~/.bhoonidhi/session.
 
-    Prompts for username and password if not given as options. Every
-    other command reads this saved session automatically, so you only
-    log in once per session lifetime.
+    Prompts for username and password if not given as options. If the
+    portal emails a 6-digit OTP (instead of returning a JWT immediately),
+    this command waits for the code instead of treating that mail notice
+    as a login failure. Pass --otp for scripts.
+
+    Every other command reads this saved session automatically, so you
+    only log in once per session lifetime.
 
     Examples:
       bhd auth login                                  # prompts for both
       bhd auth login --username myuser                # prompts for password only
       bhd auth login --username myuser --password X   # fully non-interactive
+      bhd auth login --username myuser --password X --otp 123456
 
     Use --no-save for a one-off session you don't want written to disk.
     """
+
+    def _prompt_otp(message: str) -> str:
+        console.print(f"[yellow]{message}[/]")
+        console.print(
+            "[dim]Check spam/junk if you don't see it. The code expires in a few minutes.[/]"
+        )
+        return typer.prompt("Enter the 6-digit OTP")
+
+    otp_prompt = None
+    if otp is None and sys.stdin.isatty():
+        otp_prompt = _prompt_otp
+
     try:
-        with Status("[bold blue]Authenticating...", console=console):
-            session = run_login(username, password, save)
+        session = run_login(username, password, save, otp=otp, otp_prompt=otp_prompt)
     except BhoonidhiError as e:
         render_login_error(console, str(e))
         raise typer.Exit(code=1) from e

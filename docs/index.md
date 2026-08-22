@@ -34,7 +34,7 @@ This installs two equivalent commands — `bhoonidhi-downloader` and the shorter
 Log in, run a search, and download what you find — three commands, start to finish:
 
 ```shell
-# 1. Authenticate (prompts for username/password if omitted)
+# 1. Authenticate (prompts for username/password; waits for email OTP if the portal sends one)
 bhd auth login
 
 # 2. Search a bounding box + date range, save the results as a named query
