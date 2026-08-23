@@ -66,9 +66,14 @@ def ensure_session(console: Console, password: str | None) -> str | None:
         )
         password = getpass.getpass("Password: ")
 
+    def _prompt_otp(message: str) -> str:
+        console.print(f"[yellow]{message}[/]")
+        return input("Enter the 6-digit OTP: ").strip()
+
+    otp_prompt = _prompt_otp if sys.stdin.isatty() else None
     try:
         am = AuthManager(cfg=SessionSchema(username=username, password=password))
-        session = am.login()
+        session = am.login(otp_prompt=otp_prompt)
     except Exception as e:
         console.print(f"[bold red]Re-authentication failed:[/] {e}")
         return None

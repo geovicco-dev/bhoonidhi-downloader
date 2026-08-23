@@ -6,6 +6,8 @@ rendering lives in the CLI layer (``cli/auth.py``), so the same functions can
 be called directly from a Python script without a console.
 """
 
+from collections.abc import Callable
+
 import requests
 
 from bhoonidhi_downloader.core.auth.client import AuthManager
@@ -22,13 +24,22 @@ from bhoonidhi_downloader.exceptions import (
 from bhoonidhi_downloader.schemas import SessionSchema
 
 
-def run_login(username: str, password: str, save: bool = True) -> SessionSchema:
+def run_login(
+    username: str,
+    password: str,
+    save: bool = True,
+    *,
+    otp: str | None = None,
+    otp_prompt: Callable[[str], str] | None = None,
+) -> SessionSchema:
     """Authenticate against Bhoonidhi and optionally save the session.
 
-    Returns the validated session.
+    Returns the validated session. When the portal mails an email OTP
+    instead of a JWT, ``otp`` or ``otp_prompt`` completes VERIFY_OTP.
 
     Raises:
-        BhoonidhiValidationError: if username or password is empty.
+        BhoonidhiValidationError: if username or password is empty, or
+            the OTP is not 6 digits.
         BhoonidhiAuthError: if the credentials are rejected or the new
             session fails validation.
     """
@@ -36,7 +47,7 @@ def run_login(username: str, password: str, save: bool = True) -> SessionSchema:
         raise BhoonidhiValidationError("Username and password cannot be empty.")
 
     am = AuthManager(cfg=SessionSchema(username=username, password=password))
-    session = am.login()
+    session = am.login(otp=otp, otp_prompt=otp_prompt)
     is_valid = am.validate_session(session.jwt) if session.jwt else False
     if not is_valid:
         raise BhoonidhiAuthError("Session validation failed.")

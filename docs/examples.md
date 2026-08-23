@@ -10,13 +10,15 @@ Two ways to use this tool: the CLI (`bhd`), or the [Python SDK](sdk.md). Both ca
 $ bhd auth login
 Username: myuser
 Password:
+Login OTP has been mailed to your registered email id (...)
+Enter the 6-digit OTP: 123456
 ✓ Logged in as myuser
 ```
 
-Omit `--username`/`--password` and you'll be prompted. Pass them directly for non-interactive use:
+Omit `--username`/`--password` and you'll be prompted. If the portal emails an OTP, the command waits for it instead of failing. Pass `--otp` with the code for non-interactive use:
 
 ```console
-$ bhd auth login --username myuser --password ${BHOONIDHI_PASSWORD}
+$ bhd auth login --username myuser --password ${BHOONIDHI_PASSWORD} --otp ${BHOONIDHI_OTP}
 ```
 
 Check your session anytime with `bhd auth status`, or find out who's currently logged in with `bhd auth whoami`.

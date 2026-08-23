@@ -14,6 +14,8 @@ Everything it exposes mirrors the ``bhd`` CLI one-to-one, so the command
 you'd type is the method you'd call.
 """
 
+from collections.abc import Callable
+
 from bhoonidhi_downloader.core.auth import command as _auth
 from bhoonidhi_downloader.core.auth.utils import load_session_info
 from bhoonidhi_downloader.exceptions import BhoonidhiAuthError
@@ -67,15 +69,26 @@ class BhoonidhiClient:
             raise BhoonidhiAuthError("Not authenticated. Call client.login(...) first.")
         return account
 
-    def login(self, username: str, password: str, save: bool = True) -> SessionSchema:
+    def login(
+        self,
+        username: str,
+        password: str,
+        save: bool = True,
+        *,
+        otp: str | None = None,
+        otp_prompt: Callable[[str], str] | None = None,
+    ) -> SessionSchema:
         """Authenticate and remember the session.
 
         Mirrors ``bhd auth login``. The password is used only for this call
-        and never stored on the client. Raises a
+        and never stored on the client. When the portal mails an email OTP
+        instead of a JWT, pass ``otp`` or ``otp_prompt``. Raises a
         :class:`~bhoonidhi_downloader.exceptions.BhoonidhiError` if the
         credentials are empty or rejected.
         """
-        self._session = _auth.run_login(username, password, save=save)
+        self._session = _auth.run_login(
+            username, password, save=save, otp=otp, otp_prompt=otp_prompt
+        )
         return self._session
 
     def logout(self) -> bool:

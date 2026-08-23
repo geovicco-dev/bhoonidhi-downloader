@@ -32,7 +32,7 @@ This installs two equivalent commands — `bhoonidhi-downloader` and the shorter
 Log in, run a search, and download what you find — three commands, start to finish:
 
 ```shell
-# 1. Authenticate (prompts for username/password if omitted)
+# 1. Authenticate (prompts for username/password; waits for email OTP if the portal sends one)
 bhd auth login
 
 # 2. Search a bounding box + date range, save the results as a named query
@@ -76,7 +76,7 @@ Every command supports `--help` for its full option list. This is the short vers
 
 | Command            | What it does                                                                                                                                         |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bhd auth login`   | Authenticate and save your session to `~/.bhoonidhi/session`.                                                                                        |
+| `bhd auth login`   | Authenticate and save your session to `~/.bhoonidhi/session`. If the portal emails a 6-digit OTP, enter it when prompted (or pass `--otp`). |
 | `bhd auth status`  | Show whether you're logged in and whether the token is still valid.                                                                                  |
 | `bhd auth whoami`  | Print the current username.                                                                                                                          |
 | `bhd auth refresh` | Get a fresh token without logging out and back in — only works if your session's still recent; once it's properly stale you'll need to log in again. |

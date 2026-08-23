@@ -31,6 +31,14 @@ client.is_authenticated   # True
 client.whoami()           # "my-username"
 ```
 
+If the portal emails a 6-digit OTP instead of returning a JWT immediately, pass
+it (or a prompt callback) — the same second step the website uses:
+
+```python
+client.login("my-username", "my-password", otp="123456")
+client.login("my-username", "my-password", otp_prompt=lambda msg: input("OTP: "))
+```
+
 The client keeps the session in memory and also saves it to
 `~/.bhoonidhi/session`, so a later `BhoonidhiClient()` in a new process picks it
 up automatically — you don't have to log in every run.
