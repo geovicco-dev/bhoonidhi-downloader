@@ -82,9 +82,10 @@ class BhoonidhiClient:
 
         Mirrors ``bhd auth login``. The password is used only for this call
         and never stored on the client. When the portal mails an email OTP
-        instead of a JWT, pass ``otp`` or ``otp_prompt``. Raises a
+        instead of a JWT, pass ``otp`` or ``otp_prompt`` — see
+        :meth:`AuthManager.login` for how the retry works. Raises a
         :class:`~bhoonidhi_downloader.exceptions.BhoonidhiError` if the
-        credentials are empty or rejected.
+        credentials are rejected or every OTP attempt fails.
         """
         self._session = _auth.run_login(
             username, password, save=save, otp=otp, otp_prompt=otp_prompt

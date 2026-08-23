@@ -39,6 +39,12 @@ client.login("my-username", "my-password", otp="123456")
 client.login("my-username", "my-password", otp_prompt=lambda msg: input("OTP: "))
 ```
 
+A wrong or malformed code from `otp_prompt` doesn't fail outright — the same
+callback is called again (with an updated message) against the mailed code,
+for as many attempts as the portal itself allows, before `login` raises.
+`otp` is checked once and raises immediately on rejection, since a fixed
+string can't be corrected without someone to ask for a new one.
+
 The client keeps the session in memory and also saves it to
 `~/.bhoonidhi/session`, so a later `BhoonidhiClient()` in a new process picks it
 up automatically — you don't have to log in every run.
