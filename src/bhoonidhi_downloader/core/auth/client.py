@@ -20,24 +20,23 @@ from .utils import load_session_info, save_session_info
 # calls VERIFY_OTP. The CLI used to treat that MSG as a hard failure.
 _OTP_MAILED_PREFIX = "Login OTP has been mailed"
 
-# Observed live: a wrong-but-well-formed OTP comes back as HTTP 417 with a
-# plain-text body ("Invalid or expired code. Attempts remaining : 5"), not
-# HTTP 200 + JSON MSG the way other rejections do. There's no structured error
-# code to key off, so this phrase is what tells "wrong code, worth another
-# guess" apart from a harder 417 (stale session, rate limit) that another
-# guess the same way won't fix.
+# A wrong-but-well-formed OTP comes back as HTTP 417 with a plain-text body
+# ("Invalid or expired code. Attempts remaining : 5"), not HTTP 200 + JSON
+# MSG the way other rejections do. There's no structured error code to key
+# off, so this phrase is what tells "wrong code, worth another guess" apart
+# from a harder 417 (stale session, rate limit) that another guess the same
+# way won't fix.
 _OTP_ATTEMPTS_REMAINING_HINT = "attempts remaining"
 
-# Extracts the N from that same phrase, so retrying can be driven by however
+# Extracts the N from that same phrase, so retrying is bounded by however
 # many attempts the portal itself is still willing to accept for this
-# pending_token, rather than a number this client invents.
+# pending_token.
 _ATTEMPTS_REMAINING_RE = re.compile(r"attempts remaining\s*:?\s*(\d+)", re.IGNORECASE)
 
-# Backstop only, not the intended limit: bounds retries on the rare chance a
-# rejection's wording can't be parsed for a count (unexpected message shape),
-# so a stuck otp_prompt callback can't loop forever. Comfortably above what's
-# been observed live (6 total attempts per pending_token) -- in normal
-# operation the portal's own "0 remaining" ends the loop first.
+# Backstop only, not the intended limit: bounds retries if a rejection's
+# wording can't be parsed for a count (unexpected message shape), so a stuck
+# otp_prompt callback can't loop forever. In normal operation the portal's
+# own "0 remaining" ends the loop first.
 _OTP_PROMPT_SAFETY_CAP = 10
 
 
@@ -89,10 +88,10 @@ class AuthManager:
         and returns ``pending_token`` with no JWT. Pass ``otp`` for
         non-interactive use, or ``otp_prompt`` to collect it (CLI) — a wrong
         or malformed code from ``otp_prompt`` is retried against the same
-        pending OTP challenge for as many attempts as the portal itself
-        allows (parsed from its own rejection message), not a number this
-        client picks. ``otp`` verifies once and raises immediately, since a
-        fixed string can't be corrected without someone to ask again.
+        pending OTP challenge, for as many attempts as the portal's own
+        rejection message allows. ``otp`` verifies once and raises
+        immediately, since a fixed string can't be corrected without
+        someone to ask again.
 
         Raises:
             BhoonidhiAuthError: if the request fails, credentials are
@@ -239,9 +238,10 @@ class AuthManager:
                 417 that isn't a retry-worthy OTP rejection, a non-JSON
                 body, or an empty ``Results`` list.
             _OtpRejected: on a 417 whose body names remaining OTP attempts
-                — observed live for a wrong-but-well-formed code, as plain
-                text rather than the HTTP 200 + JSON ``MSG`` shape other
-                rejections use. Only ``VERIFY_OTP`` is expected to 417.
+                — the shape a wrong-but-well-formed code comes back as,
+                plain text rather than the HTTP 200 + JSON ``MSG`` shape
+                other rejections use. Only ``VERIFY_OTP`` is expected to
+                417.
         """
         body = _encode_portal_payload(payload) if encode else payload
         response = requests.post(

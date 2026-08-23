@@ -244,7 +244,8 @@ def test_sdk_login_forwards_otp(monkeypatch):
 
 # --------------------------------------------------------------------------
 # otp_prompt retries: a wrong or malformed code re-prompts against the same
-# pending_token, up to 3 attempts, instead of forcing a whole new login.
+# pending_token, for as many attempts as the portal allows, instead of
+# forcing a whole new login.
 # --------------------------------------------------------------------------
 
 
@@ -292,9 +293,9 @@ def test_wrong_otp_then_right_otp_succeeds_same_pending_token(monkeypatch):
 
 
 def test_wrong_otps_stop_when_portal_reports_zero_remaining(monkeypatch):
-    """The retry bound comes from the portal's own countdown, not a number
-    this client picks -- keep prompting while it reports attempts left, stop
-    the moment it reports none, whatever that count turns out to be.
+    """The retry bound comes from the portal's own countdown -- keep
+    prompting while it reports attempts left, stop the moment it reports
+    none, whatever that count turns out to be.
     """
     verify_attempts = {"count": 0}
     remaining_sequence = iter([2, 1, 0])  # portal's own countdown
@@ -402,10 +403,10 @@ def test_otp_kwarg_wrong_code_fails_without_retry_even_if_prompt_given(monkeypat
 
 
 def test_wrong_otp_via_http_417_is_still_retried(monkeypatch):
-    """Live-observed shape: the portal rejects a wrong-but-well-formed OTP via
-    HTTP 417 with plain text (not HTTP 200 + JSON MSG). That must retry the
-    same as the 200+MSG rejection path does -- the transport the portal used
-    to say "wrong code" isn't the caller's concern.
+    """The portal rejects a wrong-but-well-formed OTP via HTTP 417 with plain
+    text, not HTTP 200 + JSON MSG. That must retry the same as the 200+MSG
+    rejection path does -- the transport the portal used to say "wrong code"
+    isn't the caller's concern.
     """
     calls: list[dict] = []
     verify_attempts = {"count": 0}
@@ -474,27 +475,3 @@ def test_http_417_session_error_is_not_retried(monkeypatch):
     with pytest.raises(BhoonidhiAuthError, match="Please wait before resending"):
         _am().login(otp_prompt=prompt)
     assert len(prompts) == 1, "a non-code 417 must not be retried"
-
-
-def test_http_417_during_verification_is_not_retried(monkeypatch):
-    def fake_post(url, data=None, headers=None, timeout=None):
-        payload = json.loads(data)
-        action = unquote(str(payload.get("action", "")))
-        if action == "VALIDATE_LOGIN":
-            return _FakeResponse(
-                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
-            )
-        return _FakeResponse(status_code=417, text="Please wait before resending")
-
-    monkeypatch.setattr(
-        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
-    )
-    prompts: list[str] = []
-
-    def prompt(message: str) -> str:
-        prompts.append(message)
-        return "123456"
-
-    with pytest.raises(BhoonidhiAuthError, match="Please wait before resending"):
-        _am().login(otp_prompt=prompt)
-    assert len(prompts) == 1, "a hard failure (417) must not be retried"
