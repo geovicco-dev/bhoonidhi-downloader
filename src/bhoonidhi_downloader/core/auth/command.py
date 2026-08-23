@@ -35,9 +35,8 @@ def run_login(
     """Authenticate against Bhoonidhi and optionally save the session.
 
     Returns the validated session. When the portal mails an email OTP
-    instead of a JWT, ``otp`` or ``otp_prompt`` completes VERIFY_OTP.
-    ``otp_prompt`` may be invoked more than once against the same pending
-    OTP challenge — see :meth:`AuthManager.login` for the retry contract.
+    instead of a JWT, ``otp`` or ``otp_prompt`` completes VERIFY_OTP — see
+    :meth:`AuthManager.login` for the retry contract.
 
     Raises:
         BhoonidhiValidationError: if username or password is empty, or
