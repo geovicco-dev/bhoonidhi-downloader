@@ -173,6 +173,15 @@ A couple of Bhoonidhi-specific quirks worth knowing about going in:
 - `query download` fetches only `OpenData_DirectDownload` scenes; priced, on-order, and archived scenes aren't fetched directly. Every access type — including direct-download scenes — can also be staged with `bhd cart add`.
 - Cart support stages scenes only. Placing the order — and any payment for priced data — is finished in the Browse &amp; Order portal; there's no order-placement step in the CLI.
 
+## Data usage and attribution
+
+The imagery this tool downloads belongs to ISRO/NRSC and is governed by [Bhoonidhi EULA](https://bhoonidhi.nrsc.gov.in/bhoonidhi/htmls/TnC.html), not by this project's MIT license — that license covers the code here, nothing else. What the EULA asks of you:
+
+- **Use your own account.** Every download authenticates with your own Bhoonidhi login. You register and log in as yourself; the tool never shares or bypasses a session.
+- **Credit the source.** Anything you publish from this data must carry the caption **ISRO-IRS**.
+- **Don't resell the raw data.** Scenes the portal marks as open data are free to use, publish, and build on. The original products just can't be redistributed commercially in their original form — derived and value-added products are fine.
+- **Priced and on-order scenes go through the portal.** This tool never bypasses payment: priced and on-order scenes are only staged to the cart, and you complete any order and payment on Bhoonidhi.
+
 ## Development
 
 ```shell
