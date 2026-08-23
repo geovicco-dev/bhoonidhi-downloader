@@ -129,7 +129,9 @@ from datetime import datetime
 from bhoonidhi_downloader.sdk import BhoonidhiClient
 
 client = BhoonidhiClient()
-client.login("my-username", "my-password")
+# otp_prompt is only called if the account needs a mailed OTP; a
+# password-only account logs in without it being invoked.
+client.login("my-username", "my-password", otp_prompt=lambda msg: input("OTP: "))
 
 query = client.query.create(
     datetime(2025, 12, 1), datetime(2025, 12, 30),
@@ -139,6 +141,9 @@ query = client.query.create(
 
 client.query.download(query.slug, "./downloads")
 ```
+
+Already have the OTP in hand, or scripting a password-only account? Pass
+`otp="123456"` instead of `otp_prompt` for non-interactive use.
 
 Or search around a point instead of a bounding box:
 

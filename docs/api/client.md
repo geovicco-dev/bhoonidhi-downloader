@@ -11,6 +11,10 @@ client = BhoonidhiClient()
 client.login("my-username", "my-password")
 ```
 
+Some accounts also require a 6-digit email OTP after the password — see
+[Log in](../sdk.md#log-in) in the SDK guide for both the interactive
+(`otp_prompt`) and non-interactive (`otp=`) forms.
+
 ::: bhoonidhi_downloader.sdk.client.BhoonidhiClient
     options:
       members:

@@ -125,7 +125,9 @@ from datetime import datetime
 from bhoonidhi_downloader.sdk import BhoonidhiClient
 
 client = BhoonidhiClient()
-client.login("my-username", "my-password")
+# otp_prompt is only called if the account needs a mailed OTP; a
+# password-only account logs in without it being invoked.
+client.login("my-username", "my-password", otp_prompt=lambda msg: input("OTP: "))
 
 query = client.query.create(
     datetime(2025, 12, 1), datetime(2025, 12, 30),
@@ -135,6 +137,9 @@ query = client.query.create(
 
 client.query.download(query.slug, "./downloads")
 ```
+
+Already have the OTP in hand, or scripting a password-only account? Pass
+`otp="123456"` instead of `otp_prompt` for non-interactive use.
 
 Search several missions or narrow to one product with `selections` instead of `satellite`/`sensor`:
 
@@ -152,7 +157,8 @@ query = client.query.create(
 ```
 
 See the [Python SDK guide](https://geovicco-dev.github.io/bhoonidhi-downloader/sdk/)
-for the full walkthrough, the [API Reference](https://geovicco-dev.github.io/bhoonidhi-downloader/api/)
+for the full walkthrough, the
+[API Reference](https://geovicco-dev.github.io/bhoonidhi-downloader/api/)
 for every method, and the [notebook examples](https://geovicco-dev.github.io/bhoonidhi-downloader/api/notebooks/auth/)
 for runnable worksheets.
 

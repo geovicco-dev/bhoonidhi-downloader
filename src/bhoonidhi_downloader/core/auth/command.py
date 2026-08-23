@@ -36,12 +36,14 @@ def run_login(
 
     Returns the validated session. When the portal mails an email OTP
     instead of a JWT, ``otp`` or ``otp_prompt`` completes VERIFY_OTP.
+    ``otp_prompt`` may be invoked more than once against the same pending
+    OTP challenge — see :meth:`AuthManager.login` for the retry contract.
 
     Raises:
         BhoonidhiValidationError: if username or password is empty, or
             the OTP is not 6 digits.
-        BhoonidhiAuthError: if the credentials are rejected or the new
-            session fails validation.
+        BhoonidhiAuthError: if the credentials are rejected, the new
+            session fails validation, or every OTP attempt fails.
     """
     if not username or not password:
         raise BhoonidhiValidationError("Username and password cannot be empty.")

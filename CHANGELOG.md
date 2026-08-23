@@ -7,6 +7,7 @@ All notable changes to this project are documented here.
 ### Fixed
 
 - **`bhd auth login` no longer treats Bhoonidhi's email OTP as a failed login.** Accounts that receive "Login OTP has been mailed to your registered email id..." never get a JWT on the first request — the portal then expects `VERIFY_OTP`. The CLI now waits for the 6-digit code (or `--otp` / SDK `otp=` / `otp_prompt=`) instead of exiting with `Login failed. Reason: Login OTP has been mailed...`.
+- **A wrong or expired OTP no longer forces a whole new login.** `otp_prompt=` verification gave up after one guess, discarding the pending challenge and forcing a fresh `bhd auth login` — new password prompt, new mailed code — over a single mistyped digit. It now re-prompts against the same pending code for as many attempts as the portal itself allows, parsed from its own "Attempts remaining" wording rather than a number this tool picks; `--otp` / SDK `otp=` still fail immediately, since a fixed string has no one to ask for a correction.
 
 ## [0.5.3]
 
