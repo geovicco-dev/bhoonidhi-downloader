@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from typing import ClassVar
 from urllib.parse import quote
@@ -18,6 +19,39 @@ from .utils import load_session_info, save_session_info
 # pending_token) instead of a JWT when email OTP is required. The browser then
 # calls VERIFY_OTP. The CLI used to treat that MSG as a hard failure.
 _OTP_MAILED_PREFIX = "Login OTP has been mailed"
+
+# Observed live: a wrong-but-well-formed OTP comes back as HTTP 417 with a
+# plain-text body ("Invalid or expired code. Attempts remaining : 5"), not
+# HTTP 200 + JSON MSG the way other rejections do. There's no structured error
+# code to key off, so this phrase is what tells "wrong code, worth another
+# guess" apart from a harder 417 (stale session, rate limit) that another
+# guess the same way won't fix.
+_OTP_ATTEMPTS_REMAINING_HINT = "attempts remaining"
+
+# Extracts the N from that same phrase, so retrying can be driven by however
+# many attempts the portal itself is still willing to accept for this
+# pending_token, rather than a number this client invents.
+_ATTEMPTS_REMAINING_RE = re.compile(r"attempts remaining\s*:?\s*(\d+)", re.IGNORECASE)
+
+# Backstop only, not the intended limit: bounds retries on the rare chance a
+# rejection's wording can't be parsed for a count (unexpected message shape),
+# so a stuck otp_prompt callback can't loop forever. Comfortably above what's
+# been observed live (6 total attempts per pending_token) -- in normal
+# operation the portal's own "0 remaining" ends the loop first.
+_OTP_PROMPT_SAFETY_CAP = 10
+
+
+class _OtpRejected(BhoonidhiAuthError):
+    """Internal: the portal rejected one OTP guess (wrong or expired code).
+
+    Kept distinct from other ``BhoonidhiAuthError`` cases (a 417 that isn't
+    a per-attempt rejection, a missing ``pending_token``) so the retry loop
+    in ``_complete_email_otp`` only re-prompts for the kind of rejection the
+    portal's own "Attempts remaining" message is about, not a harder failure
+    another guess can't fix. Subclasses ``BhoonidhiAuthError`` as a safety
+    net in case it ever escapes uncaught — never raised past this module
+    today.
+    """
 
 
 class AuthManager:
@@ -53,11 +87,18 @@ class AuthManager:
         Some accounts (including most recent portal registrations) require a
         6-digit email OTP after username/password. The portal mails the code
         and returns ``pending_token`` with no JWT. Pass ``otp`` for
-        non-interactive use, or ``otp_prompt`` to collect it (CLI).
+        non-interactive use, or ``otp_prompt`` to collect it (CLI) — a wrong
+        or malformed code from ``otp_prompt`` is retried against the same
+        pending OTP challenge for as many attempts as the portal itself
+        allows (parsed from its own rejection message), not a number this
+        client picks. ``otp`` verifies once and raises immediately, since a
+        fixed string can't be corrected without someone to ask again.
 
         Raises:
-            BhoonidhiAuthError: if the request fails or credentials are rejected.
-            BhoonidhiValidationError: if a provided OTP is not 6 digits.
+            BhoonidhiAuthError: if the request fails, credentials are
+                rejected, or every OTP attempt is rejected.
+            BhoonidhiValidationError: if a non-interactive ``otp`` is not
+                6 digits.
         """
         result = self._post_action(
             {
@@ -88,46 +129,120 @@ class AuthManager:
         otp_prompt: Callable[[str], str] | None,
         mailed_message: str,
     ) -> SessionSchema:
+        """Finish login after VALIDATE_LOGIN reports an email OTP was mailed.
+
+        ``otp`` (non-interactive) verifies once and raises on rejection —
+        there's no one to ask for a corrected code. ``otp_prompt``
+        (interactive) keeps re-prompting against the same ``pending_token``:
+        each rejection's message is parsed for the portal's own "Attempts
+        remaining : N" count, and prompting stops as soon as that hits 0 —
+        not before, and not later than the portal is actually willing to
+        accept. ``_OTP_PROMPT_SAFETY_CAP`` only bounds the rare case where
+        that count can't be parsed; it isn't the intended limit. Neither
+        path re-fetches ``pending_token`` — that would mail a new code and
+        abandon the one already sent.
+
+        Raises:
+            BhoonidhiAuthError: if the portal returned no pending_token, no
+                code is ever given, or every attempt is rejected.
+            BhoonidhiValidationError: if a non-interactive ``otp`` is not
+                6 digits.
+        """
         pending_token = login_result.get("pending_token")
         if not pending_token:
             raise BhoonidhiAuthError(
                 "Login OTP was mailed but the portal returned no pending_token."
             )
 
-        code = otp
-        if not code and otp_prompt is not None:
-            code = otp_prompt(mailed_message)
-        if not code:
+        if otp is not None:
+            try:
+                return self._verify_otp(pending_token, otp)
+            except _OtpRejected as e:
+                raise BhoonidhiAuthError(f"OTP verification failed. Reason: {e}") from e
+
+        if otp_prompt is None:
             raise BhoonidhiAuthError(
                 "Login OTP has been mailed to your registered email. "
                 "Re-run `bhd auth login` in a terminal and enter the 6-digit "
                 "code when prompted, or pass --otp / otp= for a non-interactive "
-                "login. The previous CLI treated this message as a failure "
-                "and never waited for the code."
+                "login."
             )
 
+        message = mailed_message
+        attempts_made = 0
+        for _ in range(_OTP_PROMPT_SAFETY_CAP):
+            code = otp_prompt(message)
+            if not code:
+                raise BhoonidhiAuthError(
+                    "No OTP entered. Re-run `bhd auth login` and enter the "
+                    "6-digit code when prompted."
+                )
+            attempts_made += 1
+            try:
+                return self._verify_otp(pending_token, code)
+            except BhoonidhiValidationError as e:
+                # Malformed locally, never reached the portal -- doesn't
+                # touch its attempt budget, so always worth another try.
+                message = str(e)
+            except _OtpRejected as e:
+                message = str(e)
+                remaining = _parse_attempts_remaining(message)
+                if remaining is not None and remaining <= 0:
+                    break
+
+        plural = "" if attempts_made == 1 else "s"
+        raise BhoonidhiAuthError(
+            f"OTP verification failed after {attempts_made} attempt{plural}. "
+            f"Reason: {message}"
+        )
+
+    def _verify_otp(self, pending_token: str, code: str) -> SessionSchema:
+        """Submit one OTP guess against ``pending_token``.
+
+        Raises:
+            BhoonidhiValidationError: if ``code`` is not 6 digits — checked
+                locally, before any request, so a malformed guess doesn't
+                spend a network round trip or count against the portal's
+                own attempt budget.
+            _OtpRejected: if the portal rejects the code as wrong or
+                expired — whether via HTTP 200 with a ``MSG`` naming the
+                rejection, or HTTP 417 reporting remaining attempts (see
+                :meth:`_post_action`). A per-attempt failure the caller may
+                retry against the same ``pending_token``.
+            BhoonidhiAuthError: on a harder failure (e.g. a 417 that isn't
+                a per-attempt rejection) that trying again won't fix.
+        """
         code = str(code).strip()
         if not code.isdigit() or len(code) != 6:
             raise BhoonidhiValidationError("OTP must be exactly 6 digits.")
 
         verify = self._post_action(
-            {
-                "selProds": pending_token,
-                "otp": code,
-                "action": "VERIFY_OTP",
-            },
+            {"selProds": pending_token, "otp": code, "action": "VERIFY_OTP"},
             encode=True,
         )
         jwt = verify.get("JWT")
-        verify_message = str(verify.get("MSG") or "")
         if jwt and jwt != "EXCEPTION":
             return self._session_from_result(verify)
 
-        raise BhoonidhiAuthError(
-            f"OTP verification failed. Reason: {verify_message or 'no JWT in response'}"
-        )
+        message = str(verify.get("MSG") or "")
+        raise _OtpRejected(message or "no JWT in response")
 
     def _post_action(self, payload: dict, *, encode: bool = False) -> dict:
+        """POST one action to the portal's login servlet and return its first result.
+
+        ``encode`` matches the portal's own ``encodeObject`` behaviour
+        (percent-encoding every value) — required for ``VERIFY_OTP``, not
+        ``VALIDATE_LOGIN``.
+
+        Raises:
+            BhoonidhiAuthError: on a status code other than 200 or 417, a
+                417 that isn't a retry-worthy OTP rejection, a non-JSON
+                body, or an empty ``Results`` list.
+            _OtpRejected: on a 417 whose body names remaining OTP attempts
+                — observed live for a wrong-but-well-formed code, as plain
+                text rather than the HTTP 200 + JSON ``MSG`` shape other
+                rejections use. Only ``VERIFY_OTP`` is expected to 417.
+        """
         body = _encode_portal_payload(payload) if encode else payload
         response = requests.post(
             self.LOGIN_URL,
@@ -135,15 +250,15 @@ class AuthManager:
             headers=self.LOGIN_HEADERS,
             timeout=30,
         )
-        # VERIFY_OTP returns HTTP 417 with a text body on some failures
-        # (invalid session / wait-to-resend). Surface that as auth failure.
-        if response.status_code not in (200, 417):
+        if response.status_code == 417:
+            text = (response.text or "").strip() or "HTTP 417"
+            if _OTP_ATTEMPTS_REMAINING_HINT in text.lower():
+                raise _OtpRejected(text)
+            raise BhoonidhiAuthError(f"OTP verification failed. Reason: {text}")
+        if response.status_code != 200:
             raise BhoonidhiAuthError(
                 f"Login failed. Status code: {response.status_code}"
             )
-        if response.status_code == 417:
-            text = (response.text or "").strip() or "HTTP 417"
-            raise BhoonidhiAuthError(f"OTP verification failed. Reason: {text}")
 
         try:
             data = response.json()
@@ -247,3 +362,14 @@ class AuthManager:
 def _encode_portal_payload(payload: dict) -> dict[str, str]:
     """Match LoginVals.js ``encodeObject`` (encodeURIComponent of every value)."""
     return {key: quote(str(value), safe="") for key, value in payload.items()}
+
+
+def _parse_attempts_remaining(text: str) -> int | None:
+    """Extract N from the portal's "...Attempts remaining : N" wording.
+
+    Returns None when the text doesn't contain a parseable count, so the
+    retry loop falls back to ``_OTP_PROMPT_SAFETY_CAP`` instead of trusting
+    an unbounded retry on an unrecognized message shape.
+    """
+    match = _ATTEMPTS_REMAINING_RE.search(text)
+    return int(match.group(1)) if match else None

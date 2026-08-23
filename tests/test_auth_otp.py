@@ -240,3 +240,261 @@ def test_sdk_login_forwards_otp(monkeypatch):
     client.login("demo-user", "secret", otp="121212")
     assert seen["otp"] == "121212"
     assert client.is_authenticated
+
+
+# --------------------------------------------------------------------------
+# otp_prompt retries: a wrong or malformed code re-prompts against the same
+# pending_token, up to 3 attempts, instead of forcing a whole new login.
+# --------------------------------------------------------------------------
+
+
+def test_wrong_otp_then_right_otp_succeeds_same_pending_token(monkeypatch):
+    calls: list[dict] = []
+    verify_attempts = {"count": 0}
+
+    def fake_post(url, data=None, headers=None, timeout=None):
+        payload = json.loads(data)
+        calls.append(payload)
+        action = unquote(str(payload.get("action", "")))
+        if action == "VALIDATE_LOGIN":
+            return _FakeResponse(
+                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
+            )
+        assert action == "VERIFY_OTP"
+        assert unquote(payload["selProds"]) == PENDING
+        verify_attempts["count"] += 1
+        if verify_attempts["count"] == 1:
+            return _FakeResponse(
+                _results(msg="Invalid or expired code. Attempts remaining : 5", jwt="")
+            )
+        return _FakeResponse(_results(msg="ENABLED SERVICES: demo-user", jwt=JWT))
+
+    monkeypatch.setattr(
+        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
+    )
+    prompts: list[str] = []
+    codes = iter(["111111", "654321"])
+
+    def prompt(message: str) -> str:
+        prompts.append(message)
+        return next(codes)
+
+    session = _am().login(otp_prompt=prompt)
+    assert session.jwt == JWT
+    assert len(prompts) == 2
+    assert prompts[0] == OTP_MAILED
+    assert "Attempts remaining" in prompts[1]
+
+    validate_calls = [
+        c for c in calls if unquote(str(c.get("action", ""))) == "VALIDATE_LOGIN"
+    ]
+    assert len(validate_calls) == 1, "a wrong OTP must not trigger a fresh login"
+
+
+def test_wrong_otps_stop_when_portal_reports_zero_remaining(monkeypatch):
+    """The retry bound comes from the portal's own countdown, not a number
+    this client picks -- keep prompting while it reports attempts left, stop
+    the moment it reports none, whatever that count turns out to be.
+    """
+    verify_attempts = {"count": 0}
+    remaining_sequence = iter([2, 1, 0])  # portal's own countdown
+
+    def fake_post(url, data=None, headers=None, timeout=None):
+        payload = json.loads(data)
+        action = unquote(str(payload.get("action", "")))
+        if action == "VALIDATE_LOGIN":
+            return _FakeResponse(
+                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
+            )
+        verify_attempts["count"] += 1
+        remaining = next(remaining_sequence)
+        return _FakeResponse(
+            _results(
+                msg=f"Invalid or expired code. Attempts remaining : {remaining}",
+                jwt="",
+            )
+        )
+
+    monkeypatch.setattr(
+        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
+    )
+    prompts: list[str] = []
+
+    def prompt(message: str) -> str:
+        prompts.append(message)
+        return "000000"
+
+    with pytest.raises(BhoonidhiAuthError, match="after 3 attempts"):
+        _am().login(otp_prompt=prompt)
+    assert verify_attempts["count"] == 3, "must stop exactly when 0 remain, not before"
+    assert len(prompts) == 3
+
+
+def test_unparseable_rejection_falls_back_to_safety_cap(monkeypatch):
+    """If a rejection's wording can't be parsed for a count at all, retrying
+    still can't run forever -- it's bounded by the safety cap, not the
+    portal's countdown (which isn't available here).
+    """
+
+    def fake_post(url, data=None, headers=None, timeout=None):
+        payload = json.loads(data)
+        action = unquote(str(payload.get("action", "")))
+        if action == "VALIDATE_LOGIN":
+            return _FakeResponse(
+                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
+            )
+        return _FakeResponse(_results(msg="Incorrect OTP", jwt=""))
+
+    monkeypatch.setattr(
+        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
+    )
+    prompts: list[str] = []
+
+    def prompt(message: str) -> str:
+        prompts.append(message)
+        return "000000"
+
+    with pytest.raises(BhoonidhiAuthError, match="after 10 attempts"):
+        _am().login(otp_prompt=prompt)
+    assert len(prompts) == 10
+
+
+def test_malformed_otp_from_prompt_is_retried_not_fatal(monkeypatch):
+    def fake_post(url, data=None, headers=None, timeout=None):
+        payload = json.loads(data)
+        action = unquote(str(payload.get("action", "")))
+        if action == "VALIDATE_LOGIN":
+            return _FakeResponse(
+                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
+            )
+        return _FakeResponse(_results(msg="ENABLED SERVICES: demo-user", jwt=JWT))
+
+    monkeypatch.setattr(
+        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
+    )
+    codes = iter(["12ab", "654321"])  # first malformed, second valid
+
+    def prompt(message: str) -> str:
+        return next(codes)
+
+    session = _am().login(otp_prompt=prompt)
+    assert session.jwt == JWT
+
+
+def test_otp_kwarg_wrong_code_fails_without_retry_even_if_prompt_given(monkeypatch):
+    def fake_post(url, data=None, headers=None, timeout=None):
+        payload = json.loads(data)
+        action = unquote(str(payload.get("action", "")))
+        if action == "VALIDATE_LOGIN":
+            return _FakeResponse(
+                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
+            )
+        return _FakeResponse(_results(msg="Incorrect OTP", jwt=""))
+
+    monkeypatch.setattr(
+        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
+    )
+    with pytest.raises(BhoonidhiAuthError, match="Incorrect OTP"):
+        _am().login(
+            otp="000000",
+            otp_prompt=lambda m: pytest.fail("otp= must not fall back to prompting"),
+        )
+
+
+def test_wrong_otp_via_http_417_is_still_retried(monkeypatch):
+    """Live-observed shape: the portal rejects a wrong-but-well-formed OTP via
+    HTTP 417 with plain text (not HTTP 200 + JSON MSG). That must retry the
+    same as the 200+MSG rejection path does -- the transport the portal used
+    to say "wrong code" isn't the caller's concern.
+    """
+    calls: list[dict] = []
+    verify_attempts = {"count": 0}
+
+    def fake_post(url, data=None, headers=None, timeout=None):
+        payload = json.loads(data)
+        calls.append(payload)
+        action = unquote(str(payload.get("action", "")))
+        if action == "VALIDATE_LOGIN":
+            return _FakeResponse(
+                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
+            )
+        assert action == "VERIFY_OTP"
+        verify_attempts["count"] += 1
+        if verify_attempts["count"] == 1:
+            return _FakeResponse(
+                status_code=417, text="Invalid or expired code. Attempts remaining : 5"
+            )
+        return _FakeResponse(_results(msg="ENABLED SERVICES: demo-user", jwt=JWT))
+
+    monkeypatch.setattr(
+        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
+    )
+    prompts: list[str] = []
+    codes = iter(["111111", "654321"])
+
+    def prompt(message: str) -> str:
+        prompts.append(message)
+        return next(codes)
+
+    session = _am().login(otp_prompt=prompt)
+    assert session.jwt == JWT
+    assert len(prompts) == 2, "must re-prompt after a 417 wrong-code rejection"
+    assert "Attempts remaining" in prompts[1]
+
+    validate_calls = [
+        c for c in calls if unquote(str(c.get("action", ""))) == "VALIDATE_LOGIN"
+    ]
+    assert len(validate_calls) == 1, "a 417 wrong OTP must not trigger a fresh login"
+
+
+def test_http_417_session_error_is_not_retried(monkeypatch):
+    """A 417 with no "attempts remaining" wording (e.g. a stale pending_token
+    or rate limit) is a harder failure than a wrong digit -- retrying it the
+    same way won't help, so it must not consume the retry loop's guesses.
+    """
+
+    def fake_post(url, data=None, headers=None, timeout=None):
+        payload = json.loads(data)
+        action = unquote(str(payload.get("action", "")))
+        if action == "VALIDATE_LOGIN":
+            return _FakeResponse(
+                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
+            )
+        return _FakeResponse(status_code=417, text="Please wait before resending")
+
+    monkeypatch.setattr(
+        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
+    )
+    prompts: list[str] = []
+
+    def prompt(message: str) -> str:
+        prompts.append(message)
+        return "123456"
+
+    with pytest.raises(BhoonidhiAuthError, match="Please wait before resending"):
+        _am().login(otp_prompt=prompt)
+    assert len(prompts) == 1, "a non-code 417 must not be retried"
+
+
+def test_http_417_during_verification_is_not_retried(monkeypatch):
+    def fake_post(url, data=None, headers=None, timeout=None):
+        payload = json.loads(data)
+        action = unquote(str(payload.get("action", "")))
+        if action == "VALIDATE_LOGIN":
+            return _FakeResponse(
+                _results(msg=OTP_MAILED, jwt="", pending_token=PENDING)
+            )
+        return _FakeResponse(status_code=417, text="Please wait before resending")
+
+    monkeypatch.setattr(
+        "bhoonidhi_downloader.core.auth.client.requests.post", fake_post
+    )
+    prompts: list[str] = []
+
+    def prompt(message: str) -> str:
+        prompts.append(message)
+        return "123456"
+
+    with pytest.raises(BhoonidhiAuthError, match="Please wait before resending"):
+        _am().login(otp_prompt=prompt)
+    assert len(prompts) == 1, "a hard failure (417) must not be retried"
