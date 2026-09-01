@@ -35,9 +35,14 @@ def _within_window(
     (an ongoing product has no end and imposes no upper bound).
     """
     starts = [d for d in (_parse_manifest_date(c.get("startDate")) for c in cols) if d]
-    ends = [d for d in (_parse_manifest_date(c.get("endDate")) for c in cols) if d]
+    parsed_ends = [_parse_manifest_date(c.get("endDate")) for c in cols]
+    # An ongoing product (no end date) means the sensor still produces data, so
+    # the selection has no upper bound. Only clamp the window when every product
+    # is retired; a single ongoing product removes the ceiling.
+    any_ongoing = any(e is None for e in parsed_ends)
+    ends = [e for e in parsed_ends if e]
     earliest = min(starts) if starts else None
-    latest = max(ends) if ends else None  # None = ongoing
+    latest = None if any_ongoing else (max(ends) if ends else None)
 
     if earliest and start_date < earliest:
         return f"data starts {earliest:%Y-%m-%d}, after search start"

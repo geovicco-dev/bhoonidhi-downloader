@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- **A whole-sensor search no longer fails when the sensor mixes retired and still-active products.** The archive window check gathered every product's end date, dropped the ongoing ones (which have no end), and took the maximum of what was left, so a sensor with one retired product and several live ones collapsed to the retired product's end date. Any search after that date was wrongly skipped, and when it was the only selection the search raised `No valid selections to search`. The check now treats an ongoing product as no upper bound, so the window is only clamped when every product is retired.
+
 ## [0.5.4]
 
 ### Fixed
