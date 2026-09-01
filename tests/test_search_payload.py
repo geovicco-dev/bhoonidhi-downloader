@@ -141,6 +141,60 @@ def test_all_invalid_selections_raises():
         )
 
 
+# A sensor whose products have a MIX of retired and ongoing windows. The
+# retired product ended 2019; the other two are still live (no endDate).
+MIXED_WINDOW_MANIFEST = {
+    "ResourceSat-2": {
+        "AWIFS": [
+            {
+                "dispName": "ResourceSat-2_AWIFS_1x1deg-tiles",
+                "startDate": "03/03/2012",
+                "endDate": "10/31/2019",
+            },
+            {"dispName": "ResourceSat-2_AWIFS_L2", "startDate": "05/08/2011"},
+            {"dispName": "ResourceSat-2_AWIFS", "startDate": "05/08/2011"},
+        ]
+    }
+}
+
+
+def test_mixed_window_sensor_search_after_retired_end_still_resolves():
+    # Searching the whole AWIFS sensor in 2024 must NOT be skipped just because
+    # one of its products retired in 2019. Two products are still live, so the
+    # selection has no upper bound. Regression for the collapse-to-oldest-end bug.
+    disp = resolve_selections(
+        [Selection(satellite="ResourceSat-2", sensor="AWIFS")],
+        MIXED_WINDOW_MANIFEST,
+        datetime(2024, 7, 21),
+        datetime(2024, 7, 28),
+    )
+    assert "ResourceSat-2_AWIFS_L2" in disp
+    assert "ResourceSat-2_AWIFS" in disp
+
+
+def test_all_retired_sensor_still_clamps_the_window():
+    # The opposite guard: when EVERY product is retired, an out-of-window search
+    # must still be skipped so the fix doesn't remove the useful clamp.
+    all_retired = {
+        "ResourceSat-1": {
+            "AWIFS": [
+                {
+                    "dispName": "ResourceSat-1_AWIFS",
+                    "startDate": "12/07/2003",
+                    "endDate": "11/18/2023",
+                }
+            ]
+        }
+    }
+    with pytest.raises(BhoonidhiValidationError, match="No valid selections"):
+        resolve_selections(
+            [Selection(satellite="ResourceSat-1", sensor="AWIFS")],
+            all_retired,
+            datetime(2024, 7, 21),
+            datetime(2024, 7, 28),
+        )
+
+
 def test_duplicate_dispnames_deduped():
     disp = resolve_selections(
         [
