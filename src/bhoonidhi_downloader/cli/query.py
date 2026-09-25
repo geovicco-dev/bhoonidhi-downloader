@@ -108,6 +108,13 @@ def create(
         "under ~/.bhoonidhi/queries/ and no slug is generated. For "
         "programmatic/stateless use where you only want the scene list.",
     ),
+    slug: str = typer.Option(
+        None,
+        "--slug",
+        help="Save under this slug instead of a generated one, so a script "
+        "knows it in advance: lower-case letters, digits and hyphens. "
+        "A saved query with the same slug is replaced.",
+    ),
 ) -> None:
     """Search for scenes and save the results as a new named query.
 
@@ -149,7 +156,12 @@ def create(
           --lat 25.58 --lon 91.89 --radius 15
 
     The results print as a table and are saved under an auto-generated
-    slug — come back to them with 'bhd query show <slug>'.
+    slug — come back to them with 'bhd query show <slug>'. Give --slug to
+    choose it instead, e.g. to download in the next line of a script:
+
+      bhd query create 2026-01-01 2026-01-31 --sat Sentinel-2A:MSI \\
+          --lat 25.58 --lon 91.89 --radius 15 --slug shillong-jan
+      bhd query download shillong-jan --out ./data
     """
     interactive = False if plain else None
     try:
@@ -168,6 +180,7 @@ def create(
             name=name,
             description=description,
             save=not no_save,
+            slug=slug,
         )
     except BhoonidhiError as e:
         console.print(f"[bold red]Search failed:[/] {e}")

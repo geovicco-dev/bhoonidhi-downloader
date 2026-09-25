@@ -69,6 +69,18 @@ $ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --minx 91.77 --ma
 
 The scenes print exactly as usual, but nothing is written under `~/.bhoonidhi/queries/` and no slug is generated — so there's no `query show`/`refresh` to come back to. The SDK equivalent is `client.query.create(..., save=False)`, which still returns the `QuerySchema` with its scenes populated.
 
+### 3d. Choose the slug
+
+A script that downloads straight after searching can name the saved query itself with `--slug`, so the next command knows it:
+
+```console
+$ bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --lat 25.58 --lon 91.89 --radius 15 --slug shillong-dec
+$ bhd query download shillong-dec --out ./data
+$ bhd query rm shillong-dec
+```
+
+A slug is lower-case letters, digits and single hyphens. A saved query with the same slug is replaced. The SDK equivalent is `client.query.create(..., slug="shillong-dec")`.
+
 ### 4. Come back to it later
 
 ```console

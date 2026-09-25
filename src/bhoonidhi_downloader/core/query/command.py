@@ -6,6 +6,7 @@ bars, and interactive prompts live in the CLI layer (``cli/query.py``).
 """
 
 import logging
+import re
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -110,6 +111,11 @@ def _build_aoi(
     )
 
 
+# A slug a caller chooses: the same shape as generated ones, and safe as a
+# file name under ~/.bhoonidhi/queries/.
+_SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
+
+
 def run_query_create(
     start_date: datetime,
     end_date: datetime,
@@ -124,6 +130,7 @@ def run_query_create(
     name: str | None = None,
     description: str | None = None,
     save: bool = True,
+    slug: str | None = None,
 ) -> QuerySchema | None:
     """Run a search and return the result as a query.
 
@@ -138,11 +145,26 @@ def run_query_create(
     generated — the returned query is ephemeral, carrying an empty slug,
     for programmatic callers that only want the scene list.
 
+    ``slug`` saves the query under that name instead of a generated one, so
+    a script knows it before the search runs and can pass it straight to
+    ``query download``. It must be lower-case letters, digits and single
+    hyphens. A saved query with the same slug is replaced.
+
     Raises:
         BhoonidhiAPIError: if the search request fails.
         BhoonidhiValidationError: if the AOI is invalid or every selection
             is invalid.
     """
+    if slug is not None:
+        if not save:
+            raise BhoonidhiValidationError(
+                "A slug names a saved query, so it cannot be used with save=False."
+            )
+        if not _SLUG.fullmatch(slug):
+            raise BhoonidhiValidationError(
+                f"Slug {slug!r} is not allowed: use lower-case letters, digits "
+                "and single hyphens, e.g. shillong-jan."
+            )
     aoi = _build_aoi(minx, maxx, miny, maxy, lat, lon, radius_km)
 
     config = _build_search_schema(
@@ -161,9 +183,8 @@ def run_query_create(
         key=lambda x: datetime.strptime(x.get("DOP", "01-Jan-1900"), "%d-%b-%Y")
     )
 
-    slug = generate_slug() if save else ""
     query = QuerySchema(
-        slug=slug,
+        slug=(slug or generate_slug()) if save else "",
         name=name or generate_name(selections, start_date, end_date),
         description=description
         or generate_description(selections, aoi, start_date, end_date, len(scenes)),
