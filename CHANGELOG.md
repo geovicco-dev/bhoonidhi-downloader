@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Added
+
+- **`bhd query create --slug NAME` (CLI) / `client.query.create(slug=...)` (SDK) saves the search under a slug you choose instead of a generated one.** A script can run `query download NAME` on the next line without reading the slug out of the printed table. `--name` only sets the query's title, so it could not do this. The slug must be lower-case letters, digits and single hyphens, so it stays a safe file name under `~/.bhoonidhi/queries/`. A saved query with the same slug is replaced, and `--slug` with `--no-save` is an error.
+
 ## [0.5.5]
 
 ### Fixed

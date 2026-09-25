@@ -1,9 +1,11 @@
-"""Tests for issue #36: a stateless ``query create`` that saves nothing.
+"""Tests for how ``query create`` saves: not at all, under a generated slug,
+or under a slug the caller chooses.
 
 ``run_query_create(save=False)`` (and its CLI ``--no-save`` / SDK ``save=False``
 surfaces) must run the search identically but write no query file and generate
 no slug — while still returning a fully populated ``QuerySchema``. The default
-``save=True`` must keep persisting exactly as before.
+``save=True`` must keep persisting exactly as before. ``slug=`` saves under the
+given name, and a slug that is not a safe file name is refused before searching.
 
 The portal-facing search is mocked so these run offline: only the save/slug
 behaviour is under test, not the network path.
@@ -14,6 +16,7 @@ from datetime import datetime
 import pytest
 
 from bhoonidhi_downloader.core.query import command as cmd
+from bhoonidhi_downloader.exceptions import BhoonidhiValidationError
 from bhoonidhi_downloader.schemas import QuerySchema, Selection
 
 _SCENES = [
@@ -92,3 +95,59 @@ def test_save_false_runs_search_identically(mock_search):
     assert saved_ids == ephemeral_ids
     # Only the one save=True run touched disk.
     assert len(mock_search) == 1
+
+
+def test_a_chosen_slug_is_used_instead_of_a_generated_one(mock_search):
+    query = cmd.run_query_create(
+        start_date=datetime(2026, 1, 1),
+        end_date=datetime(2026, 1, 31),
+        selections=[Selection(satellite="ResourceSat-2A", sensor="LISS3")],
+        lat=25.58,
+        lon=91.89,
+        radius_km=5,
+        slug="shillong-jan",
+    )
+
+    assert query is not None
+    assert query.slug == "shillong-jan"
+    assert mock_search == [query]
+
+
+@pytest.mark.parametrize(
+    "slug",
+    [
+        "Upper-case",
+        "two--hyphens",
+        "-leading",
+        "trailing-",
+        "has space",
+        "../escape",
+        "",
+    ],
+)
+def test_a_slug_outside_the_allowed_shape_is_refused_before_searching(
+    mock_search, slug
+):
+    with pytest.raises(BhoonidhiValidationError, match="lower-case letters"):
+        cmd.run_query_create(
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 1, 31),
+            selections=[Selection(satellite="ResourceSat-2A", sensor="LISS3")],
+            lat=25.58,
+            lon=91.89,
+            slug=slug,
+        )
+    assert mock_search == []
+
+
+def test_a_slug_cannot_be_combined_with_save_false(mock_search):
+    with pytest.raises(BhoonidhiValidationError, match="save=False"):
+        cmd.run_query_create(
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 1, 31),
+            selections=[Selection(satellite="ResourceSat-2A", sensor="LISS3")],
+            lat=25.58,
+            lon=91.89,
+            save=False,
+            slug="x",
+        )

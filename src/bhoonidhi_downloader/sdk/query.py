@@ -43,6 +43,7 @@ class QueryNamespace:
         description: str | None = None,
         selections: list[Selection] | None = None,
         save: bool = True,
+        slug: str | None = None,
     ) -> QuerySchema | None:
         """Search an AOI + date range, returning the matching scenes.
 
@@ -63,6 +64,10 @@ class QueryNamespace:
         — the returned query is ephemeral, with ``.scenes`` populated, for
         callers that only want the scene list.
 
+        Pass ``slug`` to save under that name instead of a generated one, so
+        it is known before the search runs. Lower-case letters, digits and
+        single hyphens only; a saved query with the same slug is replaced.
+
         Returns the query, or None if nothing matched. Mirrors
         ``bhd query create``.
         """
@@ -81,6 +86,7 @@ class QueryNamespace:
             name=name,
             description=description,
             save=save,
+            slug=slug,
         )
 
     @staticmethod
