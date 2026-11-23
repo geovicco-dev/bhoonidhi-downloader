@@ -1,6 +1,7 @@
 import json
 import random
 import time
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -10,8 +11,10 @@ import requests
 from rich.live import Live
 from rich.spinner import Spinner
 
-from bhoonidhi_downloader.exceptions import BhoonidhiValidationError
+from bhoonidhi_downloader.core.archive.client import ArchiveManager
+from bhoonidhi_downloader.exceptions import BhoonidhiAPIError, BhoonidhiValidationError
 from bhoonidhi_downloader.logger import get_console
+from bhoonidhi_downloader.schemas.selection import OTHERS
 from bhoonidhi_downloader.schemas.selection import product_token as _product_token
 
 
@@ -51,20 +54,58 @@ def _within_window(
     return None
 
 
+def _fresh_manifest() -> dict[str, Any]:
+    """Read the portal's product list again and save it."""
+    return ArchiveManager(refresh=True).manifest
+
+
+def _matching_columns(
+    sel: Any, sensors: list[str], products: dict[str, list[dict[str, Any]]]
+) -> list[dict[str, Any]]:
+    """The product columns a selection covers under the given sensors.
+
+    A product value matches the dispName suffix. ``Others`` selects the
+    sensor's suffix-less product, unless a suffix is itself named that.
+    """
+    cols: list[dict[str, Any]] = []
+    for sensor in sensors:
+        rows = [c for c in products.get(sensor, []) if c.get("dispName")]
+        if sel.product is None:
+            cols.extend(rows)
+            continue
+        wanted = sel.product.lower()
+
+        def token(col: dict[str, Any], sensor: str = sensor) -> str:
+            return _product_token(str(col["dispName"]), sel.satellite, sensor)
+
+        matched = [c for c in rows if token(c).lower() == wanted]
+        if not matched and wanted == OTHERS.lower():
+            matched = [c for c in rows if not token(c)]
+        cols.extend(matched)
+    return cols
+
+
 def resolve_selections(
     selections: list[Any],
     manifest: dict[str, Any],
     start_date: datetime,
     end_date: datetime,
+    refresh: Callable[[], dict[str, Any]] | None = None,
 ) -> list[str]:
     """Resolve selections to the raw dispNames the portal searches on.
 
     Each selection narrows the satellite → sensor → product hierarchy to a
     set of products. Selections are validated against the archive manifest
-    and the search date window; an invalid one (unknown satellite/sensor,
-    no matching product, or out of the data window) is warned about and
-    skipped rather than failing the whole search. Returned dispNames are
-    deduplicated with first-seen order preserved.
+    and the search date window; an unknown satellite or sensor, or a
+    selection outside the data window, is warned about and skipped rather
+    than failing the whole search. Returned dispNames are deduplicated with
+    first-seen order preserved.
+
+    A named product the manifest doesn't have makes ``refresh`` (when
+    given) read the portal's product list, once per call. If the product
+    is still missing, it is searched under the portal name built from
+    satellite, sensor and product: the portal keeps serving products it
+    has stopped listing.
 
     Raises:
         BhoonidhiValidationError: if every selection is skipped, so there
@@ -76,6 +117,11 @@ def resolve_selections(
 
     def skip(label: str, reason: str) -> None:
         console.print(f"[yellow]![/] skipped [bold]{label}[/] — {reason}")
+
+    def add(disp: str) -> None:
+        if disp not in seen:
+            seen.add(disp)
+            disp_names.append(disp)
 
     for sel in selections:
         label = sel.label()
@@ -94,26 +140,40 @@ def resolve_selections(
         else:
             sensors = list(manifest[sel.satellite])
 
-        # Gather candidate product columns across the covered sensors,
-        # narrowing to a single product token when one was given.
-        cols: list[dict[str, Any]] = []
-        for sensor in sensors:
-            for col in manifest[sel.satellite][sensor]:
-                disp = col.get("dispName")
-                if not disp:
-                    continue
-                if sel.product is not None:
-                    token = _product_token(str(disp), sel.satellite, sensor)
-                    if token.lower() != sel.product.lower():
-                        continue
-                cols.append(col)
+        cols = _matching_columns(sel, sensors, manifest[sel.satellite])
+        if not cols and sel.product is not None and refresh is not None:
+            try:
+                manifest = refresh()
+            except (BhoonidhiAPIError, requests.RequestException, ValueError):
+                pass  # keep searching with the saved list
+            refresh = None
+            cols = _matching_columns(sel, sensors, manifest.get(sel.satellite, {}))
 
         if not cols:
+            sensor_rows = manifest.get(sel.satellite, {})
+            if sel.sensor is not None:
+                listed = sorted(
+                    _product_token(str(c["dispName"]), sel.satellite, sel.sensor)
+                    or OTHERS
+                    for c in sensor_rows.get(sel.sensor, [])
+                    if c.get("dispName")
+                )
+                note = f" (listed: {', '.join(listed)})" if listed else ""
+                product = sel.product or OTHERS
+                console.print(
+                    f"[yellow]![/] {sel.satellite} {sel.sensor} {product} "
+                    f"is not in the portal's product list{note}."
+                )
+                parts = [sel.satellite, sel.sensor]
+                if product.lower() != OTHERS.lower():
+                    parts.append(product)
+                add("_".join(parts))
+                continue
             valid = sorted(
                 {
                     _product_token(str(c["dispName"]), sel.satellite, sensor)
                     for sensor in sensors
-                    for c in manifest[sel.satellite][sensor]
+                    for c in sensor_rows.get(sensor, [])
                     if c.get("dispName")
                 }
                 - {""}
@@ -127,10 +187,7 @@ def resolve_selections(
             continue
 
         for col in cols:
-            disp = str(col["dispName"])
-            if disp not in seen:
-                seen.add(disp)
-                disp_names.append(disp)
+            add(str(col["dispName"]))
 
     if not disp_names:
         # The skip() calls above already printed each reason in yellow;
@@ -148,7 +205,11 @@ def create_payload(cfg: Any, manifest: dict[str, Any]) -> dict[str, Any]:
     edate: str = cfg.end_date.strftime("%b%%2F%d%%2F%Y").upper()
 
     disp_names = resolve_selections(
-        cfg.selections, manifest, cfg.start_date, cfg.end_date
+        cfg.selections,
+        manifest,
+        cfg.start_date,
+        cfg.end_date,
+        refresh=_fresh_manifest,
     )
 
     # The portal URL-decodes selSats server-side (that's why the comma

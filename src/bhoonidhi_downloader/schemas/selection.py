@@ -69,38 +69,40 @@ def parse_sat_token(token: str) -> Selection:
 
 
 def parse_sat_tokens(
-    tokens: list[str] | None, legacy_sensor: str | None = None
+    tokens: list[str] | None,
+    sensor: str | None = None,
+    product: str | None = None,
 ) -> list[Selection]:
-    """Parse repeatable ``--sat`` tokens into a list of selections.
+    """Parse repeatable ``--sat`` tokens, plus ``--sen`` and ``--prod``.
 
-    ``legacy_sensor`` supports the older ``--sat SAT --sen SEN`` form: it
-    is only valid alongside exactly one plain (colon-free) ``--sat``, and
-    fills in that selection's sensor. Combining ``--sen`` with several
-    ``--sat`` tokens or with a token that already carries its own
-    sensor/product is rejected, since the pairing would be ambiguous.
+    ``--sat SAT --sen SEN --prod PROD`` is the same selection as
+    ``--sat SAT:SEN:PROD``. ``--sen`` and ``--prod`` belong to one
+    satellite, so they need exactly one plain (colon-free) ``--sat``;
+    several satellites are given as packed tokens instead.
 
     Raises:
-        BhoonidhiValidationError: on malformed tokens or an ambiguous
-            ``--sen`` combination.
+        BhoonidhiValidationError: on malformed tokens, or ``--sen`` /
+            ``--prod`` next to several ``--sat`` or a packed one.
     """
     if not tokens:
         raise BhoonidhiValidationError("At least one --sat is required.")
 
     selections = [parse_sat_token(t) for t in tokens]
 
-    if legacy_sensor:
+    if sensor or product:
         if len(selections) != 1:
             raise BhoonidhiValidationError(
-                "--sen only works with a single --sat. Attach the sensor "
-                "directly instead, e.g. --sat SAT:SENSOR."
+                "--sen and --prod work with a single --sat. To search "
+                "several satellites, give each one as --sat SAT:SEN:PROD."
             )
         sole = selections[0]
         if sole.sensor or sole.product:
             raise BhoonidhiValidationError(
-                f"--sen conflicts with --sat '{tokens[0]}', which already "
-                f"names a sensor/product. Use one form, not both."
+                f"--sat '{tokens[0]}' already names a sensor or product, so "
+                "--sen and --prod can't be added to it. Use one form."
             )
-        sole.sensor = legacy_sensor
+        sole.sensor = sensor.strip() if sensor else None
+        sole.product = product.strip() if product else None
 
     return selections
 
@@ -110,8 +112,7 @@ def product_token(disp_name: str, satellite: str, sensor: str) -> str:
 
     ``EOS-06_OCM(GAC)_L2C-Chlorophyll`` under sensor ``OCM(GAC)`` gives
     ``L2C-Chlorophyll``; a bare ``ResourceSat-2A_AWIFS`` (no suffix) gives
-    ``""`` — that dispName IS the sensor's default product, with nothing
-    to put after a third colon. Product tokens can themselves contain
+    ``""``, and that product is selected as :data:`OTHERS`. Product tokens can themselves contain
     underscores (``JPSS1_VIIRS_Imagery_L1`` -> ``Imagery_L1``), so this
     strips the known ``satellite_sensor_`` prefix rather than splitting
     on ``_``.
@@ -127,12 +128,19 @@ def product_token(disp_name: str, satellite: str, sensor: str) -> str:
     return ""
 
 
+# The product value for a dispName with no suffix (``ResourceSat-2_AWIFS``).
+# The portal labels every such product "Others", and a sensor has at most
+# one of them, so the value always points at a single product.
+OTHERS = "Others"
+
+
 def sat_value(satellite: str, sensor: str, product: str) -> str:
     """Build the ``--sat`` string that selects exactly this product.
 
-    ``product`` is the token from :func:`product_token`; an empty string
-    means the sensor's default (no distinct product suffix), so the
-    value stops at ``SAT:SEN``. Callers embedding this in a shell example
+    ``product`` is the token from :func:`product_token`, or :data:`OTHERS`
+    for a suffix-less product that shares its sensor with named ones. An
+    empty string stops the value at ``SAT:SEN``, which is exact only when
+    the sensor has that single product. Callers embedding this in a shell example
     still need to quote it themselves when the sensor or product
     contains parentheses, e.g. ``"EOS-06:OCM(GAC):L2C-Chlorophyll"``.
     """

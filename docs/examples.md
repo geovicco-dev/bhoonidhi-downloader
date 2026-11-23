@@ -47,17 +47,25 @@ The results print as a table, and the query is saved under an auto-generated slu
 
 ### 3b. Multiple missions or a single product
 
-`--sat` is repeatable and accepts `SAT[:SEN[:PROD]]` — combine several missions in one search, or narrow to one product within a sensor:
+`--sat` names the satellite and is the only required part; `--sen` and `--prod` narrow it to one sensor or one product:
+
+```console
+$ bhd query create 2025-12-01 2025-12-30 --sat EOS-06 --sen "OCM(GAC)" --prod L2C-Chlorophyll --minx 74 --maxx 80 --miny 12 --maxy 18
+```
+
+A product whose portal name has no suffix, such as `ResourceSat-2_AWIFS`, is `--prod Others`. `bhd archive list --sat ResourceSat-2` shows it as `ResourceSat-2:AWIFS:Others`:
+
+```console
+$ bhd query create 2025-12-01 2025-12-30 --sat ResourceSat-2 --sen AWIFS --prod Others --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
+```
+
+To search several missions at once, repeat `--sat` and give each as `SAT[:SEN[:PROD]]`:
 
 ```console
 $ bhd query create 2025-12-01 2025-12-30 --sat ResourceSat-2A:LISS3 --sat CartoSat-3 --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
 ```
 
-```console
-$ bhd query create 2025-12-01 2025-12-30 --sat "EOS-06:OCM(GAC):L2C-Chlorophyll" --minx 74 --maxx 80 --miny 12 --maxy 18
-```
-
-Quote a `--sat` value containing parentheses, like `OCM(GAC)` above, so the shell passes it through intact. An unknown satellite, sensor, or product is skipped with a warning rather than failing the whole search — run `bhd archive list --sat X` first to see what's valid under a satellite.
+Quote a value containing parentheses, like `OCM(GAC)` above, so the shell passes it through intact. An unknown satellite or sensor is skipped with a warning rather than failing the whole search — run `bhd archive list --sat X` first to see what's valid under a satellite. A product the portal no longer lists is still searched, with a warning such as `! IRS-1A LISS1 Others is not in the portal's product list (listed: L2).`
 
 ### 3c. Search without saving
 

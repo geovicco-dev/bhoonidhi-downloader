@@ -74,16 +74,42 @@ def test_no_tokens_rejected():
         parse_sat_tokens([])
 
 
-def test_legacy_sensor_fills_single_plain_sat():
-    sels = parse_sat_tokens(["ResourceSat-2A"], legacy_sensor="LISS3")
-    assert (sels[0].satellite, sels[0].sensor) == ("ResourceSat-2A", "LISS3")
+def test_sen_fills_single_plain_sat():
+    sels = parse_sat_tokens(["ResourceSat-2A"], sensor="LISS3")
+    assert (sels[0].satellite, sels[0].sensor, sels[0].product) == (
+        "ResourceSat-2A",
+        "LISS3",
+        None,
+    )
 
 
-def test_legacy_sensor_with_multiple_sats_rejected():
+def test_sen_and_prod_match_the_packed_form():
+    flags = parse_sat_tokens(["ResourceSat-2"], sensor="AWIFS", product="L2")
+    packed = parse_sat_tokens(["ResourceSat-2:AWIFS:L2"])
+    assert flags == packed
+
+
+def test_prod_without_sen_matches_empty_middle_field():
+    flags = parse_sat_tokens(["EOS-06"], product="L2C-NDVI")
+    packed = parse_sat_tokens(["EOS-06::L2C-NDVI"])
+    assert flags == packed
+
+
+def test_sen_with_multiple_sats_rejected():
     with pytest.raises(BhoonidhiValidationError, match="single --sat"):
-        parse_sat_tokens(["ResourceSat-2A", "CartoSat-3"], legacy_sensor="LISS3")
+        parse_sat_tokens(["ResourceSat-2A", "CartoSat-3"], sensor="LISS3")
 
 
-def test_legacy_sensor_conflicts_with_inline_sensor():
+def test_prod_with_multiple_sats_rejected():
+    with pytest.raises(BhoonidhiValidationError, match="single --sat"):
+        parse_sat_tokens(["ResourceSat-2A", "CartoSat-3"], product="L2")
+
+
+def test_sen_conflicts_with_inline_sensor():
     with pytest.raises(BhoonidhiValidationError, match="already"):
-        parse_sat_tokens(["ResourceSat-2A:LISS3"], legacy_sensor="AWIFS")
+        parse_sat_tokens(["ResourceSat-2A:LISS3"], sensor="AWIFS")
+
+
+def test_prod_conflicts_with_inline_sensor():
+    with pytest.raises(BhoonidhiValidationError, match="already"):
+        parse_sat_tokens(["ResourceSat-2A:LISS3"], product="L2")
