@@ -11,7 +11,7 @@ Find scenes over an area and date range, keep your searches to come back to them
 
 ## Features
 
-- **Search by bounding box or point + radius** — filter by satellite, sensor, and date range. `--sat` is repeatable and accepts `SAT[:SEN[:PROD]]`, so one search can span several missions or narrow to a single product within a sensor.
+- **Search by bounding box or point + radius** — filter by satellite, sensor, product and date range. `--sat` is required; `--sen` and `--prod` narrow it to one sensor or one product. Repeat `--sat` as `SAT[:SEN[:PROD]]` to search several missions at once.
 - **Named, persistent queries** — every search is saved under a short slug (`misty-falcon`), so you can come back to it later, refresh it for new scenes, or download from it without re-querying the portal.
 - **Concurrent, verified downloads** — fetches multiple scenes in parallel, verifies each with a SHA256, and skips anything already downloaded.
 - **Cart staging** — stage scenes into the Bhoonidhi cart from a saved query — priced, on-order, open-but-archived, or direct-download — and finish the order in the Browse &amp; Order portal.
@@ -50,17 +50,25 @@ Prefer a point and radius over a bounding box? Swap `--minx`/`--maxx`/`--miny`/`
 bhd query create 2025-12-01 2025-12-30 --sat Sentinel-2A:MSI --lat 25.58 --lon 91.89 --radius 15
 ```
 
-`--sat` is repeatable and accepts `SAT[:SEN[:PROD]]` — combine several missions in one search, or narrow to a single product within a sensor:
+`--sat` names the satellite and is the only required part. Narrow it with `--sen` and `--prod`; each level you add returns less:
 
 ```shell
-# Two missions in one search
-bhd query create 2025-12-01 2025-12-30 --sat ResourceSat-2A:LISS3 --sat CartoSat-3 --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
+# One product within a sensor (quote the sensor: the parentheses matter to the shell)
+bhd query create 2025-12-01 2025-12-30 --sat EOS-06 --sen "OCM(GAC)" --prod L2C-Chlorophyll --minx 74 --maxx 80 --miny 12 --maxy 18
 
-# One product within a sensor (quote it — the parentheses matter to the shell)
-bhd query create 2025-12-01 2025-12-30 --sat "EOS-06:OCM(GAC):L2C-Chlorophyll" --minx 74 --maxx 80 --miny 12 --maxy 18
+# A product whose portal name has no suffix, such as ResourceSat-2_AWIFS, is --prod Others
+bhd query create 2025-12-01 2025-12-30 --sat ResourceSat-2 --sen AWIFS --prod Others --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
 ```
 
-An unknown satellite, sensor, or product is skipped with a warning instead of failing the whole search; run `bhd archive list --sat X` first to see what's valid.
+To search several missions at once, repeat `--sat` and give each as `SAT[:SEN[:PROD]]`; `--sen` and `--prod` work with a single `--sat` only:
+
+```shell
+bhd query create 2025-12-01 2025-12-30 --sat ResourceSat-2A:LISS3 --sat CartoSat-3 --minx 91.77 --maxx 92 --miny 25.496 --maxy 25.695
+```
+
+An unknown satellite or sensor is skipped with a warning instead of failing the whole search; run `bhd archive list --sat X` first to see what's valid. A product that isn't in the saved product list makes bhd read the portal's list again. If the product is still missing, bhd searches it anyway and prints a warning, since the portal keeps serving some products it no longer lists.
+
+bhd reads the product list from `~/.bhoonidhi/` and fetches it from the portal only on first use or with `bhd archive list --refresh`. When the saved copy is more than 7 days old, commands say so.
 
 Every search is saved by default. For a one-off search — or a scripted/multi-worker run where you don't want query files piling up on disk — add `--no-save`: the scenes still print (and the SDK still returns them), but nothing is written under `~/.bhoonidhi/queries/` and no slug is generated:
 
@@ -94,7 +102,7 @@ Every command supports `--help` for its full option list. This is the short vers
 
 | Command                                                                                                                      | What it does                                                                                                                                                                                                                                |
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bhd query create <dates> --sat SAT[:SEN[:PROD]] [--sat ...]` with `--minx --maxx --miny --maxy` or `--lat --lon [--radius]` | Search and save the results as a new named query. Repeat `--sat` to combine missions; give the area as a bounding box or a point + radius, not both. Add `--no-save` to run the search without writing a query file or generating a slug. Add `--slug NAME` to save it under a slug you choose.                                                                                        |
+| `bhd query create <dates> --sat SAT [--sen SEN] [--prod PROD]` with `--minx --maxx --miny --maxy` or `--lat --lon [--radius]` | Search and save the results as a new named query. For several missions, repeat `--sat` as `SAT[:SEN[:PROD]]`; give the area as a bounding box or a point + radius, not both. Add `--no-save` to run the search without writing a query file or generating a slug. Add `--slug NAME` to save it under a slug you choose.                                                                                        |
 | `bhd query list`                                                                                                             | List all your saved queries.                                                                                                                                                                                                                |
 | `bhd query show <slug>`                                                                                                      | Redisplay a saved query's scenes. `--filter ready\|archived\|onorder\|priced` narrows the table to one or more states.                                                                                                                         |
 | `bhd query refresh <slug>`                                                                                                   | Check for new scenes matching an existing query.                                                                                                                                                                                            |

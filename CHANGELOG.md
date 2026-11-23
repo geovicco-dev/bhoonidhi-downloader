@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here.
 
+## [0.6.0]
+
+### Added
+
+- **`bhd query create --prod PROD` (CLI) / `client.query.create(product=...)` (SDK) selects one product.** `--sat` names the satellite and is the only required part; `--sen` and `--prod` narrow it, so `--sat ResourceSat-2 --sen AWIFS --prod L2` is the same search as `--sat ResourceSat-2:AWIFS:L2`. `--sen` and `--prod` work with a single plain `--sat`; several missions are still given as repeated `--sat SAT[:SEN[:PROD]]`.
+- **`Others` selects a product whose portal name has no suffix.** `ResourceSat-2_AWIFS` had no product value, so the only way to reach it was `--sat ResourceSat-2:AWIFS`, which also selects the sensor's six named products. The portal labels every such product `Others`, and a sensor has at most one, so `--prod Others` (or `SAT:SEN:Others`) selects exactly that product. A product suffix named `Others` would still win. `bhd archive list --sat X` shows `SAT:SEN:Others` in the four rows that printed "no single value": ResourceSat-1 AWIFS and LISS3, ResourceSat-2 AWIFS and ResourceSat-2A AWIFS. The archive's `sat_value` field carries the same value.
+- **Commands say when the saved product list is more than 7 days old:** `! The product list was saved 54 days ago. Run bhd archive list --refresh to update it.` The saved copy is still what bhd reads by default.
+
+### Changed
+
+- **A product that isn't in the saved product list is searched instead of skipped.** bhd first reads the portal's product list again, once per search. If the product is still missing and its satellite and sensor exist, bhd searches it under the portal name built from the three parts and prints `! IRS-1A LISS1 Others is not in the portal's product list (listed: L2).` The portal keeps serving products it has stopped listing: IRS-1A's original LISS1 and LISS2 products are no longer listed but still return their scenes. A misspelt product now returns no scenes with that warning, where it used to be skipped. An unknown satellite or sensor is still skipped.
+- **`--sen` is no longer described as legacy,** and `parse_sat_tokens` takes `sensor=` and `product=` in place of `legacy_sensor=`.
+
 ## [0.5.6]
 
 ### Added

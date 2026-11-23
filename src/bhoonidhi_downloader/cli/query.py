@@ -75,15 +75,20 @@ def create(
     satellite: list[str] = typer.Option(
         None,
         "--sat",
-        help="Satellite target as SAT[:SEN[:PROD]]. Repeat for several "
-        "missions, e.g. --sat ResourceSat-2A:LISS3 --sat CartoSat-3. "
-        "Omit the sensor/product to search everything under it.",
+        help="Satellite name, required. Repeat for several missions, giving "
+        "each as SAT[:SEN[:PROD]], e.g. --sat ResourceSat-2A:LISS3 --sat "
+        "CartoSat-3. Omit the sensor/product to search everything under it.",
     ),
     sensor: str = typer.Option(
         None,
         "--sen",
-        help="Sensor name (legacy; only with a single plain --sat). "
-        "Prefer --sat SAT:SENSOR.",
+        help="Sensor name, with a single --sat.",
+    ),
+    product: str = typer.Option(
+        None,
+        "--prod",
+        help="Product, with a single --sat: the --sat value's last part in "
+        "'bhd archive list --sat X', e.g. L2 or Others.",
     ),
     minx: float = typer.Option(None, "--minx", help="Minimum longitude (bounding box)"),
     maxx: float = typer.Option(None, "--maxx", help="Maximum longitude (bounding box)"),
@@ -118,19 +123,21 @@ def create(
 ) -> None:
     """Search for scenes and save the results as a new named query.
 
-    Targets are given with --sat, which is repeatable and accepts
-    SAT[:SEN[:PROD]]:
+    Name the satellite with --sat, and narrow it with --sen and --prod:
 
-      --sat JPSS1                    every sensor, every product
-      --sat JPSS1:VIIRS              every product under that sensor
-      --sat JPSS1:VIIRS:Imagery_L1   exactly that one product
-      --sat A --sat B                combine several missions in one search
+      --sat JPSS1                                every sensor, every product
+      --sat JPSS1 --sen VIIRS                    every product under that sensor
+      --sat JPSS1 --sen VIIRS --prod Imagery_L1  exactly that one product
 
-    Quote values containing parentheses so the shell doesn't eat them,
-    e.g. --sat "EOS-06:OCM(GAC):L2C-Chlorophyll". An invalid satellite,
-    sensor, or product is skipped with a warning rather than failing
-    the whole search — see 'bhd archive list --sat X' for valid names
-    first.
+    For several missions in one search, repeat --sat and give each as
+    SAT[:SEN[:PROD]], e.g. --sat ResourceSat-2A:LISS3 --sat CartoSat-3.
+
+    A product whose portal name has no suffix, such as ResourceSat-2_AWIFS,
+    is --prod Others. Quote values containing parentheses so the shell
+    doesn't eat them, e.g. --sen "OCM(GAC)". An unknown satellite or
+    sensor is skipped with a warning rather than failing the whole search;
+    a product the portal doesn't list is searched anyway, with a warning.
+    See 'bhd archive list --sat X' for valid names first.
 
     Give the area of interest as either a bounding box
     (--minx/--maxx/--miny/--maxy) or a point plus radius
@@ -148,7 +155,7 @@ def create(
 
       # One product within a sensor
       bhd query create 2026-01-01 2026-01-31 \\
-          --sat "EOS-06:OCM(GAC):L2C-Chlorophyll" \\
+          --sat EOS-06 --sen "OCM(GAC)" --prod L2C-Chlorophyll \\
           --minx 74 --maxx 80 --miny 12 --maxy 18
 
       # Point plus radius instead of a bounding box
@@ -165,7 +172,7 @@ def create(
     """
     interactive = False if plain else None
     try:
-        selections = parse_sat_tokens(satellite, legacy_sensor=sensor)
+        selections = parse_sat_tokens(satellite, sensor=sensor, product=product)
         query = run_query_create(
             start_date=start_date,
             end_date=end_date,

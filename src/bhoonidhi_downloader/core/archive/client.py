@@ -7,11 +7,33 @@ from typing import Any
 import requests
 
 from bhoonidhi_downloader.exceptions import BhoonidhiAPIError
-from bhoonidhi_downloader.schemas.selection import product_token, sat_value
+from bhoonidhi_downloader.logger import get_console
+from bhoonidhi_downloader.schemas.selection import OTHERS, product_token, sat_value
 
 CACHE_DIR = Path(os.path.join(os.path.expanduser("~"), ".bhoonidhi"))
 ARCHIVE_PATH = CACHE_DIR / "archive.json"
 MANIFEST_PATH = CACHE_DIR / "manifest.json"
+
+# A saved product list older than this gets a one-line notice: the portal
+# adds products and ends satellites without warning.
+STALE_AFTER_DAYS = 7
+_stale_notice_shown = False
+
+
+def _notice_if_stale() -> None:
+    """Print, once per process, how old the saved product list is."""
+    global _stale_notice_shown
+    if _stale_notice_shown:
+        return
+    saved = datetime.fromtimestamp(ARCHIVE_PATH.stat().st_mtime)
+    days = (datetime.now() - saved).days
+    if days > STALE_AFTER_DAYS:
+        _stale_notice_shown = True
+        get_console().print(
+            f"[yellow]![/] The product list was saved {days} days ago. "
+            "Run bhd archive list --refresh to update it."
+        )
+
 
 # ------------------------------
 # Fetch entire Bhoonidhi archive JSON from the web and cache it locally
@@ -40,6 +62,7 @@ class ArchiveManager:
         if not ARCHIVE_PATH.exists():
             self.refresh()
             return
+        _notice_if_stale()
         self.archive = json.loads(ARCHIVE_PATH.read_text())
         if MANIFEST_PATH.exists():
             self.manifest = json.loads(MANIFEST_PATH.read_text())
@@ -114,12 +137,21 @@ class ArchiveManager:
             availability = f"{start} - {end}"
 
             collections: list[dict[str, dict[str, Any]]] = []
-            for r in record.get("sensors", []):
-                disp = str(r.get("dispName") or "")
-                if not disp:
-                    continue
+            sat_name = str(record.get("satName") or "")
+            rows = [r for r in record.get("sensors", []) if r.get("dispName")]
+            named_sensors = {
+                str(r.get("senName") or "")
+                for r in rows
+                if product_token(
+                    str(r["dispName"]), sat_name, str(r.get("senName") or "")
+                )
+            }
+            for r in rows:
+                disp = str(r["dispName"])
                 sen_name = str(r.get("senName") or "")
-                token = product_token(disp, str(record.get("satName") or ""), sen_name)
+                token = product_token(disp, sat_name, sen_name)
+                # SAT:SEN alone would also select the named products.
+                value_token = token or (OTHERS if sen_name in named_sensors else "")
                 collections.append(
                     {
                         disp: {
@@ -129,9 +161,7 @@ class ArchiveManager:
                             "end_date": r.get("endDate"),
                             "product": _normalize_products(r.get("products")),
                             "product_token": token,
-                            "sat_value": sat_value(
-                                str(record.get("satName") or ""), sen_name, token
-                            ),
+                            "sat_value": sat_value(sat_name, sen_name, value_token),
                         }
                     }
                 )

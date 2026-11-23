@@ -117,11 +117,11 @@ def test_multi_mission_flattens_across_satellites():
     assert "CartoSat-3_PAN" in disp
 
 
-def test_invalid_selection_is_skipped_not_fatal():
-    # One bad product, one good satellite — the good one survives.
+def test_unknown_satellite_is_skipped_not_fatal():
+    # One bad satellite, one good one — the good one survives.
     disp = resolve_selections(
         [
-            Selection(satellite="EOS-06", sensor="OCM(GAC)", product="Nonexistent"),
+            Selection(satellite="NoSuchSat"),
             Selection(satellite="CartoSat-3"),
         ],
         MANIFEST,

@@ -44,18 +44,19 @@ class QueryNamespace:
         selections: list[Selection] | None = None,
         save: bool = True,
         slug: str | None = None,
+        product: str | None = None,
     ) -> QuerySchema | None:
         """Search an AOI + date range, returning the matching scenes.
 
         The AOI is either a bounding box (minx/maxx/miny/maxy) or a point
         plus radius (lat/lon/radius_km) — give exactly one of the two.
 
-        Targets are given as ``selections`` — a list of
+        Targets are given as ``satellite`` with an optional ``sensor`` and
+        ``product`` for one mission, or as ``selections`` — a list of
         :class:`~bhoonidhi_downloader.schemas.Selection`, each naming a
-        satellite and optionally a sensor and product. The legacy
-        ``satellite`` + ``sensor`` scalar pair is still accepted for a
-        single-mission search and is folded into a one-element
-        ``selections`` list; giving both is an error.
+        satellite and optionally a sensor and product — for several.
+        Giving both forms is an error. ``product="Others"`` selects a
+        product whose portal name has no suffix.
 
         By default (``save=True``) the result is persisted as a named query
         under ``~/.bhoonidhi/queries/`` and the returned query carries its
@@ -71,7 +72,7 @@ class QueryNamespace:
         Returns the query, or None if nothing matched. Mirrors
         ``bhd query create``.
         """
-        resolved = self._resolve_selections(satellite, sensor, selections)
+        resolved = self._resolve_selections(satellite, sensor, product, selections)
         return _query.run_query_create(
             start_date,
             end_date,
@@ -93,18 +94,20 @@ class QueryNamespace:
     def _resolve_selections(
         satellite: str | None,
         sensor: str | None,
+        product: str | None,
         selections: list[Selection] | None,
     ) -> list[Selection]:
-        """Reconcile the modern ``selections`` list with the legacy scalar pair.
+        """Reconcile ``selections`` with the single-mission scalar form.
 
-        Exactly one form must be given. The legacy ``satellite`` (+ optional
-        ``sensor``) becomes a single-element list; ``selections`` is used
-        as-is. Supplying both, or neither, is a usage error.
+        Exactly one form must be given. ``satellite`` (+ optional
+        ``sensor`` and ``product``) becomes a single-element list;
+        ``selections`` is used as-is. Supplying both, or neither, is a
+        usage error.
         """
         if selections is not None:
-            if satellite is not None or sensor is not None:
+            if satellite is not None or sensor is not None or product is not None:
                 raise BhoonidhiValidationError(
-                    "Give either selections or satellite/sensor, not both."
+                    "Give either selections or satellite/sensor/product, not both."
                 )
             return selections
         if satellite is None:
@@ -112,7 +115,7 @@ class QueryNamespace:
                 "A satellite selection is required (pass selections=... "
                 "or satellite=...)."
             )
-        return [Selection(satellite=satellite, sensor=sensor)]
+        return [Selection(satellite=satellite, sensor=sensor, product=product)]
 
     def list(self) -> list[QuerySchema]:
         """Return every saved query. Mirrors ``bhd query list``."""

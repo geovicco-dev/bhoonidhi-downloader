@@ -4,7 +4,7 @@ from datetime import datetime
 
 from rich.console import Console
 
-from bhoonidhi_downloader.schemas.selection import product_token, sat_value
+from bhoonidhi_downloader.schemas.selection import OTHERS, product_token, sat_value
 from bhoonidhi_downloader.viewer import Column, show_table
 
 
@@ -89,22 +89,16 @@ def _satellite_columns() -> list[Column]:
     def _sat_flag(r: dict, _i: int) -> str:
         """The --sat value that selects exactly this row.
 
-        A handful of sensors mix a bare, no-suffix dispName with other,
-        distinctly-suffixed ones under the same sensor (some AWIFS/LISS3
-        variants across the ResourceSat family) — for those, SAT:SEN
-        alone resolves to every product under the sensor, not just the
-        default one, so there is no --sat value that isolates the bare
-        row by itself. Flag that instead of printing a value that lies.
+        A handful of sensors (some AWIFS/LISS3 variants across the
+        ResourceSat family) have a bare, no-suffix dispName next to
+        suffixed ones. SAT:SEN alone selects all of them, so the bare row
+        is named with the product value ``Others``.
         """
         satellite = r.get("satName", "")
         sensor = r.get("senName", "")
         token = product_token(str(r.get("dispName", "")), satellite, sensor)
-        if not token:
-            siblings = r.get("_sibling_products") or []
-            if siblings:
-                return (
-                    f"[dim]no single value (SAT:SEN selects all {len(siblings) + 1})[/]"
-                )
+        if not token and r.get("_sibling_products"):
+            token = OTHERS
         return sat_value(satellite, sensor, token)
 
     return [
@@ -135,7 +129,8 @@ def _annotate_ambiguous_defaults(rows: list[dict]) -> list[dict]:
     A row's ``_sibling_products`` lists the other dispNames sharing its
     satellite+sensor when that row itself has no distinct product suffix
     and at least one sibling does — the case where ``--sat SAT:SEN``
-    resolves to more than just this row. Rows are returned as shallow
+    resolves to more than just this row, so the row is named
+    ``SAT:SEN:Others`` instead. Rows are returned as shallow
     copies so the caller's original dicts aren't mutated.
     """
     by_sat_sen: dict[tuple[str, str], list[dict]] = {}

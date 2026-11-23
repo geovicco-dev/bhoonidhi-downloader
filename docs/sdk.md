@@ -128,19 +128,24 @@ query = client.query.create(
 )
 ```
 
-Narrow further to a single product within a sensor:
+Narrow further to a single product within a sensor. For one mission,
+`satellite`, `sensor` and `product` can be given directly:
 
 ```python
 query = client.query.create(
     datetime(2025, 12, 1), datetime(2025, 12, 30),
-    selections=[Selection(satellite="EOS-06", sensor="OCM(GAC)", product="L2C-Chlorophyll")],
+    satellite="EOS-06", sensor="OCM(GAC)", product="L2C-Chlorophyll",
     minx=74, maxx=80, miny=12, maxy=18,
 )
 ```
 
-An unknown satellite, sensor, or product is skipped with a warning instead of
-failing the whole search; `client.archive.list()` (or `bhd archive list --sat
-X`) shows valid names.
+`product="Others"` selects a product whose portal name has no suffix, such
+as `ResourceSat-2_AWIFS`.
+
+An unknown satellite or sensor is skipped with a warning instead of failing
+the whole search; `client.archive.list()` (or `bhd archive list --sat X`)
+shows valid names. A product the portal no longer lists is still searched,
+with a warning.
 
 Work with saved queries:
 
