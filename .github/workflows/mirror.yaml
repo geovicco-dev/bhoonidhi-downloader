@@ -1,0 +1,37 @@
+# Keeps a second copy of `main` in step with this repository. On every push
+# to main, the same commits are pushed to the address in the MIRROR_URL secret
+# with the token in MIRROR_TOKEN. The push is never forced: if the copy has
+# commits this repository lacks, the job fails instead of overwriting them.
+name: Mirror main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mirror-main
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Push main to the mirror
+        env:
+          MIRROR_URL: ${{ secrets.MIRROR_URL }}
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          set -eu
+          if [ -z "$MIRROR_URL" ] || [ -z "$MIRROR_TOKEN" ]; then
+            echo "::error::Set the MIRROR_URL and MIRROR_TOKEN secrets."
+            exit 1
+          fi
+          git push "https://oauth2:${MIRROR_TOKEN}@${MIRROR_URL#https://}" "${GITHUB_SHA}:refs/heads/main"
